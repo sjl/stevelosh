@@ -36,6 +36,7 @@
 			<h1>Comments</h1>
 			{% for comment in project.comment_set.all|dictsort:"submitted" %}
 				<div class="projects-project-comment">
+					<a name="comment-{{ comment.id }}"></a>
 					<h2>{{ comment.name }} said:</h2>
 					<div class="projects-project-comment-body">
 						{{ comment.body|markdown:"safe" }}
