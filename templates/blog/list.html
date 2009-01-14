@@ -1,0 +1,41 @@
+{% extends "blog/base.html" %}
+
+{% block content %}
+	<div id="blog-list">
+		{% for entry in entries %}
+			<div class="blog-list-entry">
+				<h2 class="blog-list-entry-title">
+					<a href="{% url stevelosh.blog.views.entry entry.pub_date.year, entry.pub_date.month, entry.pub_date.day, entry.slug %}">
+						{{ entry.title }}
+					</a>
+				</h2>
+				<p class="blog-list-entry-snip">{{ entry.snip }}</p>
+			</div>
+		{% endfor %}
+		
+		{% ifnotequal newer_page older_page  %}
+			<div class="blog-list-entry">
+			{% ifnotequal newer_page None %}
+				{% ifequal newer_page 0 %}
+					{% url blog-list-newest as new_page %}
+				{% else %}
+					{% url blog-list-page newer_page as new_page %}
+				{% endifequal %}
+				
+				<h2 id="blog-list-newer"><a href="{{ new_page }}">
+					Newer &raquo;
+				</a></h2>
+			{% endifnotequal %}
+			{% ifnotequal older_page None %}
+				<h2 id="blog-list-older">
+					<a href="{% url blog-list-page older_page %}">
+						&laquo; Older
+					</a>
+				</h2>
+			{% else %}
+				<h2 id="blog-list-older">&nbsp;</h2>
+			{% endifnotequal %}
+			</div>
+		{% endifnotequal %}
+	</div>
+{% endblock %}

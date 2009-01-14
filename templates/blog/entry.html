@@ -1,0 +1,86 @@
+{% extends "blog/base.html" %}
+{% load markup %}
+
+{% block title %}{{ entry.title }}{% endblock %}
+
+{% block script %}
+	<script type="text/javascript"
+	        src="/site-media/scripts/jquery.validate.min.js">
+	</script>
+	<script type="text/javascript"
+	        src="/site-media/scripts/validate-comment-form.js">
+	</script>
+{% endblock %}
+
+{% block content %}
+	<div id="blog-entry">
+		<h1 id="blog-entry-title">
+			<a href="{% url stevelosh.blog.views.entry entry.pub_date.year, entry.pub_date.month, entry.pub_date.day, entry.slug %}">
+				{{ entry.title }}
+			</a>
+		</h1>
+		<div id="blog-entry-date">
+			<p>
+				Posted
+				on {{ entry.pub_date.date|date:"F j, Y" }}
+				at {{ entry.pub_date.time|time:"g:i A" }}
+			</p>
+		</div>
+		<div id="blog-entry-body" class="content">
+			{{ entry.body|markdown }}
+		</div>
+	</div>
+	<hr />
+	{% ifnotequal entry.comment_set.count 0 %}
+		<div id="blog-entry-comments">
+			<h1>Comments</h1>
+			{% for comment in entry.comment_set.all|dictsort:"submitted" %}
+				<div class="blog-entry-comment">
+					<h2>{{ comment.name }} said:</h2>
+					<div class="blog-entry-comment-body">
+						{{ comment.body|markdown:"safe" }}
+					</div>
+				</div>
+			{% endfor %}
+		</div>
+		<hr />
+	{% endifnotequal %}
+	<div id="blog-entry-new-comment">
+		<h1>Add your comment:</h1>
+		<form id="new-comment-form" method="post" 
+			  action="{% url stevelosh.blog.views.comment %}">
+			<p class="form-label">
+				What's your name?
+			</p>
+			<p id="blog-new-comment-name-area">
+				<input type="hidden" name="entry-id" 
+					   value="{{ entry.id }}" />
+				<input id="blog-new-comment-name" name="name" 
+					   maxlength="40" type="text" />
+			</p>
+			<p id="blog-new-comment-body-area">
+				<textarea id="blog-new-comment-body" rows="" cols=""
+			 		  	  name="body"></textarea>
+			</p>
+			<p id="blog-new-comment-instructions">
+				You can use <a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a>.
+			</p>
+			<h2>You're going to say:</h2>
+			<div class="wmd-preview"></div>
+			<p>
+				<input id="blog-new-comment-submit" name="submit"
+				 	   type="submit" value="Comment" />
+			</p>
+		</form>
+	</div>
+	
+	<script type="text/javascript">
+        wmd_options = {
+			output: "Markdown",
+			buttons: "bold italic | link blockquote code | ol ul heading hr"
+		};
+	</script>
+	<script type="text/javascript"
+	 		src="/site-media/scripts/wmd/wmd.js"></script>
+	
+{% endblock %}

@@ -1,0 +1,36 @@
+div.thought-content {
+    border-bottom: 1px solid #eee;
+    margin-bottom: 3.5em;
+}
+
+div.thought p:last-child {
+    margin-bottom: 1em;
+}
+
+.thought h2 {
+    display: inline;
+    font-size: 1.5em;
+}
+
+.thought h2 a:link, .thought h2 a:visited, .thought h2 a:active {
+    border-bottom: 1px dotted #666;
+}
+
+.thought h2 a:hover {
+    border-bottom: 1px dotted #900;
+}
+
+.thought-type {
+    text-align: right;
+}
+
+.thought-type h2 {
+    color: #666;
+    font-weight: normal;
+}
+
+.colborder-left {
+    padding-left: 25px;
+    margin-left: 14px;
+    border-left: 1px solid #eee;
+}

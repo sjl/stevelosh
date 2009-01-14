@@ -1,0 +1,103 @@
+body.stevelosh {
+    color: #111;
+}
+
+div#wrapper {
+    margin-bottom: 5em;
+}
+
+p, ol, ul, code {
+    font-size: 1.2em;
+}
+
+input, textarea {
+    font-size: 1.0em;
+    margin: 0em;
+}
+
+ol, ul {
+    padding-left: 2em;
+}
+
+pre, blockquote {
+    margin-left: 2em;
+    padding: 1em;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+}
+
+a:link, a:visited, a:active {
+    color: #900;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+#wrapper {
+    border: 1px solid white;
+}
+
+div#header {
+    margin-bottom: 3em;
+}
+
+div#header h1 {
+    font-size: 7em;
+    line-height: 1em;
+    display: inline;
+    font-weight: normal;
+    letter-spacing: -4px;
+}
+
+h1#site-logo {
+    color: black;
+}
+
+h1#site-heading {
+    color: #666;
+}
+
+h1 { 
+    font-weight: bold;
+    line-height: 1.2em; 
+}
+
+h2 {
+    margin-bottom: 0.25em;
+    font-weight: bold;
+}
+
+h1 a:link, h1 a:visited, h1 a:active, h2 a:link, h2 a:visited, h2 a:active {
+    color: black;
+    text-decoration: none;
+}
+
+h1 a:hover, h2 a:hover {
+    color: #900;
+}
+
+div#sidebar div.sidebar-item {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5em;
+    padding-top: 0.5em;
+}
+
+div#sidebar h2 {
+    display: inline;
+}
+
+p.form-label {
+    color: #666;
+    margin-bottom: 0em;
+}
+
+label.invalid {
+    font-size: 1em;
+    font-weight: normal;
+}
+
+.invalid {
+    color: #F00;
+}
