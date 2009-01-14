@@ -10,9 +10,10 @@ class Entry(models.Model):
     body = models.TextField()
     published = models.BooleanField(default=False)
     
+    @models.permalink
     def get_absolute_url(self):
-        return "/blog/entry/%i/%i/%i/%s/" % (self.pub_date.year, 
-            self.pub_date.month, self.pub_date.day, self.slug)
+        return ('blog-entry', (self.pub_date.year, self.pub_date.month, 
+                               self.pub_date.day, self.slug),)
     
     def __unicode__(self):
         return u'%s' % (self.title,)
