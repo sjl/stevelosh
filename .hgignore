@@ -5,8 +5,12 @@ syntax: glob
 *.tmproj
 
 fabfile.py
-deploy*.py
 *.db
 
 site-media/storage/*
+
+syntax: regexp
+# This is ugly but it works.
+deploy-[^t][^e][^m][^p].*
+deploy\.py
 
