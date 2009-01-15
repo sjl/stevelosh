@@ -1,0 +1,15 @@
+{% ifequal obj.type 'thought-text' %}
+	{% if obj.item.title %}
+		{{ obj.item.title }}
+	{% else %}
+		{{ obj.item.body|truncatewords:10 }}
+	{% endif %}
+{% endifequal %}
+
+{% ifequal obj.type 'thought-link' %}
+	{% if obj.item.name %}
+		{{ obj.item.name }}
+	{% else %}
+		{{ obj.item.url }}
+	{% endif %}
+{% endifequal %}

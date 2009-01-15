@@ -1,13 +1,15 @@
 from django.conf.urls.defaults import *
 from django.contrib import admin
 from django.conf import settings
-from stevelosh.feeds import LatestEntries, LatestComments, LatestProjects
+from stevelosh.feeds import *
 
 
 admin.autodiscover()
 feeds = { 'blog': LatestEntries, 
           'comments': LatestComments,
-          'projects': LatestProjects, }
+          'projects': LatestProjects, 
+          'thoughts': LatestThoughts, 
+          'all': LatestEverything, }
 
 urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),

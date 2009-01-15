@@ -8,6 +8,9 @@ class TextThought(models.Model):
     tumblr_id = models.IntegerField(blank=False, null=False)
     type = models.CharField(default='text', max_length=100)
     
+    def get_absolute_url(self):
+        return u'/thoughts/#text-' + str(self.id)
+    
     def __unicode__(self):
         return u'%s' % (self.body[:20],)
 
@@ -18,6 +21,9 @@ class LinkThought(models.Model):
     description = models.TextField(blank=True, null=True)
     tumblr_id = models.IntegerField(blank=False, null=False)
     type = models.CharField(default='link', max_length=100)
+    
+    def get_absolute_url(self):
+        return u'/thoughts/#text-' + str(self.id)
     
     def __unicode__(self):
         return u'%s' % (self.url,)

@@ -1,0 +1,26 @@
+{% load markup %}
+
+{% ifequal obj.type 'blog' %}
+	{{ obj.item.body|markdown }}
+{% endifequal %}
+
+{% ifequal obj.type 'project' %}
+	{{ obj.item.body|markdown }}
+{% endifequal %}
+
+{% ifequal obj.type 'thought-text' %}
+	{{ obj.item.body|markdown }}
+{% endifequal %}
+
+{% ifequal obj.type 'thought-link' %}
+	<a href="{{ obj.item.url }}">
+		{% if obj.item.name %}
+			{{ obj.item.name }}
+		{% else %}
+			{{ obj.item.url }}
+		{% endif %}
+	</a>
+	{% if obj.item.description %}
+		{{ obj.item.description|markdown }}
+	{% endif %}
+{% endifequal %}

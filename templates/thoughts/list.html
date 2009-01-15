@@ -15,6 +15,7 @@
 		{% for thought in thoughts %}
 			<div class="thought">
 				{% ifequal thought.type 'text' %}
+					<a name="text-{{ thought.id }}"></a>
 					<div class="thought-type span-2">
 						<h2>text</h2>
 					</div>
@@ -26,6 +27,7 @@
 					</div>
 				{% endifequal %}
 				{% ifequal thought.type 'link' %}
+					<a name="link-{{ thought.id }}"></a>
 					<div class="thought-type span-2">
 						<h2>link</h2>
 					</div>
