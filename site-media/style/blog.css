@@ -12,6 +12,7 @@ div.blog-list-entry {
     border-bottom: 1px solid #eee;
     padding-bottom: 0.5em;
     padding-top: 0.5em;
+    -webkit-text-size-adjust: none;
 }
 
 h2.blog-list-entry-title {

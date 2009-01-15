@@ -9,4 +9,5 @@ div.splash-list-entry {
     display: inline;
     color: #666;
     font-weight: normal;
+    -webkit-text-size-adjust: none;
 }
