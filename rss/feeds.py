@@ -27,7 +27,7 @@ class LatestEntries(Feed):
                (feeder,
                 'Blog', 
                 self.item_author_link + item.get_absolute_url(), 
-                item.title)
+                'Steve Losh / ' + item.title)
 
 class LatestComments(Feed):
     title = "Steve Losh / RSS / Comments"
@@ -53,7 +53,7 @@ class LatestComments(Feed):
                (feeder,
                 'Comments', 
                 self.item_author_link + item.get_absolute_url(), 
-                item.title)
+                'Comment %d' % item.id)
 
 class LatestProjects(Feed):
     title = "Steve Losh / RSS / Projects"
@@ -75,7 +75,7 @@ class LatestProjects(Feed):
                (feeder,
                 'Projects', 
                 self.item_author_link + item.get_absolute_url(), 
-                item.title)
+                'Steve Losh / ' + item.name)
     
 
 class LatestThoughts(Feed):
@@ -103,11 +103,17 @@ class LatestThoughts(Feed):
         return item['date']
     
     def item_link(self, item):
+        title = 'Steve Losh / '
+        if item['type'] == 'thought-text':
+            title += 'Thoughts / ' + item['item'].id
+        elif item['type'] == 'thought-link':
+            title += 'Thoughts / ' + item['item'].url
+        
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,
                 'Thoughts', 
                 self.item_author_link + item['item'].get_absolute_url(), 
-                item['item'].title)
+                title)
     
 
 class LatestEverything(Feed):
@@ -141,9 +147,19 @@ class LatestEverything(Feed):
         return item['date']
     
     def item_link(self, item):
+        title = 'Steve Losh / '
+        if item['type'] == 'blog':
+            title += item['item'].title
+        elif item['type'] == 'project':
+            title += item['item'].name
+        elif item['type'] == 'thought-text':
+            title += 'Thoughts / ' + item['item'].id
+        elif item['type'] == 'thought-link':
+            title += 'Thoughts / ' + item['item'].url
+        
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,
-                'Thoughts', 
+                'All', 
                 self.item_author_link + item['item'].get_absolute_url(), 
-                item['item'].title)
+                title)
     
