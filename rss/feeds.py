@@ -105,7 +105,7 @@ class LatestThoughts(Feed):
     def item_link(self, item):
         title = 'Steve Losh / '
         if item['type'] == 'thought-text':
-            title += 'Thoughts / ' + item['item'].id
+            title += 'Thoughts / ' + str(item['item'].id)
         elif item['type'] == 'thought-link':
             title += 'Thoughts / ' + item['item'].url
         
@@ -153,7 +153,7 @@ class LatestEverything(Feed):
         elif item['type'] == 'project':
             title += item['item'].name
         elif item['type'] == 'thought-text':
-            title += 'Thoughts / ' + item['item'].id
+            title += 'Thoughts / ' + str(item['item'].id)
         elif item['type'] == 'thought-link':
             title += 'Thoughts / ' + item['item'].url
         
