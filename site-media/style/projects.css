@@ -45,7 +45,7 @@ div.projects-project-comment-body {
     margin-left: 2em;
 }
 
-div.projects-project-comment-body code, .wmd-preview code, div.projects-project-comment-body blockquote, .wmd-preview blockquote {
+div.projects-project-comment-body ol, div.projects-project-comment-body ul, div.projects-project-comment-body pre, div.projects-project-comment-body code, div.projects-project-comment-body blockquote, .wmd-preview ol, .wmd-preview ul, .wmd-preview pre, .wmd-preview code, .wmd-preview blockquote {
     font-size: 1.0em;
     padding-bottom: 0em;
 }
@@ -62,7 +62,7 @@ div.projects-project-comment-body h2, .wmd-preview h2 {
     font-size: 1.3em;
 }
 
-div.projects-project-comment-body h3, .wmd-preview h3, div.projects-project-comment-body h4, .wmd-preview h4, div.projects-project-comment-body h5, .wmd-preview h5 {
+div.projects-project-comment-body h3, .wmd-preview h3, div.projects-project-comment-body h4, .wmd-preview h4, div.projects-project-comment-body h5, .wmd-preview h5, div.projects-project-comment-body h6, .wmd-preview h6 {
     font-size: 1.2em;
 }
 

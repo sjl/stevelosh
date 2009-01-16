@@ -53,7 +53,7 @@ div.blog-entry-comment-body {
     margin-left: 2em;
 }
 
-div.blog-entry-comment-body code, .wmd-preview code, div.blog-entry-comment-body blockquote, .wmd-preview blockquote {
+div.blog-entry-comment-body ol, div.blog-entry-comment-body ul, div.blog-entry-comment-body pre, div.blog-entry-comment-body code, div.blog-entry-comment-body blockquote, .wmd-preview ol, .wmd-preview ul, .wmd-preview pre, .wmd-preview code, .wmd-preview blockquote {
     font-size: 1.0em;
     padding-bottom: 0em;
 }
@@ -70,7 +70,7 @@ div.blog-entry-comment-body h2, .wmd-preview h2 {
     font-size: 1.3em;
 }
 
-div.blog-entry-comment-body h3, .wmd-preview h3, div.blog-entry-comment-body h4, .wmd-preview h4, div.blog-entry-comment-body h5, .wmd-preview h5 {
+div.blog-entry-comment-body h3, .wmd-preview h3, div.blog-entry-comment-body h4, .wmd-preview h4, div.blog-entry-comment-body h5, .wmd-preview h5, div.blog-entry-comment-body h6, .wmd-preview h6 {
     font-size: 1.2em;
 }
 
