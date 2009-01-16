@@ -104,3 +104,5 @@ label.invalid {
 .invalid {
     color: #F00;
 }
+
+p code { background-color: #eee; padding: 2px; border: 1px solid #ddd; }
