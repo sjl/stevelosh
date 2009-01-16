@@ -112,7 +112,7 @@ class LatestThoughts(Feed):
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,
                 'Thoughts', 
-                link, 
+                self.link, 
                 title)
     
 
