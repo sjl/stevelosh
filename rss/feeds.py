@@ -4,11 +4,13 @@ from stevelosh.projects.models import Project, Comment as ProjectComment
 from stevelosh.thoughts.models import TextThought, LinkThought
 import operator
 
+
+feeder = "http://stevelosh.com/feeder"
+
 class LatestEntries(Feed):
     title = "Steve Losh / RSS / Blog"
     link = "http://stevelosh.com/blog"
     description = "Latest blog entries on stevelosh.com"
-    feeder = "http://stevelosh.com/feeder"
     
     item_author_name = 'Steve Losh'
     item_author_email = 'steve@stevelosh.com'
@@ -22,19 +24,19 @@ class LatestEntries(Feed):
     
     def item_link(self, item):
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
-               (self.feeder,
+               (feeder,
                 'Blog', 
                 self.item_author_link + item.get_absolute_url(), 
                 item.title)
 
 class LatestComments(Feed):
     title = "Steve Losh / RSS / Comments"
-    link = "http://stevelosh.com/blog/"
+    link = "http://stevelosh.com/blog"
     description = "Latest comments on blog entries from stevelosh.com"
     
     item_author_name = 'Steve Losh'
     item_author_email = 'steve@stevelosh.com'
-    item_author_link = 'http://stevelosh.com/'
+    item_author_link = 'http://stevelosh.com'
     
     def items(self):
         comments  = list(BlogComment.objects.order_by('-submitted')[:50])
@@ -45,15 +47,22 @@ class LatestComments(Feed):
     
     def item_pubdate(self, item):
         return item.submitted
+    
+    def item_link(self, item):
+        return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
+               (feeder,
+                'Comments', 
+                self.item_author_link + item.get_absolute_url(), 
+                item.title)
 
 class LatestProjects(Feed):
     title = "Steve Losh / RSS / Projects"
-    link = "http://stevelosh.com/projects/"
+    link = "http://stevelosh.com/projects"
     description = "Latest projects on stevelosh.com"
     
     item_author_name = 'Steve Losh'
     item_author_email = 'steve@stevelosh.com'
-    item_author_link = 'http://stevelosh.com/'
+    item_author_link = 'http://stevelosh.com'
     
     def items(self):
         return Project.objects.order_by('-posted')[:10]
@@ -61,15 +70,22 @@ class LatestProjects(Feed):
     def item_pubdate(self, item):
         return item.posted
     
+    def item_link(self, item):
+        return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
+               (feeder,
+                'Projects', 
+                self.item_author_link + item.get_absolute_url(), 
+                item.title)
+    
 
 class LatestThoughts(Feed):
     title = "Steve Losh / RSS / Thoughts"
-    link = "http://stevelosh.com/thoughts/"
+    link = "http://stevelosh.com/thoughts"
     description = "Latest thoughts from stevelosh.com"
     
     item_author_name = 'Steve Losh'
     item_author_email = 'steve@stevelosh.com'
-    item_author_link = 'http://stevelosh.com/'
+    item_author_link = 'http://stevelosh.com'
     
     def items(self):
         thoughts = []
@@ -87,17 +103,21 @@ class LatestThoughts(Feed):
         return item['date']
     
     def item_link(self, item):
-        return item['item'].get_absolute_url()
+        return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
+               (feeder,
+                'Thoughts', 
+                self.item_author_link + item['item'].get_absolute_url(), 
+                item['item'].title)
     
 
 class LatestEverything(Feed):
     title = "Steve Losh / RSS / All"
-    link = "http://stevelosh.com/"
+    link = "http://stevelosh.com"
     description = "Latest updates from stevelosh.com"
     
     item_author_name = 'Steve Losh'
     item_author_email = 'steve@stevelosh.com'
-    item_author_link = 'http://stevelosh.com/'
+    item_author_link = 'http://stevelosh.com'
     
     def items(self):
         items = []
@@ -121,4 +141,9 @@ class LatestEverything(Feed):
         return item['date']
     
     def item_link(self, item):
-        return item['item'].get_absolute_url()
+        return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
+               (feeder,
+                'Thoughts', 
+                self.item_author_link + item['item'].get_absolute_url(), 
+                item['item'].title)
+    
