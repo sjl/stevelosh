@@ -6,18 +6,26 @@ import operator
 
 class LatestEntries(Feed):
     title = "Steve Losh / RSS / Blog"
-    link = "http://stevelosh.com/blog/"
+    link = "http://stevelosh.com/blog"
     description = "Latest blog entries on stevelosh.com"
+    feeder = "http://stevelosh.com/feeder"
     
     item_author_name = 'Steve Losh'
     item_author_email = 'steve@stevelosh.com'
-    item_author_link = 'http://stevelosh.com/'
+    item_author_link = 'http://stevelosh.com'
     
     def items(self):
         return Entry.objects.filter(published=True).order_by('-pub_date')[:10]
     
     def item_pubdate(self, item):
         return item.pub_date
+    
+    def item_link(self, item):
+        return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
+               (self.feeder,
+                'Blog', 
+                self.item_author_link + item.get_absolute_url(), 
+                item.title)
 
 class LatestComments(Feed):
     title = "Steve Losh / RSS / Comments"
