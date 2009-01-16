@@ -45,12 +45,20 @@ div#blog-entry-comments {
     margin-bottom: 1.5em;
 }
 
+div#blog-entry-comments h2{
+    font-weight: normal;
+}
+
 div#blog-entry-new-comment {
     margin-top: 1.5em;
 }
 
 div.blog-entry-comment-body {
     margin-left: 2em;
+}
+
+div.blog-entry-comment-body code {
+    font-size: 1.0em;
 }
 
 div.wmd-preview {
