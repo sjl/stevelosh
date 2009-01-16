@@ -45,6 +45,11 @@ div.projects-project-comment-body {
     margin-left: 2em;
 }
 
+div.projects-project-comment-body code, .wmd-preview code, div.projects-project-comment-body blockquote, .wmd-preview blockquote {
+    font-size: 1.0em;
+    padding-bottom: 0em;
+}
+
 div.wmd-preview {
     margin-left: 2em;
 }
@@ -54,6 +59,10 @@ div.projects-project-comment-body h1, .wmd-preview h1 {
 }
 
 div.projects-project-comment-body h2, .wmd-preview h2 {
+    font-size: 1.3em;
+}
+
+div.projects-project-comment-body h3, .wmd-preview h3, div.projects-project-comment-body h4, .wmd-preview h4, div.projects-project-comment-body h5, .wmd-preview h5 {
     font-size: 1.2em;
 }
 
