@@ -112,7 +112,7 @@ class LatestThoughts(Feed):
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,
                 'Thoughts', 
-                self.item_author_link + item['item'].get_absolute_url(), 
+                link, 
                 title)
     
 
@@ -148,18 +148,23 @@ class LatestEverything(Feed):
     
     def item_link(self, item):
         title = 'Steve Losh / '
+        new_link = ''
         if item['type'] == 'blog':
             title += item['item'].title
+            new_link = self.item_author_link + item['item'].get_absolute_url()
         elif item['type'] == 'project':
             title += item['item'].name
+            new_link = self.item_author_link + item['item'].get_absolute_url()
         elif item['type'] == 'thought-text':
             title += 'Thoughts / ' + str(item['item'].id)
+            new_link = self.item_author_link + '/thoughts/'
         elif item['type'] == 'thought-link':
             title += 'Thoughts / ' + item['item'].url
+            new_link = self.item_author_link + '/thoughts/'
         
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,
                 'All', 
-                self.item_author_link + item['item'].get_absolute_url(), 
+                new_link, 
                 title)
     
