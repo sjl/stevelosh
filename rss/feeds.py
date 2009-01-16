@@ -5,7 +5,7 @@ from stevelosh.thoughts.models import TextThought, LinkThought
 import operator
 
 class LatestEntries(Feed):
-    title = "stevelosh.com blog entries"
+    title = "Steve Losh / RSS / Blog"
     link = "http://stevelosh.com/blog/"
     description = "Latest blog entries on stevelosh.com"
     
@@ -20,7 +20,7 @@ class LatestEntries(Feed):
         return item.pub_date
 
 class LatestComments(Feed):
-    title = "stevelosh.com blog comments"
+    title = "Steve Losh / RSS / Comments"
     link = "http://stevelosh.com/blog/"
     description = "Latest comments on blog entries from stevelosh.com"
     
@@ -39,7 +39,7 @@ class LatestComments(Feed):
         return item.submitted
 
 class LatestProjects(Feed):
-    title = "stevelosh.com projects"
+    title = "Steve Losh / RSS / Projects"
     link = "http://stevelosh.com/projects/"
     description = "Latest projects on stevelosh.com"
     
@@ -55,7 +55,7 @@ class LatestProjects(Feed):
     
 
 class LatestThoughts(Feed):
-    title = "stevelosh.com thoughts"
+    title = "Steve Losh / RSS / Thoughts"
     link = "http://stevelosh.com/thoughts/"
     description = "Latest thoughts from stevelosh.com"
     
@@ -83,7 +83,7 @@ class LatestThoughts(Feed):
     
 
 class LatestEverything(Feed):
-    title = "stevelosh.com"
+    title = "Steve Losh / RSS / All"
     link = "http://stevelosh.com/"
     description = "Latest updates from stevelosh.com"
     

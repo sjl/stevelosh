@@ -15,3 +15,6 @@ SECRET_KEY = ''
 
 # Make sure it ends in a trailing slash! 
 BASE_DIR = '/full/path/to/project/directory/'
+
+# This is used for the Mint (http://haveamint.com/) Bird Feeder plugin hack.
+FEEDER_PASSWORD = ''
