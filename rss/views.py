@@ -1,5 +1,6 @@
-import deploy
+from stevelosh.deploy import FEEDER_PASSWORD
 import urllib2
+import django.contrib.syndication.views
 
 def feeds(request, url, feed_dict):
     headers = {'HTTP_HOST':'Host',
@@ -16,7 +17,7 @@ def feeds(request, url, feed_dict):
     o.addheaders = [ (headers[k], request.META.get(k, '')) 
                      for k in request.META.keys() if k in headers.keys()]
     f = o.open( "http://stevelosh.com/feeder/index.php?pw=%s&feed_name=%s" % 
-                (deploy.FEEDER_PASSWORD, feed_name) )
+                (FEEDER_PASSWORD, feed_name) )
     f.read()
     f.close()
 
