@@ -72,6 +72,10 @@ TEMPLATE_DIRS = (
     BASE_DIR + 'templates/',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = ( 
+    'mobileadmin.context_processors.user_agent', 
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -83,4 +87,5 @@ INSTALLED_APPS = (
     'stevelosh.blog',
     'stevelosh.projects',
     'stevelosh.thoughts',
+    'mobileadmin',
 )

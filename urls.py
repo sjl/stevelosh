@@ -1,10 +1,13 @@
 from django.conf.urls.defaults import *
 from django.contrib import admin
 from django.conf import settings
+import mobileadmin
 from stevelosh.rss.feeds import *
 
 
 admin.autodiscover()
+mobileadmin.autoregister()
+
 feeds = { 'blog': LatestEntries, 
           'comments': LatestComments,
           'projects': LatestProjects, 
@@ -13,6 +16,7 @@ feeds = { 'blog': LatestEntries,
 
 urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
+    (r'^m/(.*)', mobileadmin.sites.site.root),
     url(r'^blog/$',                'stevelosh.blog.views.list',        name='blog-list-newest'),
     url(r'^blog/page/(\d+)/$',     'stevelosh.blog.views.list',        name='blog-list-page'),
     url(r'^blog/comment/$',        'stevelosh.blog.views.comment',     name='blog-post-comment'),
@@ -34,3 +38,6 @@ if settings.DEBUG:
         (r'^site-media/(?P<path>.*)$', 'django.views.static.serve',
          {'document_root': settings.MEDIA_ROOT}),
     )
+
+handler404 = 'mobileadmin.views.page_not_found'
+handler500 = 'mobileadmin.views.server_error'
