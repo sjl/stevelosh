@@ -1,4 +1,6 @@
+from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 import deploy
+
 
 DEBUG = deploy.DEBUG
 TEMPLATE_DEBUG = DEBUG
@@ -49,6 +51,7 @@ MEDIA_URL = '/site-media/'
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
 ADMIN_MEDIA_PREFIX = '/media/'
+MOBILEADMIN_MEDIA_PREFIX = '/media-mobile/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = deploy.SECRET_KEY
@@ -72,7 +75,7 @@ TEMPLATE_DIRS = (
     BASE_DIR + 'templates/',
 )
 
-TEMPLATE_CONTEXT_PROCESSORS = ( 
+TEMPLATE_CONTEXT_PROCESSORS += ( 
     'mobileadmin.context_processors.user_agent', 
 )
 
