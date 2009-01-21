@@ -95,4 +95,4 @@ span#projects-new-comment-invalid-body {
     float: right;
 }
 
-div#projects-project img { text-align: left; margin-right: auto; margin-left: auto; border: 10px solid #eee; display: block; padding: 1px; background-color: #000; }
+.content img { text-align: left; margin-right: auto; margin-left: auto; border: 10px solid #eee; display: block; padding: 1px; background-color: #000;}
