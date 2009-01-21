@@ -94,3 +94,5 @@ span#projects-new-comment-invalid-body {
 #projects-new-comment-body-area label.invalid {
     float: right;
 }
+
+div#projects-project img { text-align: left; margin-right: auto; margin-left: auto; border: 10px solid #eee; display: block; padding: 1px; background-color: #000; }
