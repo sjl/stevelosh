@@ -24,6 +24,7 @@ class Comment(models.Model):
     body = models.TextField('Comment', blank=False, null=False)
     submitted = models.DateTimeField(default=datetime.datetime.now)
     entry = models.ForeignKey(Entry)
+    spam = models.BooleanField(default=False)
     
     def get_absolute_url(self):
         return self.entry.get_absolute_url() + "#comment-" + str(self.id)

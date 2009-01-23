@@ -7,8 +7,10 @@ from django.core.urlresolvers import reverse
 
 def project(request, slug):
     project = get_object_or_404(Project, slug=slug)
+    comments = project.comment_set.filter(spam=False).order_by('submitted')
+    
     return render_to_response('projects/project.html', 
-                              { 'project': project, })
+                              { 'project': project, 'comments': comments })
 
 def list(request):
     projects = Project.objects.all().order_by('-posted')

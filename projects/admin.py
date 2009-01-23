@@ -22,10 +22,10 @@ class ProjectFileAdmin(admin.ModelAdmin):
     list_filter = ('project',)
 
 class CommentAdmin(admin.ModelAdmin):
-    fields = ('name', 'body', 'submitted', 'project')
-    list_display = ('project', 'name', 'submitted', 'body')
+    fields = ('name', 'body', 'submitted', 'project', 'spam')
+    list_display = ('project', 'name', 'submitted', 'body', 'spam')
     search_fields = ('name', 'body')
-    list_filter = ('name', 'project')
+    list_filter = ('name', 'project', 'spam')
     date_hierarchy = 'submitted'
     ordering = ('-submitted',)
 

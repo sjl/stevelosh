@@ -53,10 +53,11 @@ class Comment(models.Model):
     body = models.TextField(blank=False, null=False)
     submitted = models.DateTimeField(default=datetime.datetime.now)
     project = models.ForeignKey(Project)
+    spam = models.BooleanField(default=False)
     
     def get_absolute_url(self):
         return self.project.get_absolute_url() + "#comment-" + str(self.id)
     
     def __unicode__(self):
-        return u'%s on %s' % (self.name, self.entry.title)
+        return u'%s on %s' % (self.name, self.project.name)
     

@@ -34,10 +34,10 @@
 		</div>
 	</div>
 	<hr />
-	{% ifnotequal project.comment_set.count 0 %}
+	{% ifnotequal comments.count 0 %}
 		<div id="projects-project-comments">
 			<h1>Comments</h1>
-			{% for comment in project.comment_set.all|dictsort:"submitted" %}
+			{% for comment in comments %}
 				<div class="projects-project-comment">
 					<a name="comment-{{ comment.id }}"></a>
 					<h2>{{ comment.name }} said:</h2>

@@ -17,10 +17,10 @@ class EntryAdmin(admin.ModelAdmin):
     prepopulated_fields = { 'slug': ('title',) }
 
 class CommentAdmin(admin.ModelAdmin):
-    fields = ('name', 'body', 'submitted', 'entry')
-    list_display = ('entry', 'name', 'submitted', 'body')
+    fields = ('name', 'body', 'submitted', 'entry', 'spam')
+    list_display = ('entry', 'name', 'submitted', 'body', 'spam')
     search_fields = ('name', 'body')
-    list_filter = ('name', 'entry')
+    list_filter = ('name', 'entry', 'spam')
     date_hierarchy = 'submitted'
     ordering = ('-submitted',)
 
