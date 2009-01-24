@@ -1,90 +1,91 @@
 {% extends "projects/base.html" %}
 {% load markup %}
+{% load typogrify %}
 
 {% block title %}{{ project.name }}{% endblock %}
 
 {% block script %}
-	<script type="text/javascript"
-	        src="/site-media/scripts/jquery.validate.min.js">
-	</script>
-	<script type="text/javascript"
-	        src="/site-media/scripts/validate-comment-form.js">
-	</script>
-	<script type="text/javascript"
-	        src="/site-media/scripts/stevelosh-gallery.js">
-	</script>
+    <script type="text/javascript"
+            src="/site-media/scripts/jquery.validate.min.js">
+    </script>
+    <script type="text/javascript"
+            src="/site-media/scripts/validate-comment-form.js">
+    </script>
+    <script type="text/javascript"
+            src="/site-media/scripts/stevelosh-gallery.js">
+    </script>
 {% endblock %}
 
 {% block content %}
-	<div id="projects-project">
-		<h1 id="projects-project-name">
-			<a href="{% url stevelosh.projects.views.project project.slug %}">
-					{{ project.name }}
-			</a>
-		</h1>
-		<div id="projects-project-date">
-			<p>
-				Posted
-				on {{ project.posted.date|date:"F j, Y" }}
-				at {{ project.posted.time|time:"g:i A" }}
-			</p>
-		</div>
-		<div id="projects-project-body" class="content">
-			{{ project.body|markdown:"codehilite" }}
-		</div>
-	</div>
-	<hr />
-	{% ifnotequal comments.count 0 %}
-		<div id="projects-project-comments">
-			<h1>Comments</h1>
-			{% for comment in comments %}
-				<div class="projects-project-comment">
-					<a name="comment-{{ comment.id }}"></a>
-					<h2>{{ comment.name }} said:</h2>
-					<div class="projects-project-comment-body">
-						{{ comment.body|markdown:"safe" }}
-					</div>
-				</div>
-			{% endfor %}
-		</div>
-		<hr />
-	{% endifnotequal %}
-	<div id="projects-project-new-comment">
-		<h1>Add your comment:</h1>
-		<form id="new-comment-form" method="post" 
-			  action="{% url stevelosh.projects.views.comment %}">
-			<p class="form-label">
-				What's your name?
-			</p>
-			<p id="projects-new-comment-name-area">
-				<input type="hidden" name="project-id" 
-					   value="{{ project.id }}" />
-				<input id="projects-new-comment-name" name="name" 
-					   maxlength="40" type="text" />
-			</p>
-			<p id="projects-new-comment-body-area">
-				<textarea id="projects-new-comment-body" rows="" cols=""
-			 		  	  name="body"></textarea>
-			</p>
-			<p id="projects-new-comment-instructions">
-				You can use <a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a>.
-			</p>
-			<h2>You're going to say:</h2>
-			<div class="wmd-preview"></div>
-			<p>
-				<input id="projects-new-comment-submit" name="submit"
-				 	   type="submit" value="Comment" />
-			</p>
-		</form>
-	</div>
-	
-	<script type="text/javascript">
+    <div id="projects-project">
+        <h1 id="projects-project-name">
+            <a href="{% url stevelosh.projects.views.project project.slug %}">
+                    {{ project.name|typogrify }}
+            </a>
+        </h1>
+        <div id="projects-project-date">
+            <p>
+                Posted
+                on {{ project.posted.date|date:"F j, Y" }}
+                at {{ project.posted.time|time:"g:i A" }}
+            </p>
+        </div>
+        <div id="projects-project-body" class="content">
+            {{ project.body|markdown:"codehilite"|typogrify }}
+        </div>
+    </div>
+    <hr />
+    {% ifnotequal comments.count 0 %}
+        <div id="projects-project-comments">
+            <h1>Comments</h1>
+            {% for comment in comments %}
+                <div class="projects-project-comment">
+                    <a name="comment-{{ comment.id }}"></a>
+                    <h2>{{ comment.name }} said:</h2>
+                    <div class="projects-project-comment-body">
+                        {{ comment.body|markdown:"safe"|typogrify }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <hr />
+    {% endifnotequal %}
+    <div id="projects-project-new-comment">
+        <h1>Add your comment:</h1>
+        <form id="new-comment-form" method="post" 
+              action="{% url stevelosh.projects.views.comment %}">
+            <p class="form-label">
+                What's your name?
+            </p>
+            <p id="projects-new-comment-name-area">
+                <input type="hidden" name="project-id" 
+                       value="{{ project.id }}" />
+                <input id="projects-new-comment-name" name="name" 
+                       maxlength="40" type="text" />
+            </p>
+            <p id="projects-new-comment-body-area">
+                <textarea id="projects-new-comment-body" rows="" cols=""
+                          name="body"></textarea>
+            </p>
+            <p id="projects-new-comment-instructions">
+                You can use <a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a>.
+            </p>
+            <h2>You're going to say:</h2>
+            <div class="wmd-preview"></div>
+            <p>
+                <input id="projects-new-comment-submit" name="submit"
+                       type="submit" value="Comment" />
+            </p>
+        </form>
+    </div>
+    
+    <script type="text/javascript">
         wmd_options = {
-			output: "Markdown",
-			buttons: "bold italic | link blockquote code | ol ul heading hr"
-		};
-	</script>
-	<script type="text/javascript"
-	 		src="/site-media/scripts/wmd/wmd.js"></script>
-	
+            output: "Markdown",
+            buttons: "bold italic | link blockquote code | ol ul heading hr"
+        };
+    </script>
+    <script type="text/javascript"
+            src="/site-media/scripts/wmd/wmd.js"></script>
+    
 {% endblock %}

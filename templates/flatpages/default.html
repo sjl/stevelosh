@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load markup %}
+{% load typogrify %}
 
 {% block title %}{{ flatpage.title }}{% endblock %}
 
@@ -7,6 +8,6 @@
 
 {% block content %}
 	<div id="flatpage-content">
-		{{ flatpage.content|markdown }}
+		{{ flatpage.content|markdown|typogrify }}
 	</div>
 {% endblock %}

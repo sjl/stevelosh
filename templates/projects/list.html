@@ -1,4 +1,5 @@
 {% extends "projects/base.html" %}
+{% load typogrify %}
 
 {% block content %}
 	<div id="projects-list">
@@ -6,10 +7,10 @@
 			<div class="projects-list-entry">
 				<h2 class="projects-list-entry-title">
 					<a href="{% url stevelosh.projects.views.project project.slug %}">
-						{{ project.name }}
+						{{ project.name|typogrify }}
 					</a>
 				</h2>
-				<p class="projects-list-entry-snip">{{ project.snip }}</p>
+				<p class="projects-list-entry-snip">{{ project.snip|typogrify }}</p>
 			</div>
 		{% endfor %}
 	</div>

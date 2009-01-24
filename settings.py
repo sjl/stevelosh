@@ -91,4 +91,5 @@ INSTALLED_APPS = (
     'stevelosh.projects',
     'stevelosh.thoughts',
     'mobileadmin',
+    'typogrify',
 )

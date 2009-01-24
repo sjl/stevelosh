@@ -1,4 +1,5 @@
 {% extends "flatpages/default.html" %}
+{% load typogrify %}
 
 {% block style %}
 	<link rel="stylesheet" href="/site-media/style/splash.css" 
@@ -6,6 +7,7 @@
 {% endblock %}
 
 {% block content %}
+{% filter typogrify %}
 	<div id="splash-list">
 		<div class="splash-list-entry">
 			<h2>I like writing. &raquo;</h2>
@@ -23,4 +25,5 @@
 			<h2>Stay up to date. &raquo;</h2>
 		</div>
 	</div>
+{% endfilter %}
 {% endblock %}

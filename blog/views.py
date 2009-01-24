@@ -49,7 +49,7 @@ def comment(request):
         akismet_data['user_agent'] = request.META['HTTP_USER_AGENT']
         akismet_data['comment_author'] = fields['name']
         akismet_data['comment_type'] ='comment'
-        spam = ak.comment_check(fields['body'], akismet_data)
+        spam = ak.comment_check(fields['body'].encode('ascii', 'ignore'), akismet_data)
         
         new_comment = Comment(name=fields['name'], 
                               body=fields['body'], 

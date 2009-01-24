@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load markup %}
+{% load typogrify %}
 
 {% block title %}Thoughts{% endblock %}
 
@@ -21,9 +22,9 @@
 					</div>
 					<div class="thought-content text-thought colborder-left span-14 last">
 						{% ifnotequal thought.title None %}
-							<h2>{{ thought.title }}</h2>
+							<h2>{{ thought.title|typogrify }}</h2>
 						{% endifnotequal %}
-						{{ thought.body|markdown:"safe" }}
+						{{ thought.body|markdown|typogrify }}
 					</div>
 				{% endifequal %}
 				{% ifequal thought.type 'link' %}
@@ -34,13 +35,13 @@
 					<div class="thought-content link-thought colborder-left span-14 last">
 						<h2><a href="{{ thought.url }}">
 							{% if thought.name %}
-								{{ thought.name }}
+								{{ thought.name|typogrify }}
 							{% else %}
 								{{ thought.url }}
 							{% endif %}
 						</a></h2>
 						{% if thought.description %}
-							{{ thought.description|markdown:"safe" }}
+							{{ thought.description|markdown|typogrify }}
 						{% endif %}
 					</div>
 				{% endifequal %}

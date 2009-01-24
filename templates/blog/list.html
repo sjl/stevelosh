@@ -1,4 +1,5 @@
 {% extends "blog/base.html" %}
+{% load typogrify %}
 
 {% block content %}
 	<div id="blog-list">
@@ -6,10 +7,10 @@
 			<div class="blog-list-entry">
 				<h2 class="blog-list-entry-title">
 					<a href="{% url stevelosh.blog.views.entry entry.pub_date.year, entry.pub_date.month, entry.pub_date.day, entry.slug %}">
-						{{ entry.title }}
+						{{ entry.title|typogrify }}
 					</a>
 				</h2>
-				<p class="blog-list-entry-snip">{{ entry.snip }}</p>
+				<p class="blog-list-entry-snip">{{ entry.snip|typogrify }}</p>
 			</div>
 		{% endfor %}
 		
