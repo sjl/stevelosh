@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.core.urlresolvers import reverse
 from akismet import Akismet
-import deploy
+from stevelosh import deploy
 
 ak = Akismet(deploy.AKISMET_API_KEY, blog_url='http://stevelosh.com/')
 ENTRIES_PER_PAGE = 10
