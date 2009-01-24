@@ -3,8 +3,10 @@ from markdown import markdown
 from django.shortcuts import get_object_or_404, render_to_response
 from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
 from django.core.urlresolvers import reverse
+from akismet import Akismet
+import deploy
 
-
+ak = Akismet(deploy.AKISMET_API_KEY, blog_url='http://stevelosh.com/')
 ENTRIES_PER_PAGE = 10
 
 def entry(request, year, month, day, slug):
@@ -34,11 +36,25 @@ def comment(request):
     fields = request.POST
     entry = Entry.objects.get(pk=fields['entry-id'])
     
-    if ( fields.has_key('name') and (not fields['name'].strip() == '') and
-         fields.has_key('body') and not fields['body'].strip() == ''):
+    if ( fields.has_key('name') and 
+         not fields['name'].strip() == '' and
+         not len(fields['name']) < 3 and
+         fields.has_key('body') and 
+         not fields['body'].strip() == '' and
+         not len(fields['body']) < 3 and
+         not len(fields['body']) > 15000):
+        
+        akismet_data = {}
+        akismet_data['user_ip'] = request.META['REMOTE_ADDR']
+        akismet_data['user_agent'] = request.META['HTTP_USER_AGENT']
+        akismet_data['comment_author'] = fields['name']
+        akismet_data['comment_type'] ='comment'
+        spam = ak.comment_check(fields['body'], akismet_data)
+        
         new_comment = Comment(name=fields['name'], 
                               body=fields['body'], 
-                              entry=entry)
+                              entry=entry,
+                              spam=spam)
         new_comment.save()
     
     return HttpResponseRedirect(reverse('stevelosh.blog.views.entry',
