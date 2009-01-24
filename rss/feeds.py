@@ -39,11 +39,13 @@ class LatestComments(Feed):
     item_author_link = 'http://stevelosh.com'
     
     def items(self):
-        comments  = list(BlogComment.objects.order_by('-submitted')[:50])
-        comments += list(ProjectComment.objects.order_by('-submitted')[:50])
+        comments  = list(BlogComment.objects.filter(spam=False)
+                                            .order_by('-submitted')[:10])
+        comments += list(ProjectComment.objects.filter(spam=False)
+                                               .order_by('-submitted')[:10])
         comments.sort(key=operator.attrgetter('submitted'))
         comments.reverse()
-        return comments[:50]
+        return comments[:20]
     
     def item_pubdate(self, item):
         return item.submitted
