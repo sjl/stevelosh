@@ -1,0 +1,35 @@
+
+
+
+creator=Steve Losh <steve@stevelosh.com>
+
+
+
+
+
+
+severity=minor
+
+
+
+
+
+
+status=open
+
+
+
+
+
+
+summary=Refactor to use Djangos built-in pagination.
+
+
+
+
+
+
+time=Fri, 30 Jan 2009 01:32:30 +0000
+
+
+
