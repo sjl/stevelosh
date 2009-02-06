@@ -40,6 +40,10 @@ div#blog-entry {
     margin-bottom: 1.5em;
 }
 
+div#blog-entry img {
+    border: 1px solid #000;
+}
+
 div#blog-entry-comments {
     margin-top: 1.5em;
     margin-bottom: 1.5em;
