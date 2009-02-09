@@ -72,7 +72,12 @@ h2 {
 }
 
 h3 { 
-	margin-bottom: 0.5em; font-weight: bold; }
+	margin-bottom: 0.5em; font-weight: bold; 
+}
+
+h3 { 
+	margin-bottom: 0.5em; font-weight: bold; 
+}
 
 h1 a:link, h1 a:visited, h1 a:active, h2 a:link, h2 a:visited, h2 a:active {
     color: black;
