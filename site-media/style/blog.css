@@ -42,6 +42,8 @@ div#blog-entry {
 
 div#blog-entry img {
     border: 1px solid #000;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 div#blog-entry-comments {
