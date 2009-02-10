@@ -42,6 +42,7 @@ div#blog-entry {
 
 div#blog-entry img {
     border: 1px solid #000;
+    display: block;
     margin-left: auto;
     margin-right: auto;
 }
@@ -113,12 +114,12 @@ span#blog-new-comment-invalid-body {
     float: right;
 }
 
-.blog-photo-inline-left {
+div#blog-entry img.blog-photo-inline-left {
     float: left;
 	margin-right:  1.5em;
 }
 
-.blog-photo-inline-right {
+div#blog-entry img.blog-photo-inline-right {
     float: right;
 	margin-left: 1.5em;
 }
