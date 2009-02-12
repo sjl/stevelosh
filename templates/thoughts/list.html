@@ -5,75 +5,75 @@
 {% block title %}Thoughts{% endblock %}
 
 {% block style %}
-	<link rel="stylesheet" href="/site-media/style/thoughts.css" 
-		  type="text/css"/>
+    <link rel="stylesheet" href="/site-media/style/thoughts.css" 
+          type="text/css"/>
 {% endblock %}
 
 {% block header %}/ thoughts{% endblock %}
 
 {% block content %}
-	<div id="thoughts-list">
-		{% for thought in thoughts %}
-			<div class="thought">
-				{% ifequal thought.type 'text' %}
-					<a name="text-{{ thought.id }}"></a>
-					<div class="thought-type span-2">
-						<h2>text</h2>
-					</div>
-					<div class="thought-content text-thought colborder-left span-14 last">
-						{% ifnotequal thought.title None %}
-							<h2>{{ thought.title|typogrify }}</h2>
-						{% endifnotequal %}
-						{{ thought.body|markdown|typogrify }}
-					</div>
-				{% endifequal %}
-				{% ifequal thought.type 'link' %}
-					<a name="link-{{ thought.id }}"></a>
-					<div class="thought-type span-2">
-						<h2>link</h2>
-					</div>
-					<div class="thought-content link-thought colborder-left span-14 last">
-						<h2><a href="{{ thought.url }}">
-							{% if thought.name %}
-								{{ thought.name|typogrify }}
-							{% else %}
-								{{ thought.url }}
-							{% endif %}
-						</a></h2>
-						{% if thought.description %}
-							{{ thought.description|markdown|typogrify }}
-						{% endif %}
-					</div>
-				{% endifequal %}
-			</div>
-		{% endfor %}
-		
-		{% ifnotequal newer_page older_page  %}
-			<div class="thought thought-navigation">
-			{% ifnotequal newer_page None %}
-				{% ifequal newer_page 0 %}
-					{% url thoughts-list-newest as new_page %}
-				{% else %}
-					{% url thoughts-list-page newer_page as new_page %}
-				{% endifequal %}
-				<span id="thought-list-newer">
-					<h2><a href="{{ new_page }}">
-						Newer &raquo;
-					</a></h2>
-				</span>
-			{% endifnotequal %}
-			{% ifnotequal older_page None %}
-				<span id="thought-list-older">
-					<h2><a href="{% url thoughts-list-page older_page %}">
-						&laquo; Older
-					</a></h2>
-				</span>
-			{% else %}
-				<span id="thought-list-older">
-					<h2>&nbsp;</h2>
-				</span>
-			{% endifnotequal %}
-			</div>
-		{% endifnotequal %}
-	</div>
+    <div id="thoughts-list">
+        {% for thought in thoughts %}
+            <div class="thought">
+                {% ifequal thought.type 'text' %}
+                    <a name="text-{{ thought.id }}"></a>
+                    <div class="thought-type span-2">
+                        <h2>text</h2>
+                    </div>
+                    <div class="thought-content text-thought colborder-left span-14 last">
+                        {% ifnotequal thought.title None %}
+                            <h2>{{ thought.title|typogrify }}</h2>
+                        {% endifnotequal %}
+                        {{ thought.body|markdown|typogrify }}
+                    </div>
+                {% endifequal %}
+                {% ifequal thought.type 'link' %}
+                    <a name="link-{{ thought.id }}"></a>
+                    <div class="thought-type span-2">
+                        <h2>link</h2>
+                    </div>
+                    <div class="thought-content link-thought colborder-left span-14 last">
+                        <h2><a href="{{ thought.url }}">
+                            {% if thought.name %}
+                                {{ thought.name|typogrify }}
+                            {% else %}
+                                {{ thought.url }}
+                            {% endif %}
+                        </a></h2>
+                        {% if thought.description %}
+                            {{ thought.description|markdown|typogrify }}
+                        {% endif %}
+                    </div>
+                {% endifequal %}
+            </div>
+        {% endfor %}
+        
+        {% ifnotequal newer_page older_page  %}
+            <div class="thought thought-navigation prepend-3">
+            {% ifnotequal newer_page None %}
+                {% ifequal newer_page 0 %}
+                    {% url thoughts-list-newest as new_page %}
+                {% else %}
+                    {% url thoughts-list-page newer_page as new_page %}
+                {% endifequal %}
+                <span id="thought-list-newer">
+                    <h2><a href="{{ new_page }}">
+                        Newer &raquo;
+                    </a></h2>
+                </span>
+            {% endifnotequal %}
+            {% ifnotequal older_page None %}
+                <span id="thought-list-older">
+                    <h2><a href="{% url thoughts-list-page older_page %}">
+                        &laquo; Older
+                    </a></h2>
+                </span>
+            {% else %}
+                <span id="thought-list-older">
+                    <h2>&nbsp;</h2>
+                </span>
+            {% endifnotequal %}
+            </div>
+        {% endifnotequal %}
+    </div>
 {% endblock %}

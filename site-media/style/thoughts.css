@@ -34,3 +34,7 @@ div.thought p:last-child {
     margin-left: 14px;
     border-left: 1px solid #eee;
 }
+
+span#thought-list-newer {
+    float: right;
+}
