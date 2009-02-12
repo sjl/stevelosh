@@ -33,6 +33,11 @@ h2#blog-list-newer {
     float: right;
 }
 
+div#blog-list-nav {
+    border: 0px;
+    margin-left: -1.5em;
+}
+
 
 
 
