@@ -12,6 +12,11 @@ div.thought p:last-child {
     font-size: 1.5em;
 }
 
+div.thought-content h2 {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
 .thought h2 a:link, .thought h2 a:visited, .thought h2 a:active {
     border-bottom: 1px dotted #666;
 }
