@@ -25,7 +25,7 @@ def list(request, page=1):
     page = int(page)
     
     entries = Entry.objects.all().filter(published=True).order_by('-pub_date')
-    p = Paginator(entries, 7, orphans=4).page(page)
+    p = Paginator(entries, 7, orphans=3).page(page)
     
     return render_to_response('blog/list.html', 
         { 'entries': p.object_list,
