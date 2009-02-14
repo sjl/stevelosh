@@ -1,0 +1,7 @@
+img#photoblog-main-image { border: 15px solid #eee; margin: 1em auto 2em; display: block; }
+div#photoblog-entry-date { color: #666; }
+div.photoblog-nav-entry { border-bottom: 1px solid #eee; height: 54px; vertical-align: middle; }
+div.photoblog-nav-entry h2, div.photoblog-nav-entry h3 { line-height: 54px; display: inline; }
+div.photoblog-nav-entry img { float: right; margin: 2px 0px; }
+div#photoblog-nav-older { width: 48%; }
+div#photoblog-nav-newer { width: 48%; float: right; }

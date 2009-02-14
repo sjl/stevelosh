@@ -11,6 +11,11 @@ class Entry(ImageModel):
     num_views = models.PositiveIntegerField(editable=False, default=0)
     published = models.BooleanField(default=True)
     
+    @models.permalink
+    def get_absolute_url(self):
+        return ('photoblog-entry', (self.pub_date.year, self.pub_date.month, 
+                                    self.pub_date.day, self.slug),)
+    
     def snippet(self):
         return self.body[:50] + ('...' if len(self.body) > 50 else '')
     

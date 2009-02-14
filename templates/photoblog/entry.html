@@ -1,0 +1,52 @@
+{% extends "photoblog/base.html" %}
+{% load markup %}
+{% load typogrify %}
+
+{% block title %}{{ entry.title }}{% endblock %}
+
+{% block script %}
+{% endblock %}
+
+{% block content %}
+    <div id="photoblog-entry">
+        <h1 id="photoblog-entry-title">
+            <a href="{{ entry.get_absolute_url }}">
+                {{ entry.title|typogrify }}
+            </a>
+        </h1>
+        
+        <img id="photoblog-main-image" src="{{ entry.display.url }}" />
+        
+        <div id="photoblog-entry-body" class="content">
+            {{ entry.body|markdown|typogrify }}
+        </div>
+        
+        <div id="photoblog-entry-date">
+            <p>
+                Posted on {{ entry.pub_date|date:"F j, Y" }}
+            </p>
+        </div>
+        
+        <div id="photoblog-nav">
+            <div id="photoblog-nav-newer">
+                <div class="photoblog-nav-entry">
+                    <h2>Newer</h2>
+                </div>
+                <div class="photoblog-nav-entry">
+                    <a href=""><img src="{{ entry.thumbnail.url }}" /></a>
+                    <h3><a href="">{{ entry.title }}</a></h3>
+                </div>
+            </div>
+            
+            <div id="photoblog-nav-older">
+                <div class="photoblog-nav-entry">
+                    <h2>Older</h2>
+                </div>
+                <div class="photoblog-nav-entry">
+                    <a href=""><img src="{{ entry.thumbnail.url }}" /></a>
+                    <h3><a href="">{{ entry.title }}</a></h3>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

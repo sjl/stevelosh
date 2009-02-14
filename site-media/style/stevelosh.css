@@ -79,12 +79,13 @@ h4 {
 	margin-bottom: 0.5em; font-weight: bold; 
 }
 
-h1 a:link, h1 a:visited, h1 a:active, h2 a:link, h2 a:visited, h2 a:active {
+h1 a:link, h1 a:visited, h1 a:active, h2 a:link, h2 a:visited, h2 a:active,
+h3 a:link, h3 a:visited, h3 a:active {
     color: black;
     text-decoration: none;
 }
 
-h1 a:hover, h2 a:hover {
+h1 a:hover, h2 a:hover, h3 a:hover {
     color: #900;
 }
 

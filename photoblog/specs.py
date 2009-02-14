@@ -1,9 +1,8 @@
 from imagekit.specs import ImageSpec
 from imagekit import processors
 
-class ResizeThumb(processors.Resize): 
-    width = 100
-    height = 100
+class ResizeThumb(processors.Resize):
+    height = 50
 
 class ResizeDisplay(processors.Resize):
     width = 550

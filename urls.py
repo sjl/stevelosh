@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     url(r'^blog/', include('stevelosh.blog.urls')),
     url(r'^projects/', include('stevelosh.projects.urls')),
     url(r'^thoughts/', include('stevelosh.thoughts.urls')),
+    url(r'^photoblog/', include('stevelosh.photoblog.urls')),
     url(r'^rss/', include('stevelosh.rss.urls')),
 )
 
