@@ -10,6 +10,10 @@ class Entry(models.Model):
     body = models.TextField()
     published = models.BooleanField(default=False)
     
+    class Meta:
+        verbose_name = 'entry'
+        verbose_name_plural = 'entries'
+    
     @models.permalink
     def get_absolute_url(self):
         return ('blog-entry', (self.pub_date.year, self.pub_date.month, 
