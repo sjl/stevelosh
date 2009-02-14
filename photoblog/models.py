@@ -14,6 +14,10 @@ class Entry(ImageModel):
     def snippet(self):
         return self.body[:50] + ('...' if len(self.body) > 50 else '')
     
+    class Meta:
+        verbose_name = 'entry'
+        verbose_name_plural = 'entries'
+    
     class IKOptions:
         spec_module = 'photoblog.specs'
         cache_dir = 'storage/photoblog/cache'
