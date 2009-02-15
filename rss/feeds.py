@@ -115,13 +115,13 @@ class LatestEverything(Feed):
     def items(self):
         items = []
         
-        items += [{'type': 'blog', 'item': entry, 'date': entry.pub_date, 'title': title} 
+        items += [{'type': 'blog', 'item': entry, 'date': entry.pub_date, 'title': entry.title} 
             for entry in Entry.objects.filter(published=True).order_by('-pub_date')[:10]]
         
-        items += [{'type': 'photoblog', 'item': entry, 'date': entry.pub_date, 'title': title} 
+        items += [{'type': 'photoblog', 'item': entry, 'date': entry.pub_date, 'title': entry.title} 
             for entry in PhotoBlogEntry.objects.filter(published=True).order_by('-pub_date')[:10]]
         
-        items += [{'type': 'project', 'item': project, 'date': project.posted, 'title': name}
+        items += [{'type': 'project', 'item': project, 'date': project.posted, 'title': project.name}
             for project in Project.objects.order_by('-posted')[:10]]
         
         items.sort(key=operator.itemgetter('date'))
@@ -133,7 +133,7 @@ class LatestEverything(Feed):
     
     def item_link(self, item):
         title = 'Steve Losh / ' + item['title']
-        new_link = items['item'].get_absolute_url()
+        new_link = item['item'].get_absolute_url()
         
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,
