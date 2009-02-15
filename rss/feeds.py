@@ -1,7 +1,7 @@
 from django.contrib.syndication.feeds import Feed
 from stevelosh.blog.models import Entry, Comment as BlogComment
 from stevelosh.projects.models import Project, Comment as ProjectComment
-from stevelosh.thoughts.models import TextThought, LinkThought
+from stevelosh.photoblog.models import Entry as PhotoBlogEntry
 import operator
 
 
@@ -80,42 +80,27 @@ class LatestProjects(Feed):
                 'Steve Losh / ' + item.name)
     
 
-class LatestThoughts(Feed):
-    title = "Steve Losh / RSS / Thoughts"
-    link = "http://stevelosh.com/thoughts"
-    description = "Latest thoughts from stevelosh.com"
+class LatestPhotoBlogEntries(Feed):
+    title = "Steve Losh / RSS / Photo Blog"
+    link = "http://stevelosh.com/photoblog"
+    description = "Latest photos from stevelosh.com"
     
     item_author_name = 'Steve Losh'
     item_author_email = 'steve@stevelosh.com'
     item_author_link = 'http://stevelosh.com'
     
     def items(self):
-        thoughts = []
-        thoughts += [{'type': 'thought-text', 'item': thought, 'date': thought.posted}
-                     for thought in 
-                     TextThought.objects.order_by('-posted')[:10]]
-        thoughts += [{'type': 'thought-link', 'item': thought, 'date': thought.posted}
-                     for thought in 
-                     LinkThought.objects.order_by('-posted')[:10]]
-        thoughts.sort(key=operator.itemgetter('date'))
-        thoughts.reverse()
-        return thoughts[:10]
+        return PhotoBlogEntry.objects.filter(published=True).order_by('-pub_date')[:10]
     
     def item_pubdate(self, item):
-        return item['date']
+        return item.pub_date
     
     def item_link(self, item):
-        title = 'Steve Losh / '
-        if item['type'] == 'thought-text':
-            title += 'Thoughts / ' + str(item['item'].id)
-        elif item['type'] == 'thought-link':
-            title += 'Thoughts / ' + item['item'].url
-        
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,
-                'Thoughts', 
-                self.link, 
-                title)
+                'Blog', 
+                self.item_author_link + item.get_absolute_url(), 
+                'Steve Losh / ' + item.title)
     
 
 class LatestEverything(Feed):
@@ -129,18 +114,16 @@ class LatestEverything(Feed):
     
     def items(self):
         items = []
-        items += [{'type': 'blog', 'item': entry, 'date': entry.pub_date} 
-                  for entry in 
-                  Entry.objects.filter(published=True).order_by('-pub_date')[:15]]
-        items += [{'type': 'thought-text', 'item': thought, 'date': thought.posted}
-                  for thought in 
-                  TextThought.objects.order_by('-posted')[:10]]
-        items += [{'type': 'thought-link', 'item': thought, 'date': thought.posted}
-                  for thought in 
-                  LinkThought.objects.order_by('-posted')[:10]]
-        items += [{'type': 'project', 'item': project, 'date': project.posted}
-                  for project in 
-                  Project.objects.order_by('-posted')[:10]]
+        
+        items += [{'type': 'blog', 'item': entry, 'date': entry.pub_date, 'title': title} 
+            for entry in Entry.objects.filter(published=True).order_by('-pub_date')[:10]]
+        
+        items += [{'type': 'photoblog', 'item': entry, 'date': entry.pub_date, 'title': title} 
+            for entry in PhotoBlogEntry.objects.filter(published=True).order_by('-pub_date')[:10]]
+        
+        items += [{'type': 'project', 'item': project, 'date': project.posted, 'title': name}
+            for project in Project.objects.order_by('-posted')[:10]]
+        
         items.sort(key=operator.itemgetter('date'))
         items.reverse()
         return items[:10]
@@ -149,20 +132,8 @@ class LatestEverything(Feed):
         return item['date']
     
     def item_link(self, item):
-        title = 'Steve Losh / '
-        new_link = ''
-        if item['type'] == 'blog':
-            title += item['item'].title
-            new_link = self.item_author_link + item['item'].get_absolute_url()
-        elif item['type'] == 'project':
-            title += item['item'].name
-            new_link = self.item_author_link + item['item'].get_absolute_url()
-        elif item['type'] == 'thought-text':
-            title += 'Thoughts / ' + str(item['item'].id)
-            new_link = self.item_author_link + '/thoughts/'
-        elif item['type'] == 'thought-link':
-            title += 'Thoughts / ' + item['item'].url
-            new_link = self.item_author_link + '/thoughts/'
+        title = 'Steve Losh / ' + item['title']
+        new_link = items['item'].get_absolute_url()
         
         return '%s/?FeederAction=clicked&feed=%s&seed=%s&seed_title=%s' % \
                (feeder,

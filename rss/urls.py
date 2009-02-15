@@ -4,7 +4,7 @@ from stevelosh.rss.feeds import *
 feeds = { 'blog': LatestEntries, 
           'comments': LatestComments,
           'projects': LatestProjects, 
-          'thoughts': LatestThoughts, 
+          'photoblog': LatestPhotoBlogEntries, 
           'all': LatestEverything, }
 
 urlpatterns = patterns('stevelosh.rss.views',

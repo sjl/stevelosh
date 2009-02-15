@@ -21,7 +21,7 @@
             </p>
         </div>
         
-        <img id="photoblog-main-image" src="{{ entry.display.url }}" />
+        <img id="photoblog-main-image" src="{{ entry.original_image.url }}" />
         
         <div id="photoblog-entry-body" class="content">
             {{ entry.body|markdown|typogrify }}

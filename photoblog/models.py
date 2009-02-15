@@ -5,7 +5,7 @@ import datetime
 class Entry(ImageModel):
     title = models.CharField(max_length=300)
     slug = models.SlugField()
-    pub_date = models.DateField(default=datetime.datetime.today)
+    pub_date = models.DateTimeField(default=datetime.datetime.now)
     body = models.TextField(blank=True)
     original_image = models.ImageField(upload_to="storage/photoblog/original")
     num_views = models.PositiveIntegerField(editable=False, default=0)
