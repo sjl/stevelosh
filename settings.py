@@ -89,7 +89,6 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'stevelosh.blog',
     'stevelosh.projects',
-    'stevelosh.thoughts',
     'stevelosh.photoblog',
     'mobileadmin',
     'typogrify',
