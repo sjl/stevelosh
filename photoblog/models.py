@@ -24,7 +24,7 @@ class Entry(ImageModel):
         verbose_name_plural = 'entries'
     
     class IKOptions:
-        spec_module = 'photoblog.specs'
+        spec_module = 'stevelosh.photoblog.specs'
         cache_dir = 'storage/photoblog/cache'
         image_field = 'original_image'
         save_count_as = 'num_views'
