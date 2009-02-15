@@ -15,37 +15,59 @@
             </a>
         </h1>
         
-        <img id="photoblog-main-image" src="{{ entry.display.url }}" />
-        
-        <div id="photoblog-entry-body" class="content">
-            {{ entry.body|markdown|typogrify }}
-        </div>
-        
         <div id="photoblog-entry-date">
             <p>
                 Posted on {{ entry.pub_date|date:"F j, Y" }}
             </p>
         </div>
         
+        <img id="photoblog-main-image" src="{{ entry.display.url }}" />
+        
+        <div id="photoblog-entry-body" class="content">
+            {{ entry.body|markdown|typogrify }}
+        </div>
+        
         <div id="photoblog-nav">
             <div id="photoblog-nav-newer">
-                <div class="photoblog-nav-entry">
-                    <h2>Newer</h2>
-                </div>
-                <div class="photoblog-nav-entry">
-                    <a href=""><img src="{{ entry.thumbnail.url }}" /></a>
-                    <h3><a href="">{{ entry.title }}</a></h3>
-                </div>
+                {% if next %}
+                    <div class="photoblog-nav-entry">
+                        <h2>Newer</h2>
+                    </div>
+                    <div class="photoblog-nav-entry">
+                        <a href="{{ next.get_absolute_url }}">
+                            <img src="{{ next.thumbnail.url }}" />
+                        </a>
+                        <h3>
+                            <a href="{{ next.get_absolute_url }}">
+                                {{ next.title }}
+                            </a>
+                        </h3>
+                    </div>
+                {% else %}
+                    &nbsp;
+                {% endif %}
+                
             </div>
             
             <div id="photoblog-nav-older">
-                <div class="photoblog-nav-entry">
-                    <h2>Older</h2>
-                </div>
-                <div class="photoblog-nav-entry">
-                    <a href=""><img src="{{ entry.thumbnail.url }}" /></a>
-                    <h3><a href="">{{ entry.title }}</a></h3>
-                </div>
+                {% if previous %}
+                    <div class="photoblog-nav-entry">
+                        <h2>Older</h2>
+                    </div>
+                    <div class="photoblog-nav-entry">
+                        <a href="{{ previous.get_absolute_url }}">
+                            <img src="{{ previous.thumbnail.url }}" />
+                        </a>
+                        <h3>
+                            <a href="{{ previous.get_absolute_url }}">
+                                {{ previous.title }}
+                            </a>
+                        </h3>
+                    </div>
+                {% else %}
+                    &nbsp;
+                {% endif %}
+                
             </div>
         </div>
     </div>
