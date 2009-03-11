@@ -1,0 +1,17 @@
+{% extends "messengerbag/base.html" %}
+{% load typogrify %}
+
+{% block title %}Messenger Bag{% endblock %}
+
+{% block content %}
+    <h1>Notebook</h1>
+    <p id="mb-note-list">
+        {% for note in note_list %}
+            <span class="mb-note-list-title">
+                <a href="{{ note.get_absolute_url }}">{{ note.title|typogrify }}</a>
+            </span>
+            <span class="mb-note-list-snip">{{ note.snippet|typogrify }}</span>
+            <br/>
+        {% endfor %}
+    </p>
+{% endblock %}

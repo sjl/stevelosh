@@ -1,0 +1,12 @@
+{% extends "messengerbag/base.html" %}
+{% load typogrify %}
+{% load markup %}
+
+{% block title %}{{ note.title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ note.title|typogrify }}</h1>
+    <div id="mb-rendered-note">
+        {{ note.body|markdown:"codehilite"|typogrify }}
+    </div>
+{% endblock %}
