@@ -9,6 +9,8 @@ fabfile.py
 
 site-media/storage/*
 
+messengerbag/*
+
 syntax: regexp
 # This is ugly but it works.
 deploy-[^t][^e][^m][^p].*
