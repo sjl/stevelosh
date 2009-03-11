@@ -90,6 +90,7 @@ INSTALLED_APPS = (
     'stevelosh.blog',
     'stevelosh.projects',
     'stevelosh.photoblog',
+    'stevelosh.messengerbag',
     'mobileadmin',
     'typogrify',
     'imagekit',

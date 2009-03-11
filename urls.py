@@ -13,6 +13,8 @@ urlpatterns = patterns('',
     url(r'^projects/', include('stevelosh.projects.urls')),
     url(r'^photoblog/', include('stevelosh.photoblog.urls')),
     url(r'^rss/', include('stevelosh.rss.urls')),
+    url(r'^mb/', include('stevelosh.messengerbag.urls')),
+
 )
 
 if settings.DEBUG:
