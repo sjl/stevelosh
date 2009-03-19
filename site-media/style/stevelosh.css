@@ -1,3 +1,5 @@
+/* @override http://stevelosh.com/site-media/style/stevelosh.css */
+
 body.stevelosh {
     color: #111;
 }
@@ -29,7 +31,7 @@ pre, blockquote {
 }
 
 a:link, a:visited, a:active {
-    color: #900;
+    color: #e50053;
     text-decoration: none;
 }
 
@@ -86,7 +88,7 @@ h3 a:link, h3 a:visited, h3 a:active {
 }
 
 h1 a:hover, h2 a:hover, h3 a:hover {
-    color: #900;
+    color: #e50053;
 }
 
 div#sidebar div.sidebar-item {
@@ -116,10 +118,9 @@ label.invalid {
 /* Typogrify Styles */
 
 .amp { 
-	color: #444; 
-	font-size: 1.05em; 
-    font-family: "Warnock Pro", "Palatino", "Book Antiqua", serif; 
-    font-style: italic;
+	color: #444;
+	font: italic 1.05em "Hoefler Text", "Warnock Pro", Palatino, "Book Antiqua", serif;
+	font-weight: inherit;
 }
 
 a .amp { color: inherit; }
