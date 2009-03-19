@@ -2,8 +2,8 @@ from django.conf.global_settings import TEMPLATE_CONTEXT_PROCESSORS
 import deploy
 
 
-DEBUG = deploy.DEBUG
 TEMPLATE_DEBUG = DEBUG
+TEST = TRUE
 
 ADMINS = (
     ('Steve Losh', 'steve@stevelosh.com'),
