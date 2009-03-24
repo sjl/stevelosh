@@ -6,7 +6,7 @@
         {% for entry in entries %}
             <div class="blog-list-entry">
                 <h2 class="blog-list-entry-title">
-                    <a href="{% url stevelosh.blog.views.entry entry.pub_date.year, entry.pub_date.month, entry.pub_date.day, entry.slug %}">
+                    <a href="{% url blog-entry entry.pub_date.year, entry.pub_date.month, entry.pub_date.day, entry.slug %}">
                         {{ entry.title|typogrify }}
                     </a>
                 </h2>

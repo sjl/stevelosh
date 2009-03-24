@@ -16,7 +16,7 @@
 {% block content %}
     <div id="blog-entry">
         <h1 id="blog-entry-title">
-            <a href="{% url stevelosh.blog.views.entry entry.pub_date.year, entry.pub_date.month, entry.pub_date.day, entry.slug %}">
+            <a href="{% url blog-entry entry.pub_date.year, entry.pub_date.month, entry.pub_date.day, entry.slug %}">
                 {{ entry.title|typogrify }}
             </a>
         </h1>
@@ -50,7 +50,7 @@
     <div id="blog-entry-new-comment">
         <h1>Add your comment:</h1>
         <form id="new-comment-form" method="post" 
-              action="{% url stevelosh.blog.views.comment %}">
+              action="{% url blog-post-comment %}">
             <p class="form-label">
                 What's your name?
             </p>

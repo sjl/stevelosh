@@ -45,5 +45,4 @@ def comment(request):
                               spam=spam)
         new_comment.save()
     
-    return HttpResponseRedirect(reverse('stevelosh.projects.views.project',
-                                        args=(project.slug,)))
+    return HttpResponseRedirect(reverse('project-view', args=(project.slug,)))

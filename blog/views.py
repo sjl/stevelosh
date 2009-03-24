@@ -57,7 +57,7 @@ def comment(request):
                               spam=spam)
         new_comment.save()
     
-    return HttpResponseRedirect(reverse('stevelosh.blog.views.entry',
+    return HttpResponseRedirect(reverse('blog-entry',
                                         args=(entry.pub_date.year, 
                                               entry.pub_date.month, 
                                               entry.pub_date.day,

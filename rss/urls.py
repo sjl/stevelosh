@@ -6,6 +6,6 @@ feeds = { 'blog': LatestEntries,
           'projects': LatestProjects, 
           'all': LatestEverything, }
 
-urlpatterns = patterns('stevelosh.rss.views',
+urlpatterns = patterns('rss.views',
     url(r'^(?P<url>.+)/$', 'feeds', {'feed_dict': feeds}),
 )

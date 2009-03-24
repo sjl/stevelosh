@@ -19,7 +19,7 @@
 {% block content %}
     <div id="projects-project">
         <h1 id="projects-project-name">
-            <a href="{% url stevelosh.projects.views.project project.slug %}">
+            <a href="{% url project-view project.slug %}">
                     {{ project.name|typogrify }}
             </a>
         </h1>
@@ -53,7 +53,7 @@
     <div id="projects-project-new-comment">
         <h1>Add your comment:</h1>
         <form id="new-comment-form" method="post" 
-              action="{% url stevelosh.projects.views.comment %}">
+              action="{% url project-post-comment %}">
             <p class="form-label">
                 What's your name?
             </p>

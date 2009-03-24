@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('stevelosh.blog.views',
+urlpatterns = patterns('blog.views',
     url(r'^$',                              'list',      name='blog-list-newest'),
     url(r'^page/(\d+)/$',                   'list',      name='blog-list-page'),
     url(r'^comment/$',                      'comment',   name='blog-post-comment'),

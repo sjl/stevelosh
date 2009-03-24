@@ -6,7 +6,7 @@
 		{% for project in projects %}
 			<div class="projects-list-entry">
 				<h2 class="projects-list-entry-title">
-					<a href="{% url stevelosh.projects.views.project project.slug %}">
+					<a href="{% url project-view project.slug %}">
 						{{ project.name|typogrify }}
 					</a>
 				</h2>
