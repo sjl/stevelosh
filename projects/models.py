@@ -20,18 +20,6 @@ class Project(models.Model):
         return u"%s" % (self.name,)
 
 
-class ProjectFile(models.Model):
-    """A single file for a project."""
-    
-    title = models.CharField(blank=False, max_length=140)
-    description = models.TextField(blank=True, null=True)
-    file = models.FileField(upload_to='storage/projects/files')
-    project = models.ForeignKey(Project)
-    
-    def __unicode__(self):
-        return u"%s - %s" % (self.project.name, self.title)
-
-
 class Comment(models.Model):
     name = models.CharField(blank=False, null=False, max_length=40)
     body = models.TextField(blank=False, null=False)
