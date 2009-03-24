@@ -91,9 +91,7 @@ INSTALLED_APPS = (
     'django.contrib.flatpages',
     'stevelosh.blog',
     'stevelosh.projects',
-    'stevelosh.photoblog',
     'stevelosh.messengerbag',
     'mobileadmin',
     'typogrify',
-    'imagekit',
 )

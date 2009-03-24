@@ -32,22 +32,6 @@ class ProjectFile(models.Model):
         return u"%s - %s" % (self.project.name, self.title)
 
 
-class ProjectPhoto(models.Model):
-    """A single photograph for a project."""
-    
-    title = models.CharField(blank=False, max_length=140)
-    description = models.TextField(blank=True, null=True)
-    height = models.IntegerField(blank=True, null=True)
-    width = models.IntegerField(blank=True, null=True)
-    photo = models.ImageField(upload_to='storage/projects/images',
-                              height_field='height', width_field='width')
-    project = models.ForeignKey(Project)
-    position = models.IntegerField(blank=True, null=True)
-    
-    def __unicode__(self):
-        return u"%s - %s" % (self.project.name, self.title)
-
-
 class Comment(models.Model):
     name = models.CharField(blank=False, null=False, max_length=40)
     body = models.TextField(blank=False, null=False)

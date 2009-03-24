@@ -1,4 +1,4 @@
-from stevelosh.projects.models import Project, ProjectFile, ProjectPhoto, Comment
+from stevelosh.projects.models import Project, ProjectFile, Comment
 from django.contrib import admin
 
 class ProjectAdmin(admin.ModelAdmin):
@@ -8,12 +8,6 @@ class ProjectAdmin(admin.ModelAdmin):
     date_hierarchy = 'posted'
     ordering = ('-posted',)
     prepopulated_fields = { 'slug': ('name',) }
-
-class ProjectPhotoAdmin(admin.ModelAdmin):
-    fields = ('title', 'description', 'project', 'position', 'photo')
-    list_display = ('project', 'title', 'description', 'height', 'width')
-    search_fields = ('title', 'description',)
-    list_filter = ('project',)
 
 class ProjectFileAdmin(admin.ModelAdmin):
     fields = ('title', 'description', 'project', 'file',)
@@ -31,6 +25,5 @@ class CommentAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Project, ProjectAdmin)
-admin.site.register(ProjectPhoto, ProjectPhotoAdmin)
 admin.site.register(ProjectFile, ProjectFileAdmin)
 admin.site.register(Comment, CommentAdmin)

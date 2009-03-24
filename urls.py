@@ -11,7 +11,6 @@ urlpatterns = patterns('',
     (r'^m/(.*)', mobileadmin.sites.site.root),
     url(r'^blog/', include('stevelosh.blog.urls')),
     url(r'^projects/', include('stevelosh.projects.urls')),
-    url(r'^photoblog/', include('stevelosh.photoblog.urls')),
     url(r'^rss/', include('stevelosh.rss.urls')),
     url(r'^mb/', include('stevelosh.messengerbag.urls')),
 
