@@ -19,7 +19,7 @@
 {% block content %}
     <div id="projects-project">
         <h1 id="projects-project-name">
-            <a href="{% url project-view project.slug %}">
+            <a href="{{ project.get_absolute_url }}">
                     {{ project.name|typogrify }}
             </a>
         </h1>
