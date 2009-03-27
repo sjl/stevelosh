@@ -5,17 +5,22 @@
 {% block title %}Create a Note{% endblock %}
 
 {% block content %}
+    
     <form id="mb-note-create" action="" method="post">
         <h1>{{ form.title }}</h1>
         {% for error in form.title.errors %}
             <p class="mb-error">{{ error }}</p>
         {% endfor %}
         
+        <p id="mb-navigation">
+            <a href="{% url note-list %}">&laquo; back to your notes</a>
+        </p>
+        
         <p>{{ form.body }}</p>
         {% for error in form.body.errors %}
             <p class="mb-error">{{ error }}</p>
         {% endfor %}
         
-        <input id="mb-note-create-submit" type="submit" value="Create" />
+        <input id="mb-note-create-submit" type="submit" value="Save" />
     </form>
 {% endblock %}
