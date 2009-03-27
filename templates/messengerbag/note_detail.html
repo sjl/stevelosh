@@ -5,7 +5,8 @@
 {% block title %}{{ note.title }}{% endblock %}
 
 {% block content %}
-    <h1>{{ note.title|typogrify }}</h1>
+    <h1><a href="{{ note.get_absolute_url }}">{{ note.title|typogrify }}</a></h1>
+    <p id="mb-navigation"><a href="{% url note-list %}">&laquo; back to your notes</a></p>
     <div id="mb-rendered-note">
         {{ note.body|markdown:"codehilite"|typogrify }}
     </div>

@@ -5,5 +5,11 @@ div#mb-rendered-note h4 {font-size:1em;font-weight:bold;margin-bottom:1.5em;}
 div#mb-rendered-note h5 {font-size:1em;font-weight:bold;}
 div#mb-rendered-note h6 {font-size:1em;font-weight:bold;}
 
+p#mb-navigation { margin-top: -1em; }
+
 span.mb-note-list-title { font-weight: bold; margin-right: 1em; }
 span.mb-note-list-snip { color: #888; }
+
+form#mb-note-create h1 input { width: 81%; }
+form#mb-note-create p textarea { width: 80%; }
+input#mb-note-create-submit { font-size: 3em; }
