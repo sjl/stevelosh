@@ -12,7 +12,7 @@ p, ol, ul, pre, code, blockquote {
     font-size: 1.2em;
 }
 
-p code { background-color: #eee; padding: 2px; border: 1px solid #ddd; }
+p code, li code { background-color: #eee; padding: 2px; border: 1px solid #ddd; }
 
 input, textarea {
     font-size: 1.0em;
