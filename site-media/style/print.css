@@ -1,0 +1,14 @@
+/* @override http://localhost:8000/site-media/style/print.css */
+
+div#sidebar {
+    display: none;
+}
+div#blog-entry-new-comment {
+    display:  none;
+}
+div#projects-project-new-comment {
+    display:  none;
+}
+div#header {
+   font-size: 0.75em; 
+}
