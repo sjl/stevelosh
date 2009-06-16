@@ -12,3 +12,10 @@ div#projects-project-new-comment {
 div#header {
    font-size: 0.75em; 
 }
+ul.print-links {
+    display: block;
+    font-size: 1em;
+    list-style-type: none;
+    font-style: italic;
+    margin-left: 0em;
+}

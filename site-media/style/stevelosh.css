@@ -101,6 +101,10 @@ div#sidebar h2 {
     display: inline;
 }
 
+ul.print-links {
+    display: none;
+}
+
 p.form-label {
     color: #666;
     margin-bottom: 0em;
