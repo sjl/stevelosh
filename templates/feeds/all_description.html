@@ -1,7 +1,3 @@
 {% load markup %}
 
-{% ifequal obj.type 'photoblog' %}
-    <img src="{{ obj.item.original_image.url }}" />
-{% endifequal %}
-
 {{ obj.item.body|markdown }}
