@@ -1,11 +1,10 @@
 from django.conf.urls.defaults import *
 from stevelosh.rss.feeds import *
 
-feeds = { 'blog': LatestEntries, 
-          'comments': LatestComments,
-          'projects': LatestProjects, 
+feeds = { 'comments': LatestComments,
           'all': LatestEverything, }
 
-urlpatterns = patterns('rss.views',
-    url(r'^(?P<url>.+)/$', 'feeds', {'feed_dict': feeds}),
+urlpatterns = patterns('',
+    url(r'^(?P<url>.+)/$', 'django.contrib.syndication.views.feed', 
+        {'feed_dict': feeds}),
 )

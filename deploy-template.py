@@ -13,7 +13,4 @@ DEBUG = False
 # start a new project.
 SECRET_KEY = ''
 
-# This is used for the Mint (http://haveamint.com/) Bird Feeder plugin hack.
-FEEDER_PASSWORD = ''
-
 AKISMET_API_KEY = ''
