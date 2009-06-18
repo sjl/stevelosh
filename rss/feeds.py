@@ -49,7 +49,7 @@ class LatestEverything(Feed):
         
         items.sort(key=operator.itemgetter('date'))
         items.reverse()
-        return items[:10]
+        return items[:5]
     
     def item_pubdate(self, item):
         return item['date']
