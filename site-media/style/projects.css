@@ -1,98 +1,68 @@
+/* @override http://127.0.0.1:8000/site-media/style/projects.css */
 div.projects-list-entry {
     border-bottom: 1px solid #eee;
     height: 3em;
     line-height: 3em;
     -webkit-text-size-adjust: none;
 }
-
 h2.projects-list-entry-title {
     display: inline;
 }
-
 p.projects-list-entry-snip {
     display: inline;
     padding-left: 1em;
     color: #666;
 }
-
-
-
 div#projects-project-date {
-    margin: 0em;
-    margin-bottom: 2em;
     color: #666;
 }
-
-h1#projects-project-name {
-    margin-bottom: 0.1em;
-}
-
-div#projects-project {
-    margin-bottom: 1.5em;
-}
-
-
-div#projects-project-comments {
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-}
-
-div#projects-project-new-comment {
-    margin-top: 1.5em;
-}
-
 div.projects-project-comment-body {
     margin-left: 2em;
 }
-
-div.projects-project-comment-body ol, div.projects-project-comment-body ul, div.projects-project-comment-body pre, div.projects-project-comment-body code, div.projects-project-comment-body blockquote, .wmd-preview ol, .wmd-preview ul, .wmd-preview pre, .wmd-preview code, .wmd-preview blockquote {
-    font-size: 1.0em;
-    padding-bottom: 0em;
-}
-
 div.wmd-preview {
     margin-left: 2em;
 }
-
 div.projects-project-comment-body h1, .wmd-preview h1 {
     font-size: 1.4em;
 }
-
 div.projects-project-comment-body h2, .wmd-preview h2 {
     font-size: 1.3em;
 }
-
+div.projects-project-comment-body pre {
+    font-size: 1em;
+    line-height: 1.5em;
+}
 div.projects-project-comment-body h3, .wmd-preview h3, div.projects-project-comment-body h4, .wmd-preview h4, div.projects-project-comment-body h5, .wmd-preview h5, div.projects-project-comment-body h6, .wmd-preview h6 {
     font-size: 1.2em;
 }
-
 input#projects-new-comment-name {
     width: 40%;
     margin-right: 1em;
 }
-
 input#projects-new-comment-submit {
-    margin-top: 1em;
+    margin-top: 1.5em;
 }
-
 p#projects-new-comment-body-area {
     margin-bottom: 0em;
 }
-
 p#projects-new-comment-instructions {
     margin-top: 0em;
 }
-
 span#projects-new-comment-invalid-body {
     float: right;
 }
-
 #projects-new-comment-name-area label.invalid {
     display: inline;
 }
-
 #projects-new-comment-body-area label.invalid {
     float: right;
 }
-
-.content img { text-align: left; margin-right: auto; margin-left: auto; border: 10px solid #eee; display: block; padding: 1px; background-color: #000;}
+.content img {
+    text-align: left;
+    margin-right: auto;
+    margin-left: auto;
+    border: 10px solid #eee;
+    display: block;
+    padding: 1px;
+    background-color: #000;
+}
