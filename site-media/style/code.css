@@ -1,42 +1,19 @@
-table.codehilitetable { 
-	margin-left: 2em;
+/* @override http://localhost:8000/site-media/style/code.css */
+table.codehilitetable {
+    margin-left: 2em;
 }
-
-div.codehilite { 
-	margin-left: 2em; 
+table.codehilitetable td {
+    border: none;
+    padding: 0;
 }
-
-.codehilitetable div.codehilite { 
-	margin-left: 0em;
-    margin-right: 1.5em;
-}
-
-.codehilitetable pre, .codehilitetable blockquote {
+table.codehilitetable td.linenos pre {
     margin: 0em;
-    padding-top: 1em;
-    padding-bottom: 1em;
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
+    text-align: center;
 }
-
-.codehilitetable td.linenos  { 
-	padding: 0em;
+table.codehilitetable td.code pre {
+    margin-right: 4em;
 }
-
-div.codehilite pre { 
-	margin-left: 0em;
-	padding-left: 1em; 
-	padding-right: 1em;
-	padding-bottom: 1em;
-}
-
-.codehilitetable td.linenos pre { 
-	padding-right: 0.75em;
-	padding-left: 1em;
-}
-
 .codehilite .hll { background-color: #ffffcc }
-.codehilite  { background: #f9f9f9; }
 .codehilite .c { color: #8f5902; font-style: italic } /* Comment */
 .codehilite .err { color: #a40000; border: 1px solid #ef2929 } /* Error */
 .codehilite .g { color: #000000 } /* Generic */

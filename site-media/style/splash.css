@@ -1,7 +1,6 @@
 div.splash-list-entry {
     border-bottom: 1px solid #eee;
-    padding-bottom: 0.5em;
-    padding-top: 0.5em;
+    height: 3em;
     text-align: right;
 }
 
@@ -9,5 +8,8 @@ div.splash-list-entry {
     display: inline;
     color: #666;
     font-weight: normal;
+    font-size: 1.5em;
+    line-height: 2em;
     -webkit-text-size-adjust: none;
+    margin: 0em;
 }
