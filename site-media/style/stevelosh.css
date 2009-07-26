@@ -83,6 +83,14 @@ label.invalid {
     color: #F00;
 }
 
+div.toc ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+div.toc > ul > li {
+    margin-left: 0;
+}
+
 /* Typogrify Styles */
 
 .amp { 
