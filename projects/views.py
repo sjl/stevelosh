@@ -17,8 +17,10 @@ def project(request, slug):
                               { 'project': project, 'comments': comments })
 
 def list(request):
-    projects = Project.objects.all().order_by('-posted')
-    return render_to_response('projects/list.html', { 'projects': projects, })
+    photo = Project.objects.filter(type='photography').order_by('-posted')
+    programming = Project.objects.filter(type='programming').order_by('-posted')
+    return render_to_response('projects/list.html',
+        {'photo': photo, 'programming': programming})
 
 def comment(request):
     fields = request.POST

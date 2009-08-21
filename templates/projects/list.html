@@ -3,7 +3,31 @@
 
 {% block content %}
     <div id="projects-list">
-        {% for project in projects %}
+        <div class="projects-list-entry">
+            <h2 class="projects-list-entry-title">Programming</h2>
+            <p class="projects-list-entry-snip">&nbsp;</p>
+        </div>
+        {% for project in programming %}
+            <div class="projects-list-entry">
+                <h2 class="projects-list-entry-title">
+                    <a href="{{ project.get_absolute_url }}">
+                        {{ project.name|typogrify }}
+                    </a>
+                </h2>
+                <p class="projects-list-entry-snip">{{ project.snip|typogrify }}</p>
+            </div>
+        {% endfor %}
+        
+        <div class="projects-list-entry">
+            <h2 class="projects-list-entry-title">&nbsp;</h2>
+            <p class="projects-list-entry-snip">&nbsp;</p>
+        </div>
+        
+        <div class="projects-list-entry">
+            <h2 class="projects-list-entry-title">Photography</h2>
+            <p class="projects-list-entry-snip">&nbsp;</p>
+        </div>
+        {% for project in photo %}
             <div class="projects-list-entry">
                 <h2 class="projects-list-entry-title">
                     <a href="{{ project.get_absolute_url }}">
