@@ -11,7 +11,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 class CommentAdmin(admin.ModelAdmin):
     fields = ('name', 'body', 'submitted', 'project', 'spam')
-    list_display = ('project', 'name', 'submitted', 'body', 'spam')
+    list_display = ('project', 'name', 'submitted', 'snip', 'spam')
     search_fields = ('name', 'body')
     list_filter = ('name', 'project', 'spam')
     date_hierarchy = 'submitted'

@@ -18,7 +18,7 @@ class EntryAdmin(admin.ModelAdmin):
 
 class CommentAdmin(admin.ModelAdmin):
     fields = ('name', 'body', 'submitted', 'entry', 'spam')
-    list_display = ('entry', 'name', 'submitted', 'body', 'spam')
+    list_display = ('entry', 'name', 'submitted', 'snip', 'spam')
     search_fields = ('name', 'body')
     list_filter = ('name', 'entry', 'spam')
     date_hierarchy = 'submitted'

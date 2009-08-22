@@ -35,4 +35,7 @@ class Comment(models.Model):
     
     def __unicode__(self):
         return u'%s on %s' % (self.name, self.entry.title)
-
+    
+    def snip(self):
+        return self.body[:40] + '...' if len(self.body) > 40 else ''
+    
