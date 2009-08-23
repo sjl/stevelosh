@@ -34,6 +34,6 @@ class Comment(models.Model):
         return u'%s on %s' % (self.name, self.project.name)
     
     def snip(self):
-        return self.body[:40] + '...' if len(self.body) > 40 else ''
+        return self.body[:40] + ('...' if len(self.body) > 40 else '')
     
 
