@@ -101,3 +101,7 @@ div#blog-entry img.blog-photo-inline-right {
 h2 + p .blog-photo-inline-left {
 	margin-top:  1em;
 }
+div.blog-entry-comment-body pre {
+    font-size: 1em;
+    line-height: 1.5em;
+}
