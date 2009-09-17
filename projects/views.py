@@ -28,7 +28,7 @@ def comment(request):
     
     if ( fields.has_key('name') and 
          not fields['name'].strip() == '' and
-         not len(fields['name']) < 3 and
+         not len(fields['name']) < 2 and
          fields.has_key('body') and 
          not fields['body'].strip() == '' and
          not len(fields['body']) < 3 and

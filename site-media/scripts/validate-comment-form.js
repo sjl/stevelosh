@@ -4,7 +4,7 @@ $(document).ready(function() {
 		rules: {
 			name: {
 				required: true,
-				minlength: 3,
+				minlength: 2,
 				maxlength: 40
 			},
 			body: {
