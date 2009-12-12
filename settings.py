@@ -19,11 +19,6 @@ DATABASE_PASSWORD = deploy.DATABASE_PASSWORD
 DATABASE_HOST = deploy.DATABASE_HOST
 DATABASE_PORT = deploy.DATABASE_PORT
 
-
-# django-simplebackup settings
-BACKUP_DIRECTORY = os.path.join(BASE_DIR, 'backup')
-BACKUP_EXCLUDE = ['admin', 'sessions']
-
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -43,6 +38,10 @@ USE_I18N = True
 
 # Base directory.
 BASE_DIR = os.path.dirname(__file__)
+
+# django-simplebackup settings
+BACKUP_DIRECTORY = os.path.join(BASE_DIR, 'backup')
+BACKUP_EXCLUDE = ['admin', 'sessions']
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
