@@ -4,3 +4,5 @@ syntax: glob
 *.pyc
 *.log
 deploy/
+deploy_tmp/
+backups/
