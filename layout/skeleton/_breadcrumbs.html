@@ -1,0 +1,13 @@
+{% extends "skeleton/_root.html" %}
+{% block all %}
+<ul class="breadcrumbs">
+{% for node in page.node.ancestors %}
+    <li>
+        <a href="{{node.listing_url}}">{{node.name|unslugify}}</a>
+        {% if not forloop.last%}{% block breadcrumb_seperator %}
+        <span class="separator">&gt;</span>{% endblock %}{% endif %}
+    </li>
+{% endfor %}
+</ul>
+    
+{% endblock %}

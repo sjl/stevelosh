@@ -1,0 +1,20 @@
+{% extends "skeleton/_root.html" %}
+{% block all %}
+{%spaceless%}
+{% for list_page in node.pages %}
+{% ifnotequal list_page node.listing_page %}
+{% if not list_page.exclude %}
+<div class="article">
+    <div class="title">
+    {% with list_page.name_without_extension|remove_date_prefix|unslugify as default_title %}
+        <h3><a href="{{list_page.url}}">{{list_page.title|default_if_none:default_title }}</a></h3>
+        {% if list_page.created %}<span>{{list_page.created}}</span>{% endif %}
+    {%endwith%}
+    </div>
+    {% render_article list_page %}
+</div>
+{%endif%}
+{% endifnotequal %}
+{% endfor %}
+{%endspaceless%}
+{% endblock %}

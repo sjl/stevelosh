@@ -1,0 +1,14 @@
+{% extends "skeleton/_body.html" %}
+{% block content_body %}
+<div id="post-content">
+{% filter typogrify %}
+{% markdown %}
+{% article %}
+{% block article %}
+    
+{% endblock %}
+{% endarticle %}    
+{% endmarkdown %}
+{% endfilter %}
+</div>
+{% endblock %}

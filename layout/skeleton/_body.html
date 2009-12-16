@@ -1,0 +1,25 @@
+{% extends "skeleton/_base.html" %}
+{% block title %}{{site.name}}{% endblock %}
+{% block content %}
+{% comment %}{% block breadcrumbs %}{% include "skeleton/_breadcrumbs.html"%}{% endblock %}{% endcomment %}
+{% block nav %}
+<div id="nav">
+    <ul>
+        <a href="{{site.listing_url}}">
+        <li{% ifequal page.module site.module %} class="home-selected" {% endifequal %}>
+            Home
+        </li>
+        </a>
+        {% for module in site.children %}
+        <a href="{{module.listing_url}}">
+        <li{% ifequal page.module module %} class="selected" {% endifequal %}>
+            {{module.name|unslugify}}
+        </li>
+        </a>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+{% block content_header %}{% ifnotequal page.module site.module %}<div class="article title"><h3>{{ page.title }}</h3></div>{% endifnotequal %}{% endblock %}
+{% block content_body %}{% endblock %}
+{% endblock %}

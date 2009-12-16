@@ -1,0 +1,8 @@
+syntax: glob
+
+.DS_Store
+*.pyc
+*.log
+out
+deploy_tmp
+.sass-cache

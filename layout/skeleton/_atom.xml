@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+{%spaceless%}
+<feed xmlns="http://www.w3.org/2005/Atom">
+ <title>{% block title %}{{site.name}} {{page.node.name}}{%endblock%}</title>
+ {%block  self_url %}
+ <link href="{{page.node.full_url}}/atom.xml" rel="self"/>
+ {%endblock%}
+ {%block  site_url %}
+ <link href="{{site.full_url}}"/>
+ {%endblock%}{%block feed_extra%}{%endblock%}
+ <updated>{{now|xmldatetime}}</updated>
+ <id>{{site.full_url}}</id>
+ {% for node_page in page.node.walk_pages %}
+ {% ifnotequal node_page page %}
+ {% if not node_page.listing and not node_page.exclude %}
+ <entry>
+   <title>{{node_page.title}}</title>
+   <author><name>Lakshmi Vyas</name></author>
+   <link href="{{node_page.full_url}}"/>
+   <updated>{{node_page.updated|default:node_page.created|xmldatetime}}</updated>
+   <published>{{node_page.created|xmldatetime}}</published>
+   <id>{{node_page.full_url}}</id>
+   {%block entry_extra%}{%endblock%}
+   <content type="html">
+       {%filter force_escape%}{% render_article node_page %}{%endfilter%}
+   </content>
+ </entry>
+ {%endif%}
+ {%endifnotequal%}
+ {% endfor %}
+</feed>
+{%endspaceless%}

@@ -1,0 +1,27 @@
+{% extends "skeleton/_root.html" %}
+{% block all %}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+	"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>{% block title %}{{site.name}}{% endblock %}</title>
+    {% block feeds %}
+    <link href="{{site.url}}/blog/atom.xml" rel="alternate" title="{{site.name}}" type="application/atom+xml"/>
+    {% endblock %}
+    {% block css %}
+    <link rel="stylesheet" href="{{site.url}}/media/css/base.css" type="text/css" media="screen" charset="utf-8">
+    {% block extra_css %}{% endblock %}{% endblock %}{% block js %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+    {% block extra_js %}{% endblock %}{% endblock %}
+</head>
+<body>
+{% include "skeleton/_header.html" %}
+<div id="content">
+    {% block content %}{% endblock %}
+</div>
+{% include "skeleton/_footer.html" %}
+</body>
+</html>
+{% endblock %}
