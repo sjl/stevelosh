@@ -8,14 +8,18 @@
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
         
-        <title>{% block title %}{{site.name}} / {{ page.title }}{% endblock %}</title>
+        <title>{% block title %}{{ site.name }} / {{ page.title }}{% endblock %}</title>
         
         {% block feeds %}
-            <link href="{{site.url}}/blog/atom.xml" rel="alternate" title="{{site.name}}" type="application/atom+xml"/>
+            <link href="{{ site.url }}/blog/atom.xml"
+                  rel="alternate" title="{{ site.name }}"
+                  type="application/atom+xml" />
         {% endblock %}
         
         {% block css %}
-            <link rel="stylesheet" href="{{site.url}}/media/css/base.css" type="text/css" media="screen" charset="utf-8">
+            <link rel="stylesheet"
+                  href="{{ site.url }}/media/css/base.css"
+                  type="text/css" media="screen" charset="utf-8" />
             {% block extra_css %}{% endblock %}
         {% endblock %}
         
@@ -27,6 +31,7 @@
     
     <body>
         {% include "skeleton/_header.html" %}
+        
         <div id="content">
             {% block content %}{% endblock %}
         </div>

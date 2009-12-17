@@ -6,15 +6,15 @@
     {% block nav %}
         <div id="nav">
             <ul>
-                <a href="{{site.listing_url}}">
+                <a href="{{ site.listing_url }}">
                     <li{% ifequal page.module site.module %} class="home-selected" {% endifequal %}>
                         Home
                     </li>
                 </a>
                 {% for module in site.children %}
-                    <a href="{{module.listing_url}}">
+                    <a href="{{ module.listing_url }}">
                         <li{% ifequal page.module module %} class="selected" {% endifequal %}>
-                            {{module.name|unslugify}}
+                            {{ module.name|unslugify }}
                         </li>
                     </a>
                 {% endfor %}
