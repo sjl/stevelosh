@@ -21,7 +21,7 @@ GENERATE_CLEAN_URLS = True
 
 # A list of filenames (without extensions) that will be considered listing
 # pages for their enclosing folders.
-LISTING_PAGE_NAMES = ['list']
+LISTING_PAGE_NAMES = ['index']
 
 # Determines whether or not to append a trailing slash to generated urls when
 # clean urls are enabled.
