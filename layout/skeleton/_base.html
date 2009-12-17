@@ -30,7 +30,21 @@
     </head>
     
     <body>
-        {% include "skeleton/_header.html" %}
+        <div id="header">
+            <a href="/">
+                <h1>steve losh <span class="page-title">/ {{ page.title }}</span></h1>
+            </a>
+        </div>
+        
+        <div id="nav">
+            <ul>
+                <li><a href="/blog/">Blog</a></li>
+                <li><a href="http://bitbucket.org/sjl/">Code</a></li>
+                <li><a href="/projects">Projects</a></li>
+                <li><a href="/about/">About</a></li>
+                <li><a href="/rss/">RSS</a></li>
+            </ul>
+        </div>
         
         <div id="content">
             {% block content %}{% endblock %}

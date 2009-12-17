@@ -1,6 +1,8 @@
-{% extends "skeleton/_body.html" %}
+{% extends "skeleton/_base.html" %}
 
-{% block content_body %}
+{% block content %}
+    <div class="article title"><h3>{{ page.title }}</h3></div>
+    
     <div id="post-content">
         {% filter typogrify %}
             {% markdown %}
