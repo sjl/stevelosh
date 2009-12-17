@@ -2,7 +2,6 @@ import os
 
 ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 
-#Directories
 LAYOUT_DIR = os.path.join(ROOT_PATH, 'layout')
 CONTENT_DIR = os.path.join(ROOT_PATH, 'content')
 MEDIA_DIR = os.path.join(ROOT_PATH, 'media')
@@ -13,31 +12,20 @@ BACKUPS_DIR = os.path.join(ROOT_PATH, 'backups')
 BACKUP = False
 
 SITE_ROOT = "/"
-SITE_WWW_URL = "http://www.yoursite.com"
-SITE_NAME = "Hyde"
+SITE_WWW_URL = "http://stevelosh.com"
+SITE_NAME = "Steve Losh"
+SITE_AUTHOR = "Steve Losh"
 
-#Url Configuration
 GENERATE_ABSOLUTE_FS_URLS = False
-
-# Clean urls causes Hyde to generate urls without extensions. Examples:
-# http://example.com/section/page.html becomes
-# http://example.com/section/page/, and the listing for that section becomes
-# http://example.com/section/
-# The built-in CherryPy webserver is capable of serving pages with clean urls
-# without any additional configuration, but Apache will need to use Mod_Rewrite
-# to map the clean urls to the actual html files.  The HtaccessGenerator site
-# post processor is capable of automatically generating the necessary
-# RewriteRules for use with Apache.
-GENERATE_CLEAN_URLS = False
+GENERATE_CLEAN_URLS = True
 
 # A list of filenames (without extensions) that will be considered listing
 # pages for their enclosing folders.
-# LISTING_PAGE_NAMES = ['index']
-LISTING_PAGE_NAMES = []
+LISTING_PAGE_NAMES = ['list']
 
 # Determines whether or not to append a trailing slash to generated urls when
 # clean urls are enabled.
-APPEND_SLASH = False
+APPEND_SLASH = True
 
 # {folder : extension : (processors)}
 # The processors are run in the given order and are chained.
@@ -101,10 +89,9 @@ YUI_COMPRESSOR = "./lib/yuicompressor-2.4.1.jar"
 #HSS_PATH = "./lib/hss-1.0-osx"
 HSS_PATH = None # if you don't want to use HSS
 
-#Django settings
+# Django settings
 
 TEMPLATE_DIRS = (LAYOUT_DIR, CONTENT_DIR, TMP_DIR, MEDIA_DIR)
-
 INSTALLED_APPS = (
     'hydeengine',
     'django.contrib.webdesign',
