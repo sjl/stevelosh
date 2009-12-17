@@ -2,6 +2,9 @@ import os
 
 ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 
+import hydeengine
+HYDE_FOLDER = os.path.dirname(os.path.dirname(hydeengine.__file__))
+
 LAYOUT_DIR = os.path.join(ROOT_PATH, 'layout')
 CONTENT_DIR = os.path.join(ROOT_PATH, 'content')
 MEDIA_DIR = os.path.join(ROOT_PATH, 'media')
@@ -18,13 +21,7 @@ SITE_AUTHOR = "Steve Losh"
 
 GENERATE_ABSOLUTE_FS_URLS = False
 GENERATE_CLEAN_URLS = True
-
-# A list of filenames (without extensions) that will be considered listing
-# pages for their enclosing folders.
 LISTING_PAGE_NAMES = ['index']
-
-# Determines whether or not to append a trailing slash to generated urls when
-# clean urls are enabled.
 APPEND_SLASH = True
 
 # {folder : extension : (processors)}
@@ -39,19 +36,11 @@ APPEND_SLASH = True
 # Extensions do not support wildcards.
 
 MEDIA_PROCESSORS = {
-    '*':{
-        '.css':('hydeengine.media_processors.TemplateProcessor',
-                'hydeengine.media_processors.YUICompressor',),
-        '.ccss':('hydeengine.media_processors.TemplateProcessor',
-                'hydeengine.media_processors.CleverCSS',
-                'hydeengine.media_processors.YUICompressor',),
-        '.hss':(
-                'hydeengine.media_processors.TemplateProcessor',
-                'hydeengine.media_processors.HSS',
-                'hydeengine.media_processors.YUICompressor',),
-        '.js':(
-                'hydeengine.media_processors.TemplateProcessor',
-                'hydeengine.media_processors.YUICompressor',)
+    '*': {
+        '.css':( 'hydeengine.media_processors.TemplateProcessor',
+                 'hydeengine.media_processors.YUICompressor', ),
+        '.js':( 'hydeengine.media_processors.TemplateProcessor',
+                'hydeengine.media_processors.YUICompressor', )
     } 
 }
 
@@ -76,17 +65,9 @@ FILTER = {
 }        
 
 
-#Processor Configuration
+# Processor Configuration
 
-# path for YUICompressor, or None if you don't
-# want to compress JS/CSS. Project homepage:
-# http://developer.yahoo.com/yui/compressor/
-YUI_COMPRESSOR = "./lib/yuicompressor-2.4.1.jar"
-#YUI_COMPRESSOR = None 
-
-# path for HSS, which is a preprocessor for CSS-like files (*.hss)
-# project page at http://ncannasse.fr/projects/hss
-#HSS_PATH = "./lib/hss-1.0-osx"
+YUI_COMPRESSOR = os.path.join(HYDE_FOLDER, 'lib', 'yuicompressor-2.4.1.jar')
 HSS_PATH = None # if you don't want to use HSS
 
 # Django settings
