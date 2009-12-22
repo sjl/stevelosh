@@ -1,3 +1,4 @@
+/* @override http://localhost:8080/media/css/base.css */
 * {
     margin: 0;
     padding: 0;
@@ -8,6 +9,11 @@ body {
     color: black;
     font-size: 1em;
     line-height: 2em;
+}
+
+div#main-wrap {
+    width: 60em;
+    margin: 0 auto;
 }
 
 h1 {font-size: 4em; line-height: 72px; font-weight: bold;}
@@ -41,52 +47,47 @@ li {
     list-style-position: inside;
 }
 
-#header {
-    height: 10em;
-}
 #header h1 {
-    margin: 0;
-    padding: 1em 0 0 0.5em;
-    line-height: 0;
+    line-height: 1.5em;
     font-size: 4em;
-    color: black;
+    font-weight: normal;
+    font-family: "Helvetica Neue Light", HelveticaNeue-Light, Arial, Helvetica, sans-serif;
 }
 #header h1:hover {
 	color: #cc0000;
 }
-#header a:visited {
-    font-style: normal;
-}
 
-#nav ul {
-    padding: 0;
-    margin: 0;
+#nav {
+    float: right;
+    width: 10em;
+    font-size: 1.5em;
+    line-height: 2em;
 }
 #nav ul li {
-    padding: 0;
     margin: 0;
-    display: inline;
     list-style: none;
-    padding: 0.5em;
-    margin-right: 5px;
-    background: black;
-    color: white;
-}
-#nav ul li:hover {
-    border-bottom: 5px solid #cc0000;
+    border-bottom: 1px solid #eee;
 }
 #nav a {
-    color: white;
     border: none;
     font-style: normal;
 }
 
-#content-header {
-    margin: 1em 0 0 0;
+#splash-info {
+    font-size: 1.5em;
+    line-height: 2em;
+    text-align: right;
+    color: #888;
+    font-family: "Helvetica Neue Light", HelveticaNeue-Light, Arial, Helvetica, sans-serif;
+}
+#splash-info ul li {
+    margin: 0;
+    list-style: none;
+    border-bottom: 1px solid #eee;
 }
 
 #content {
-    margin: 0 2em 2em 2em;
+	width: 42em;
 }
 
 ul#archives {
@@ -94,11 +95,6 @@ ul#archives {
 }
 ul#archives li {
     font-size: 1.5em;
-}
-
-#footer {
-    text-align: center;
-    font-size: 0.6em;
 }
 
 div.article {
