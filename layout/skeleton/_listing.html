@@ -3,7 +3,7 @@
 {% block content %}
     <div id="section-listing">
         <ol>
-            {% for node in page.node.walk %}
+            {% for node in page.node.walk reversed %}
                 {% include "skeleton/_innerlisting.html" %}
             {% endfor %}
         </ol>
