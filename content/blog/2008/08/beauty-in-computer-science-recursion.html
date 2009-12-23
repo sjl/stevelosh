@@ -1,0 +1,179 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Beauty in Computer Science"
+    created: 2008-08-29 15:30:38
+%}
+
+
+{% block article %}
+
+When I went to college, I majored in Computer Science. I haven't really
+written anything about this part of my life yet, so I figured this might be a
+good time to start.
+
+I decided to major in CS when I was in high school. I learned to program on my
+own and enjoyed the challenge of it. I also knew that programming jobs are
+fairly common and pay well enough that I wouldn't have to worrying about
+paying my rent. I wasn't artistic in high school, and CS seemed like a
+logical, sterile field that I felt I could do well in.
+
+During the years I spent at RIT I changed quite a bit. I think the most
+important, or at least the most obvious, change has been my becoming more
+artistic. Between dancing, playing bass and photography I've developed a
+creative side that I never thought I could. Has this led me away from Computer
+Science at all?
+
+No. While I became a programmer for practical reasons, I stayed one for
+entirely different reasons. Computer Science (and math in general) is
+beautiful. It took me years to slowly realize this, but now that I have I see
+that it's more beautiful than any dance, photograph of music I've ever
+encountered. This post is the first in a series of posts that I hope can
+communicate why I find CS beautiful, or at least point in the right direction.
+
+A Quick Primer on "Functions" for Non-Programmers
+---------
+
+I know that most (if not all) of the people that read my website don't
+program. I'm going to try to avoid using extremely technical, computer sciency
+terms in these posts, but there are at least a few basic things that I need to
+explain. The first is what a function is.
+
+Think of a function as a set of instructions. A recipe is a decent example.
+Imagine you have a piece of paper with the following written on it:
+
+1. Heat a frying pan.
+2. Crack two eggs into a bowl.
+3. Mix the eggs.
+4. Pour the mixture into the hot frying pan.
+5. Stir the mixture until it is solid.
+6. Take the mixture out of the pan.
+
+That's the simplest example of a function: a list of instructions that you
+follow in the order you get them. The next idea is a "parameter." That recipe
+only told us how to make food for one person, wouldn't it be nice to know how
+to make enough for two or more? Imagine the paper now says this:
+
+1. Heat a frying pan.
+2. Crack NUMBER_OF_PEOPLE * 2 eggs into a bowl.
+3. Mix the eggs.
+4. Pour the mixture into the hot frying pan.
+5. Stir the mixture until it is solid.
+6. Take the mixture out of the pan.
+
+Now we still have a single piece of paper, but by just substituting in the
+number of people we're cooking for we have instructions for making any amount
+of food. If we have three people, NUMBER_OF_PEOPLE * 2 eggs becomes 3 * 2
+eggs, or 6 eggs.
+
+The last important concept is "calling." Once you have one function, you can
+use it in other functions, like so:
+
+1. Put a plate on the table.
+2. Refer to the other piece of paper and do what it says, for 1 person.
+3. Put the result of that on the plate.
+4. Eat it.
+
+See how we did a few things, then referred to the other piece of paper instead
+of repeating ourselves? This lets you make small tasks and put them together
+to form bigger ones. That's enough of a primer for now; if something's not
+clear please comment and let me know.
+
+What's Recursion?
+---------------
+
+Recursion is a term that means, basically, a function calls (or refers to)
+itself. This concept can be hard to grasp, but once you do it slowly turns
+into something breathtakingly beautiful.
+
+Here's a simple example: imagine you're 10 meters away from a doorway and you
+want to walk out of it. A function that could help you do this might be: "Walk
+11 meters." That's pretty simple.
+
+What if we want to be able to walk out of a doorway that's any number of
+meters ahead of us? We could say: "Walk DISTANCE + 1 meters." This works, but
+requires that you know how many meters away the door is before you even start
+walking. What if we don't?
+
+How about we just do a little at a time and see how it goes? "Walk 2 meters.
+If you're out of the doorway, stop. Otherwise, repeat this function." If the
+doorway is 3 meters in front of us, we'll walk 2, check if we're out (we're
+not), and repeat. We'll walk 2, check if we're out (we are), and stop. This
+function is recursive; it refers back to itself.
+
+Why is it beautiful?
+--------------
+
+The beauty of recursion, for me, is that you can build infinitely large or
+complex tasks or structures using one or two tiny, simple parts. I'll give an
+example of this because I think it's the easiest way for me to show it.
+
+Imagine that you only know three things: how to add 1 to a number, how to
+subtract 1 from a number, and what 0 means. Now imagine that you want to be
+able to add any two (positive) numbers (integers) together. How could you do
+this? Here's a function:
+
+    function add(x, y):
+        if y = 0:
+            return x
+        otherwise:
+            return add( x+1, y-1 )
+
+Don't let the new notation scare you; it's the same kind of function as
+always. In English, it says "This function is named 'add' and needs two
+parameters (x and y). Step one is to see if y is 0. If it is, the result is x.
+If it's not, then the result is whatever you get from performing this function
+with the following parameters: x+1, y-1."
+
+It might not be immediately obvious that this will actually perform the
+addition we're used to, so let's try it. First, let's try adding 1 + 0. In
+that case, we check if y is 0. It is, so the result is x, or 1. So far, so
+good.
+
+Let's try 2 + 1. Is y equal to 0? No, so we need to call add with some new
+parameters. 2+1 is 3, 1-0 is 0, so the result is now whatever we get from
+add(3, 0). We start following the instructions of add. Does y equal 0? Yes, so
+the result is 3, which is what we expect.
+
+One more for good measure: 9 + 2. First we check if y is 0. It's not, so the
+result is then add(9+1, 2-1), or add(10,1). Start over. Is y zero? Nope, so
+the result is now add(11, 0). Start over. Is y zero? Yes, so the result is x,
+or 11.
+
+So What?
+--------
+
+This will work for any x and any y (as long as they're both positive, negative
+numbers make it just a tiny bit more complicated). This might not seem
+impressive, but think about what we've done. We've created something that can
+add any two numbers together. There are an infinite amount of numbers. This
+tiny function that we've made from the simplest of parts can generate more
+results than there are people on this planet. Or atoms in the universe. To me,
+this is amazing. Not "magic trick" amazing or "miracle" amazing but "I can
+understand and create something that can describe more knowledge than the
+whole of humanity couldn't hope to describe in a thousand lifetimes" amazing.
+
+Computer Science (and math in general) is full of this kind of beauty. I've
+tried to find parallels in my other interests; the closest I've found is the
+photograph [Pale Blue Dot][]. It's a photo taken by the Voyager 1 space probe
+showing an immense amount of space with the tiniest blue speck in the middle,
+which is Earth.
+
+When you view the photograph, it's a mostly black field with a little fleck of
+blue pigment. Not terribly complicated or interesting, until you realize that
+that blue fleck is a representation of the planet that billions of people have
+lived and died on. A smidgen of blue ink, in the right context, represents
+every place a human has ever called "home."
+
+Our addition function might not seems nearly as nifty as this, but it actually
+represents more than even this photo ever can. There are a finite number of
+people on Earth, but the addition function can add more numbers that that.
+Even if you count every second in the life of every person that has ever lived
+on our planet, the addition function can create more numbers than that.
+
+This awes me more than any myth, photograph, story, song, legend or dance ever
+has. It's the reason I stayed a Computer Scientist.
+
+[Pale Blue Dot]: http://en.wikipedia.org/wiki/Pale_Blue_Dot
+
+{% endblock %}
