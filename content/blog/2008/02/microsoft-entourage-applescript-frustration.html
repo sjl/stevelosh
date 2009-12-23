@@ -1,0 +1,44 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Entourage + Applescript = Frustration"
+    created: 2008-02-21 15:25:45
+%}
+
+
+{% block article %}
+
+I've been working on a project lately to automate the setup of some rules and
+schedules in Microsoft Entourage. This isn't the easiest thing in the world
+because Entourage doesn't really support AppleScript for creating rules or
+schedules (though it does an admirable job in a lot of other areas).
+
+We've resorted to GUI scripting to get the job done. This basically means
+we're telling our script to click button X, wait a bit, put "abc" in text
+field Y, click button Z, etc. This is painful, fragile and slow but it does
+what we need in all but one case.
+
+That case is selecting a folder. The folder list dialog that pops up doesn't
+seem to use any of Apple's UI components which makes GUI scripting it nearly
+impossible. Only "nearly" though, because there's a way to get around it: the
+keyboard. AppleScript can type into a window by sending a series of key codes.
+You can select something from the folder list by typing its name, which means
+that as long as you know the name (we do) you can select it. Almost.
+
+There's one more snag: selection by typing will only ever select the first
+item in the list. This means that if you want to select "Inbox" and both the
+"On My Computer" list and the "youremail@server.com" list are open, you can
+only get the first Inbox. Oh, and good luck predicting which one will show up
+first. It seemed to be different each time I opened the window.
+
+Once again the keyboard comes to our rescue. A simple (and excruciatingly
+ugly) fix is to make sure that the only account listing that's open is the one
+we want. How can we do that? Send an up arrow key code 50 times to move to the
+beginning of the list, then left and down codes 50 times. This collapses the
+entire tree. Then just type the name of the account to select it, send the
+right arrow code to expand the tree, and type the folder name to select it.
+
+It's painful, but it works. If anyone has a better solution please let me know
+so I can rip this monstrosity out of my code and try to forget about it.
+
+{% endblock %}
