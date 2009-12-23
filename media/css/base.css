@@ -86,11 +86,27 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
 	width: 42em;
 }
 
-ul#archives {
+div#section-listing {
+    font-size: 1.5em;
+    line-height: 2em;
+    color: #888;
+}
+div#section-listing ol {
     list-style: none;
 }
-ul#archives li {
-    font-size: 1.5em;
+div#section-listing ol li {
+    border-bottom: 1px solid #eee;
+}
+div#section-listing ol a {
+    color: #111;
+    font-weight: bold;
+}
+div#section-listing ol a:hover {
+    color: #e50053;
+    text-decoration: none;
+}
+div#section-listing ol li:last-child {
+    border-bottom: none;
 }
 
 div.article {
