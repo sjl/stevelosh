@@ -5,11 +5,11 @@
     
     <div id="leaf-content">
         {% filter typogrify %}
-            {% markdown %}
-                {% article %}
-                    {% block article %}{% endblock %}
-                {% endarticle %}
-            {% endmarkdown %}
+            {% article %}
+                {% markdown %}
+                        {% block article %}{% endblock %}
+                {% endmarkdown %}
+            {% endarticle %}
         {% endfilter %}
     </div>
 {% endblock %}
