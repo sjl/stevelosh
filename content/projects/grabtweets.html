@@ -1,0 +1,77 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "grabtweets"
+    snip: "A simple tool for backing up your tweets."
+    created: 2009-09-12 11:02:46
+%}
+
+{% block article %}
+
+`grabtweets` is a simple tool to backup your tweets.
+
+The code is in a [Mercurial repository][repository] on [BitBucket][].
+
+[BitBucket]: http://bitbucket.org/
+
+[TOC]
+
+Installing
+----------
+
+`grabtweets` requires [Python][] 2.6 or later.
+
+To install it, you can [download][] the latest version, or clone the Mercurial
+repository:
+
+    hg clone http://bitbucket.org/sjl/grabtweets/
+
+You can put it anywhere you like.
+
+Using
+-----
+
+`grabtweets` can back up your tweets and print tweets that it has already
+archived.
+
+### Backing Up Tweets
+
+To back up your tweets, run `grabtweets` like this:
+
+    $ grabtweets.py -u USERNAME FILE
+
+`grabtweets` will pull down the 200 newest tweets from USERNAME and store them in FILE.
+
+You probably have more than 200 tweets. However, Twitter will only let you
+pull down 200 at a time and hitting the server too fast will result in Twitter
+cutting off your access for a while.
+
+To deal with this, it's best to set up `grabtweets` as a cron/launchd job that
+runs every couple of hours. Each time it runs, it will pull down the newest
+200 tweets, plus 200 older tweets if there are any available.
+
+It will take about `NUMBER_OF_TWEETS_YOU_HAVE/200` runs to finish archiving
+your tweets. Just set it up and forget about it.
+
+### Printing Backed Up Tweets
+
+To print the tweets that `grabtweets` has already backed up, run it like this:
+
+    $ grabtweets.py -p FILE
+
+[Python]: http://python.org/
+[download]: http://bitbucket.org/sjl/grabtweets/get/tip.zip
+
+Problems, Contributing, etc
+---------------------------
+
+`grabtweets` was hacked together in an hour. There are probably bugs. If you
+find any, go ahead and create an issue in the [issue tracker][].
+
+Want to fix something or add a feature? Great! Fork the [repository][] and
+send me a pull request.
+
+[issue tracker]: http://bitbucket.org/sjl/grabtweets/issues/?status=new&status=open
+[repository]: http://bitbucket.org/sjl/grabtweets/
+
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "hgtab"
+    snip: "Smarter tab completion for Mercurial in bash."
+    created: 2009-03-10 20:22:44
+%}
+
+{% block article %}
+
+hgtab was created to provide smarter tab completion for Mercurial in bash.
+
+**UPDATE**: Apparently there's already [tab completion in
+Mercurial](http://www.selenic.com/hg/file/11efa41037e2/contrib/bash_completion)!
+It's way better than this, *use that*! It should probably be better documented
+though &ndash; I posted this yesterday and it's already the top four results
+for "mercurial tab completion" on Google...
+
+If I've missed something you'd really like tab completed, post an issue on the
+issue tracker and I'll do my best to implement it. My bash scripting skills
+are almost non-existent, so if you improve this (or port it to another shell)
+feel free to send a pull request!
+
+You can download hgtab from its [BitBucket
+repository](http://source.stevelosh.com/hgtab/).
+
+## Installing
+
+All you need to do to use hgtab is source it. There are three ways to do this,
+ranging from easy and ugly to slightly less easy and more elegant.
+
+### OPTION 1: Easy, Ugly
+
+Copy the contents of hgtab-bash.sh into your ~/.bashrc file.
+
+### OPTION 2: Harder, Less Ugly
+
+Download hgtab-bash.sh and place the following line somewhere in your
+~/.bashrc file:
+
+    source ~/path/to/hgtab/hgtab-bash.sh
+
+### OPTION 3: Hardest, Elegant
+
+Clone this repository somewhere with this command:
+
+    hg clone http://bitbucket.org/sjl/hgtab/
+
+Add the following line to your ~/.bashrc file:
+
+    source ~/path/to/hgtab/hgtab-bash.sh
+
+If you use this method you can update the file by pulling down the changes
+from this repository:
+
+    cd ~/path/to/hgtab
+    hg pull
+
+## Using
+
+Once hgtab is sourced it'll add some nifty tab completion features in your
+shell. For example, you can tab complete Mercurial commands:
+
+    #!console
+    sjl at grendel in test $  hg re<tab(s)>
+    recover  remove   rename   resolve  revert
+    sjl at grendel in test $  hg re
+
+When you're using a command that wants a revision as a parameter, hitting tab
+will complete on tags (and bookmarks) and branches.
+
+    #!console
+    sjl at grendel in test $  hg branches
+    blue                          20:f05ca6eb51a1
+    red                           16:8262f0345f41 (inactive)
+    default                       15:67f959b8deb8 (inactive)
+    sjl at grendel in test $  hg book
+     * dev-1.0                   20:f05ca6eb51a1
+    sjl at grendel in test $  hg tags
+    tip                               20:f05ca6eb51a1
+    dev-1.0                           20:f05ca6eb51a1
+    beta                              18:f3ab9bf730f7
+    alpha                             17:ca802019f04f
+    
+    sjl at grendel in test $  hg update <tab(s)>
+    alpha    beta     blue     default  dev-1.0  red      tip
+    sjl at grendel in test $  hg update b<tab(s)>
+    beta  blue  
+    sjl at grendel in test $  hg update b
+    
+    sjl at grendel in test $  hg diff -r b<tab(s)>
+    beta  blue  
+    sjl at grendel in test $  hg diff -r b
+
+It will also complete remote paths when you're pushing or pulling.
+
+    #!console
+    sjl at grendel in test $  hg paths
+    alice-dev = http://alice-dev
+    alice-stable = http://alice-stable
+    bob = http://bob
+    default = ssh://hg@bitbucket.org/sjl/hgtag/
+    
+    sjl at grendel in test $  hg push <tab(s)>
+    alice-dev     alice-stable  bob           default
+    sjl at grendel in test $  hg push
+    
+    sjl at grendel in test $  hg pull alice-<tab(s)>
+    alice-dev     alice-stable  
+    sjl at grendel in test $  hg pull alice-
+
+Enjoy!
+
+{% endblock %}

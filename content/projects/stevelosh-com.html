@@ -1,0 +1,101 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "stevelosh.com"
+    snip: "This website."
+    created: 2009-01-11 15:40:26
+%}
+
+{% block article %}
+
+For a long time I used [Squarespace][] to create and host my personal website.
+It's a great service, and I highly recommend it to anyone that needs a simple,
+easy, beautiful site.
+
+Recently, however, I've started learning more and more about web design and I
+decided to completely revamp my website and build it myself from the ground
+up. This is the result.
+
+Design
+------
+
+I like simplicity. In all areas of my life (music, dancing, photography,
+programming, design, etc) I'm striving to make everything I do as simple,
+clean, and elegant as possible. That's why I went with such a minimal design
+for the site.
+
+I haven't used any graphics in the layout for a few reasons. First, I'm not
+very good at making them. Second, I want the site to load quickly, even on
+phones, and scale gracefully for accessibility. Third, I wanted the interface
+to be as uncluttered as possible so the content of the site would be front and
+center.
+
+I also stuck to a minimum of color. The only items that have any color on the
+site are any photographs that I post and the links. I did this because I'm not
+a graphic designer and so I haven't studied color enough to know how to use it
+well.
+
+One last thing I tried to keep in mind was sticking to a baseline rhythm for
+some elements of the site. The home page, blog entry list, and project list
+all line up with the links in the right sidebar. I think it gives the layout a
+more stable feel.
+
+Implementation
+------------
+
+This website was written in [Python][] using the [Django][] framework. Django
+makes it really easy to write useful web apps quickly and cleanly. I love it.
+
+[Blueprint][] kept me sane while writing the CSS. Grid layouts are no longer a
+nightmare!
+
+I rely pretty heavily on [Markdown][] throughout the site. The blog entries
+and static pages are all written in Markdown and parsed to XHTML later. This
+might not be the fastest way to do things but processor time is cheap and my
+time isn't.
+
+The Markdown-based editor and preview for commenting is the wonderful [WMD][].
+It's clean, simple, and does exactly what I want it to do. Most of the other
+Javascript magic comes from [jQuery][]. I use the [jQuery form validation
+plugin][form validation] in a couple of places to make checking input easier.
+
+For site statistics I'm relying on the fantastic [Mint][]. It's got a gorgeous
+interface and is absurdly simple to install. Plus it's hosted on my own host
+so I have control. It's also just a one time fee, unlike some other site stat
+packages that charge monthly.
+
+My development process is pretty simple. I use [TextMate][] to edit the code
+and a [Mercurial][] repository to store it and protect against accidents. To
+deploy, I push my local changes to a private repository on [Bitbucket.org][],
+and then use [Fabric][] to pull those changes down to the server and restart
+if necessary.
+
+The site is hosted by [WebFaction][]. If you're looking for a web host for
+Django or Rails sites (or any other kind, really) you should definitely
+consider them. Not only do they make installing Django or Rails very easy,
+they're absurdly cheap: 10gb disk space and 600gb/month bandwidth is less than
+$10 a month. I'd recommend them to anyone.
+
+It's Open Source, Too!
+----------------------
+
+Want to see what makes this site tick? Want to make it tick more smoothly?
+Feel free to head over to <http://bitbucket.org/sjl/stevelosh> and take a look
+at the code.
+
+[Squarespace]: http://www.squarespace.com/
+[Python]: http://python.org
+[Django]: http://djangoproject.com
+[Blueprint]: http://www.blueprintcss.org/
+[Markdown]: http://daringfireball.net/projects/markdown/
+[WMD]: http://wmd-editor.com/
+[jQuery]: http://jquery.com
+[form validation]: http://bassistance.de/jquery-plugins/jquery-plugin-validation/
+[TextMate]: http://macromates.com/
+[Mercurial]: http://www.selenic.com/mercurial/wiki/
+[Bitbucket.org]: http://www.bitbucket.org/
+[Fabric]: http://www.nongnu.org/fab/
+[Mint]: http://haveamint.com/
+[WebFaction]: http://www.webfaction.com/signup?affiliate=sjl
+
+{% endblock %}

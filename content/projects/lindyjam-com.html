@@ -1,0 +1,152 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "lindyjam.com"
+    snip: "A page for a local weekly swing dance event (and more)."
+    created: 2009-01-21 18:28:35
+%}
+
+{% block article %}
+
+A few days ago I released the new [Lindy Jam][] website. Lindy Jam is a weekly
+swing dance in Rochester, NY. I wanted to create a site that was useful for
+those that attend the event but also more than just a "here's when it is and
+how to get there" page.
+
+[Lindy Jam]: http://lindyjam.com/
+
+![lindyjam.com screenshot](/site-media/storage/projects/2009-01-21-lindyjam/lindyjamcom-splash.png "Screenshot of the Lindy Jam site.")
+
+Design
+------
+
+Let me preface this section by saying: "I'm not a graphic designer." Yes, I
+appreciate good design and typography, but I simply haven't studied it as much
+as I'd like. That might change in the future, but for now I'll make due with
+the knowledge I have.
+
+There are very few images used on the site; the background stripes and the
+splash page photo(s) comprise all of them. I did this for a few reasons:
+
+* It saved me time.
+* The site loads faster.
+* The site scales to larger or smaller sizes very gracefully.
+
+I tried to keep things as clean as possible while still being useful. Comments
+and error messages are displayed immediately, without reloading the page. This
+makes it easier to see what you've done (or what went wrong) right off the
+bat.
+
+I'm not 100% pleased with how it came out, but it will do until I learn more
+about design. If you have advice or suggestions about the design, please
+[email me][]!
+
+[email me]: mailto:steve@stevelosh.com
+
+Pages
+-----
+
+### About
+
+The most important part of the site is probably the [About][] page, because it
+tells people when and where the event happens. It's as simple and to the point
+as I could make it so people can get the information they're looking for right
+away. It's linked right from the splash page so it's easier to find.
+
+[About]: http://lindyjam.com/about/
+
+### DJ Schedule
+
+Another important piece of the site is the [DJ Schedule][] page. Every week
+someone can sign up to DJ the event. They get in for free, and we get to hear
+a wider variety of music. The schedule page makes it easy to sign up for a
+week in the near future.
+
+When you sign up to DJ you can also enter your email address or cell phone
+number (or both) if you'd like to be reminded. I know that sometimes I've
+almost forgotten to bring my laptop (and arrive right on time), so I hope that
+this feature will be useful to other DJs too.
+
+[DJ Schedule]: http://lindyjam.com/schedule/
+
+### Blog
+
+One thing I believe our Lindy Hop scene lacks is a place for people to write
+thoughtful, well-crafted articles about the scene. I hope the Lindy Jam
+[Blog][] can become such a place.
+
+It's a fairly simple blog; entries and comments are written in [Markdown][] so
+authors don't need to know HTML to make their articles look nice. Anyone can
+comment without signing up for anything, so I hope people will take advantage
+of that and discuss the articles.
+
+[Blog]: http://lindyjam.com/blog/
+[Markdown]: http://daringfireball.net/projects/markdown/
+
+### Links
+
+Most sites like this have a list of links to other sites that their viewers
+might be interested in, and this site is no different. The [Links][] page is a
+simple, clean list of links that anyone can contribute to. If someone knows of
+a great page we haven't listed, they can submit it and it will appear on the
+page as soon as it's been approved.
+
+[Links]: http://lindyjam.com/links/
+
+### Quotes
+
+Along the top of every page is a random quote. Right now there aren't very
+many, but I hope that people will submit some more by going to the [Quotes][]
+page or by text messaging them to <quotes@lindyjam.com>.
+
+I think the quotes add a more personal touch and allowing anyone to add one
+can really make it a "community" site.
+
+[Quotes]: http://lindyjam.com/quotes/
+
+### RSS
+
+We nerds love our [RSS][] feeds, so I've implemented a couple of different
+feeds that people can use to stay up to date.
+
+[RSS]: http://lindyjam.com/rss/
+
+Implementation
+--------------
+
+The site was built with [Django][] because it makes it very, very easy to get
+a dynamic site like this up and running quickly. I use [Fabric][] to deploy it
+(check out [this
+entry](http://stevelosh.com/blog/entry/2009/1/15/deploying-site-fabric-and-mercurial/)
+on my personal blog for more information about that). All of the fancy effects
+use [jQuery][] so I can avoid programming them from scratch in javascript (and
+tearing my hair out).
+
+One thing I would do differently if I were to design the site all over again
+is use a CSS framework like [Blueprint][]. I used Blueprint for my personal
+site and it made things far, far easier than writing the layout in CSS from
+scratch. I definitely recommend it if you want to keep your sanity.
+
+The site itself is hosted on [WebFaction][]. I use them to host my own site
+too and they're fantastic. Setting up a Django or Rails (or any other type) of
+site is quick and easy, and they're very cheap. If you're looking for a web
+host you should check them out.
+
+The site is open source if you'd like to take a look at what makes it tick.
+You can browse or download the code from the [Mercurial repository][] on
+BitBucket.
+
+[Django]: http://djangoproject.com/
+[Fabric]: http://www.nongnu.org/fab/
+[jQuery]: http://jquery.com/
+[Blueprint]: http://www.blueprintcss.org/
+[WebFaction]: http://www.webfaction.com/signup?affiliate=sjl
+[Mercurial repository]: http://bitbucket.org/sjl/lindyjam/
+
+Feedback
+--------
+
+If you have any comments or questions about the site please let me know! You
+can post them here or [email me][].
+
+{% endblock %}

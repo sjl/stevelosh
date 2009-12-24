@@ -1,0 +1,167 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "hg-prompt"
+    snip: "A Mercurial extension for adding repository info to your shell prompt."
+    created: 2009-06-19 22:25:17
+%}
+
+{% block article %}
+
+hg-prompt adds an 'hg prompt' command to Mercurial for viewing repository
+information. It's designed to be used in a shell prompt. You can grab the code
+from [the repository on BitBucket](http://bitbucket.org/sjl/hg-prompt/).
+
+Here's what it looks like:
+
+![My bash prompt while using hg-prompt.](http://stevelosh.com/site-media/storage/projects/2009-06-19-hg-prompt/hg-prompt.png "My bash prompt while using hg-prompt.")
+
+[TOC]
+
+Requirements
+------------
+
+hg-prompt requires Python 2.5+ and (obviously) Mercurial.
+
+Installing
+----------
+
+Clone the repository:
+
+    :::text
+    $ hg clone http://bitbucket.org/sjl/hg-prompt/
+
+Edit the `[extensions]` section in your `~/.hgrc` file:
+
+    :::text
+    [extensions]
+    prompt = (path to)/hg-prompt/prompt.py
+
+Using the Command
+-----------------
+
+The `hg prompt` command takes a single string as an argument and outputs it.
+Here's a simple (and useless) example:
+
+    :::text
+    $ hg prompt "test"
+    test
+
+Keywords in curly braces can be used to output repository information:
+
+    :::text
+    $ hg prompt "currently on {branch}"
+    currently on default
+
+Keywords also have an extended form:
+
+    :::text
+    {optional text{branch}more optional text}
+
+This form will output the text and the expanded keyword **only** if the
+keyword successfully expands. This can be useful for displaying extra text
+only if it's applicable:
+
+    :::text
+    $ hg prompt "currently on {branch} and at {bookmark}"
+    currently on branch default and at 
+    
+    $ hg prompt "currently on {branch} {and at {bookmark}}"
+    currently on branch default 
+    
+    $ hg bookmark my-book
+    
+    $ hg prompt "currently on {branch} {and at {bookmark}}"
+    currently on branch default and at my-book
+
+Available Keywords
+------------------
+
+There a number of keywords available. If you have any suggestions for more
+please let me know.
+
+* **bookmark:** the current bookmark (requires the [bookmarks][] extension)
+* **branch:** the current branch
+* **node:** the (full) changeset hash of the current parent
+* **node|short:** a short form of the changeset hash of the current parent
+* **node|merge:** the (full) changeset hash of the changeset you're merging with if you're currently merging, otherwise nothing.
+* **node|merge|short:** a short form of the changeset hash of the changeset you're merging with if you're currently merging, otherwise nothing
+* **patch:** the topmost currently-applied patch (requires the mq extension)
+* **patch|count:** the number of patches in the queue
+* **patch|applied:** the number of currently applied patches
+* **patch|unapplied:** the number of unapplied patches in the queue
+* **rev:** the repository-local changeset number of the current parent
+* **rev|merge:** the repository-local changeset number of the changeset you're merging with if you're currently merging, otherwise nothing
+* **root:** the full path to the root of the current repository, without a trailing slash
+* **root|basename:** the directory name of the root of the current repository.  For example, if the repository is in `/home/u/myrepo` then this keyword would expand to `myrepo`.
+* **status:**  `!` if the repository has any changed/added/removed files, otherwise `?` if it has any untracked (but not ignored) files, otherwise nothing
+* **status|modified:** `!` if the current repository contains files that have been modified, added, removed, or deleted, otherwise nothing
+* **status|unknown:** `?` if the current repository contains untracked files, otherwise nothing
+* **status|modified|unknown:** `!` if the current repository contains files that have been modified, added, removed, or deleted, *and* `?` if it contains untracked (and not ignored) files, otherwise nothing
+* **tags:** the tags of the current parent, separated by a space
+* **tags|SEP:** the tags of the current parent, separated by `SEP`
+* **task:** the current task (requires the [tasks][] extension)
+* **tip:** the repository-local changeset number of the current tip
+* **tip|node:** the (full) changeset hash of the current tip
+* **tip|node|short:** a short form of the changeset hash of the current tip
+* **update:** `^` if the current parent is not the tip of the current branch, otherwise nothing.  In effect, this lets you see if running `hg update` would do something.
+
+[bookmarks]: http://mercurial.selenic.com/wiki/BookmarksExtension
+[tasks]: http://bitbucket.org/alu/hgtasks/wiki/Home
+
+Remote Status Keywords
+----------------------
+
+There are several keywords available to monitor the status of remote
+repositories. Because this can be an expensive operation if the remote
+repository is across a network, they cache their results in
+`.hg/prompt/cache/`. The cache is updated roughly every fifteen minutes.
+
+* **incoming:** this keyword prints nothing on its own.  If the default path contains incoming changesets the extra text will be expanded. For example: `{incoming changes{incoming}}` will expand to `incoming changes` if there are changes, or nothing otherwise.
+* **incoming|count:** the number of incoming changesets if greater than 0
+* **outgoing:** this keyword prints nothing on its own.  If the current repository contains outgoing changesets (to default) the extra text will be expanded. For example: `{outgoing changes{outgoing}}` will expand to `outgoing changes` if there are changes, or nothing otherwise.
+* **outgoing|count:** the number of outgoing changesets if greater than 0
+
+Putting it in a Bash Prompt
+---------------------------
+
+To put it in your bash prompt, edit your `~/.bashrc` file to include something
+like this:
+
+    #!bash
+    hg_ps1() {
+        hg prompt "{ on {branch}}{ at {bookmark}}{status}" 2> /dev/null
+    }
+    
+    export PS1='\u at \h in \w$(hg_ps1)\n$ '
+
+`source ~/.bashrc` after to test it out. Make sure you're in a Mercurial
+repository or you won't see anything. This little prompt will give you
+something like this:
+
+    steve at myhost in ~/src/hg-prompt on default at feature-bookmark?
+    $
+
+How about something a little more interesting?
+
+    hg_ps1() {
+        hg prompt "{[+{incoming|count}]-->}{root|basename}{/{branch}}{-->[+{outgoing|count}]}{ at {bookmark}}{status}" 2> /dev/null
+    }
+    
+    export PS1='$(hg_ps1)\n\u at \h in \w\n$ '
+
+And the result (this example assumes one incoming changeset and two outgoing):
+
+    [+1]-->hg-prompt/default-->[+2] at feature-bookmark
+    steve at myhost in ~/src/hg-prompt
+    $
+
+Questions, Comments, Suggestions
+--------------------------------
+
+The code was kind of thrown together in one night after I got tired of
+chaining three or four hg runs together to get what I wanted. I'm sure it's
+not perfect, so if you've got a way to improve it please [add an
+issue](http://bitbucket.org/sjl/hg-prompt/issues/) and let me know.
+
+{% endblock %}

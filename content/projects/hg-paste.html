@@ -1,0 +1,73 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "hg-paste"
+    snip: "Send diffs from Mercurial to various pastebin websites."
+    created: 2009-09-16 17:52:55
+%}
+
+{% block article %}
+
+hg-paste adds an `hg paste` command to Mercurial which can send diffs to
+various pastebin websites for easy sharing. You can grab the code from the
+[repository][] on BitBucket.
+
+It was inspired by [Pocoo][]'s [hgpaste][pocoopaste] extension, but is
+designed to work with public pastebin websites instead of private
+installations of [LodgeIt][].
+
+[Pocoo]: http://www.pocoo.org/
+[pocoopaste]: http://dev.pocoo.org/hg/hgpaste/
+[LodgeIt]: http://dev.pocoo.org/projects/lodgeit/
+
+[TOC]
+
+Installing
+----------
+
+Clone the repository:
+
+    hg clone http://bitbucket.org/sjl/hg-paste/
+
+Edit the `[extensions]` section in your `~/.hgrc` file:
+
+    [extensions]
+    paste = (path to)/hg-paste/paste.py
+
+Using the Command
+-----------------
+
+To paste a diff of all uncommitted changes in the working directory:
+
+    hg paste
+
+To paste the changes that revision `REV` made:
+
+    hg paste -r REV
+
+To paste the changes between revisions `REV1` and `REV2`:
+
+    hg paste -r REV1:REV2
+
+If any files are specified only those files will be included in the diffs.
+
+Several options can be used to specify more metadata about the paste:
+
+    hg paste --user Steve --title 'Progress on feature X' --keep
+
+The pastebin website to use can be specified with `--dest`. Currently only
+[dpaste.com](http://dpaste.com/) and [dpaste.org](http://dpaste.org) are
+supported.
+
+Questions, Comments, Suggestions
+--------------------------------
+
+If you find any bugs, please create an issue in the [issue tracker][issues].
+
+If you want to contribute (support for more pastebin websites would be great),
+fork the [repository][] on BitBucket and send a pull request.
+
+[issues]: http://bitbucket.org/sjl/hg-paste/issues/?status=new&status=open
+[repository]: http://bitbucket.org/sjl/hg-paste
+
+{% endblock %}
