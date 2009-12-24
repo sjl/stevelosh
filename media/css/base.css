@@ -29,12 +29,16 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     text-decoration: none;
 }
 
+#header {
+    margin-top: 1.5em;
+    margin-bottom: 3em;
+}
 #header h1 {
 	letter-spacing: -3px;
     font-size: 3.5em;
-    margin-bottom: 0.2em;
     font-weight: normal;
     font-family: "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
+    margin-bottom: 0em;
 }
 #header span.page-title {
     color: #666;
@@ -44,7 +48,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
 #nav {
     float: right;
     width: 10em;
-    font-size: 1.25em;
+    font-size: 1.5em;
     font-weight: bold;
     line-height: 2em;
 }
@@ -66,7 +70,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
 }
 
 #splash-info {
-    font-size: 1.25em;
+    font-size: 1.5em;
     line-height: 2em;
     text-align: right;
     color: #888;
@@ -82,11 +86,11 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
 }
 
 #content {
-	width: 45em;
+	width: 42em;
 }
 
 div#section-listing {
-    font-size: 1.25em;
+    font-size: 1.5em;
     font-weight: bold;
     line-height: 2em;
     color: #888;
@@ -108,7 +112,7 @@ div#section-listing ol li:last-child {
     border-bottom: none;
 }
 div#section-listing ol li span.snip {
-    font-size: 0.75em;
+    font-size: 0.65em;
     line-height: 1em;
     margin-left: 0.5em;
     font-weight: normal;
