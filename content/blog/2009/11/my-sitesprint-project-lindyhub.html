@@ -1,0 +1,196 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "My SiteSprint Project: LindyHub"
+    snip: "I want to make something awesome for dancers."
+    created: 2009-11-16 19:15:07
+%}
+
+{% block article %}
+
+If you're a web designer and/or developer, you might have heard of
+[SiteSprint][]. From the SiteSprint page:
+
+>What is the Site Sprint?  
+>A challenge to do something about our personal websites. If you were looking 
+>for a reason to rework an existing site or launch a new one, here it is.
+
+The event has a couple of rules:
+
+>The Rules  
+>1. Launch by 12/15  
+>2. Document your process  
+>3. On launch, share what you did and how you did it
+
+I've decided to join in and finish up a pet project of mine that I've been
+working on (very sporadically) for the past six months or so: [LindyHub][]
+
+[SiteSprint]: http://sitesprint.info/
+[LindyHub]: http://lindyhub.com/
+
+[TOC]
+
+Preface: About Swing Dancing
+----------------------------
+
+If you're a dancer, go ahead and skip to the next section. This is for the
+programmers and designers that might not have heard of Lindy Hop.
+
+[Lindy Hop][] is a form of swing dancing. I've been doing it for six years and
+love it.
+
+Part of the Lindy Hop culture consists of "exchanges" and "workshop weekends".
+The general idea is that a group of dancers will host one of these events on a
+weekend. They'll hire DJs or bands, and teachers if they're going to have
+classes, and plan out a whole weekend of awesomeness.
+
+Dancers from far and wide will travel to these events to meet and dance with
+new people (and old friends).
+
+If you want more background on dancing post a comment and I'll gladly explain
+more, but this in-a-nutshell explanation should be enough for you to
+understand the rest of this entry.
+
+[Lindy Hop]: http://en.wikipedia.org/wiki/Lindy_hop
+
+The Problem
+-----------
+
+LindyHub is a project I've been working on for about six months off and on in
+my spare time and it was rolling around in my head before that.
+
+Over the last few years or so I've been getting back into web development and
+design. At the beginning of this year I started to notice a trend: most
+websites for Lindy Hop and blues events are very basic and unpolished. Some of
+the things I've noticed about almost every event site:
+
+* They have a form for you to register for the event, but the form almost never has any nice inline validation of your input.
+* Every site's form is different -- you have to read every single one carefully to see exactly what they want.
+* You end up entering the same information every single time for every event: name, phone number, email, etc.
+* Housing is a toss up.  Sometimes they have a place for it in the registration form, other times they just say "Email aaa@bbb.com if you need housing."  That's a lot of emails for the housing coordinator to sort through and quite often it can become a mess.
+* Some of them list addresses for each venue, which is great for those of us that have GPSes.  Sometimes they just give driving directions to and from each one, which is terrible if you just want to type each one into your GPS or print off directions from Google Maps before you go.
+* Only one event that I've gone to ([Blues Muse][] in Philly) has had a "Who's Coming" list so you could see who else was going to the event (you could choose whether or not to let them show your name when you registered). Sometimes you can figure this out from Facebook event pages, but that's pretty unreliable.
+
+There are other things, but those are the big ones.
+
+Now, I completely understand why people don't add those features to their
+event sites. It doesn't make sense to spend 10 hours adding cool features that
+are nice to have but not really necessary if your website is only going to be
+used for a single event. Those 10 hours could be spent promoting your event
+and getting more people to come which is better for everyone.
+
+Around the time I was noticing these things I was also starting to get back
+into contributing to open source projects. Two of the big project hosting
+sites nowadays are [BitBucket][] and [GitHub][]. I noticed how they both make
+starting a new project almost trivially easy -- you sign up for an account and
+within two minutes people can view and contribute back to your new project.
+They've fostered a lot of collaboration in the open source community and it's
+been a very good thing all around.
+
+The two ideas came together in my head pretty quickly. I started thinking
+about designing a site that made setting up a dance event almost as easy as
+forking a project on BitBucket.
+
+Sure, every organizer spending 10 hours to add cool features to their event
+site doesn't really make sense. But what if one person spent a couple hundred
+hours and built a site that let every organizer add those features in 10
+*minutes*? After 20 or 30 events it's saved those couple hundred hours and
+just gets better from there.
+
+The more I thought about it the more it seemed like a good idea. I'd been
+learning a lot about web development and about six months ago I decided I was
+competent enough to handle something like this, and started working on the
+LindyHub core.
+
+[Blues Muse]: http://www.lindyandblues.com/events/2009/bluesmuse/
+[BitBucket]: http://bitbucket.org/
+[GitHub]: http://github.com/
+
+LindyHub's Current State
+------------------------
+
+I've been working on LindyHub off and on for the past six months or so, and it
+has been coming along pretty well. I decided to use SiteSprint as motivation
+to buckle down and complete it to a point where I can invite a few organizers
+to give it a try in a "closed-beta" period. From there I'll work out any kinks
+and open it up for public use.
+
+Here are some of the things the site can do *right now*:
+
+* Users can sign up and create profiles for themselves.  "Forgot my password" and such is supported.
+* They can view (and search for) events that are happening in the future, and comment on them.
+* They can create a new event and add things to its schedule.
+* The schedule is formatted nicely.  If an event starts before 5 AM it's grouped with the previous day's events because it's probably a late night dance.
+* Venues will add links to Google Maps if the organizers put in the address.
+* Organizers can let LindyHub handle event registration for them.  They specify how they want to be paid: door, check, and/or PayPal.  If it's PayPal, LindyHub takes the email address that should receive the money and handles creating the PayPal "Buy Now" button.
+* Early registration is supported -- organizers can specify a cutoff date and the early/late prices if they like.
+* LindyHub doesn't *have* to be used for the registration.  Organizers can opt to handle registration themselves and just put the event on LindyHub to help more people find it.
+* Users can register for events quickly and easily.  LindyHub will ask them how they want to pay and tell them how to do it.
+* When they register they can allow other people to see that they're going to the event.  If they do, they'll show up in the list on the event page.
+* Organizers can see nicely formatted lists of registration/payment information and housing requests.
+
+My Goals for the Sprint (and Beyond)
+------------------------------------
+
+Some of the things I'm planning on adding to the site in during the sprint
+are:
+
+* Redesign the interface.  I'm not a designer, but I can certainly do better than the spartan design I've thrown together during development.
+* Better, Javascript-based form fields.  They'll validate the input before you even click "Submit" (so you can correct mistakes immediately) and provide nice date/time pickers for the date and time fields.  I wanted to make sure the site works 100% for people with JavaScript turned off before I started relying on it to make things pretty.
+* Mobile stylesheets for iPhone users.
+* Tagging events with tags like "lindyhop, blues, workshop, exchange, gordonwebster, etc."  This will make it easier to find events you're interested in.  This will also be easy to add.
+* "Friending" other users.  This would let you see what your friends are going to and would be awesome (for me, at least).
+* Location-based features.  LindyHub can already store your hometown and the locations of events.  It wouldn't be terribly difficult to parse this information into a latitude and longitude.  Once that's done it's simple to calculate the distance to events and say "Show me all events within 300 miles of my hometown" or "Show me everyone going to this event that lives within 30 miles of me because we might want to carpool."
+* Automatically email reminders to people a week before the event.  The emails could include links to Google Maps for the first (and other) venues to make it take only one click to print directions.  There are a lot of other things that would be nice to include too -- I've been holding off on this because it really requires the attention of a copywriter to get right.
+* Provide an easy-to-use interface for organizers to assign people that have requested housing to people that offer it.
+* Send emails to guest/host groups automatically to make sure guests have their host's contact information (and vice versa).
+* Translations into different languages.  This will be pretty simple if someone wants to volunteer to translate (I only speak English and American Sign Language myself).
+* Suggesting events a user might like.  This is something for the far future, but it would give me a chance to play around in another favorite area of mine: artificial intelligence.  I have some ideas on how to implement it but it's not critical so I'm not looking at it right now.
+
+There are a whole slew of other things I have tumbling about in my head, but
+those should be enough to give you an idea of where the site can go.
+
+**Above all, my goal is to spend as much time as it takes to create a site
+that will save organizers a few hours of their time and make it easier for
+dancers to find events they want to go to.**
+
+I *don't* want to try to create a site that will accommodate *every* event. If
+I make LindyHub flexible enough to handle Frankie 95 it will become so
+complicated that no other events will want to use it. I want it to work for
+the 85% or 90% of events that just need the most common features. Doing that
+will make it far, far easier to use, which means more people will use it.
+
+For the Nerds: What I'm Using
+-----------------------------
+
+LindyHub is built with [Django][] and [Python][].
+
+It's hosted on [WebFaction][] and uses a [PostgreSQL][] database to store its
+data.
+
+It uses [Aardvark Legs][] to keep me sane while writing the CSS, and will use
+[jQuery][] for the inline form validation.
+
+I'm happy to go further in depth if you're curious -- let me know with a
+comment.
+
+[Django]: http://www.djangoproject.com/
+[Python]: http://python.org/
+[WebFaction]: http://www.webfaction.com/?affiliate=sjl
+[PostgreSQL]: http://www.postgresql.org/
+[Aardvark Legs]: http://fecklessmind.com/2009/01/20/aardvark-css-framework/
+[jQuery]: http://jquery.com/
+
+If You're Interested, Follow My Progress!
+-----------------------------------------
+
+I'm going to be working on the site a lot over the next month. I might write
+another blog entry or two, but I'll try to post updates to
+[@lindyhub][twitter] on Twitter much more often.
+
+If there's anything specific you want to know post a comment here and I'll be
+happy to answer!
+
+[twitter]: http://twitter.com/lindyhub/
+
+{% endblock %}

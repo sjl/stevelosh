@@ -1,0 +1,367 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "How to Contribute to Mercurial"
+    snip: "Ten minutes of setup will make it easier."
+    created: 2009-06-01 20:09:44
+%}
+
+{% block article %}
+
+After my last post on [What I Hate About Mercurial][hate], seydar commented
+that I should contribute a patch to add untrack/forget functionality. I
+decided to take the advice, stop being lazy and write one.
+
+It's a very, very simple change and I'm not sure if it will even make it into
+the core repository, but even so it gave me a chance to figure out how to set
+up a decent development environment for hacking on Mercurial. I figured that
+other people might find that information useful so I decided to write this.
+
+[hate]: http://stevelosh.com/blog/entry/2009/5/29/what-i-hate-about-mercurial/
+
+[TOC]
+
+About This Guide
+----------------
+
+This is meant to be a guide to get yourself set up to work on Mercurial's code
+base and contribute your work back to the community. It's *not* a guide for
+actually working on the code.
+
+I'm going to go ahead and assume a few (small) things:
+
+1. You're running OS X or some form of Linux.  If you're using Windows, I'm sorry, but I just don't use it enough to really help.
+2. You've got [Python][] installed.
+3. You've got a copy of Mercurial installed in some way (MacPorts, apt-get, source, etc).
+4. You're familiar with (and have clients for) IRC and email.
+
+If those things are true, let's get started. The entire process should take
+between 15 and 45 minutes, depending on how comfortable you are with bash,
+Python, and Mercurial itself.
+
+[Python]: http://python.org/
+
+Join the Community
+------------------
+
+The first step to contributing is to join the community. Things will probably
+go more smoothly if other developers have seen your name before and those
+other developers are a great resource if you get stuck.
+
+Join the [#mercurial channel on Freenode][irc]. A lot of other Mercurial
+developers hang out in there and it's a good place to go if you want some
+really quick feedback. Take a few minutes and [register your nick][register]
+on Freenode, just because it's a good thing to do.
+
+You should also [subscribe][] to the Mercurial development [mailing list][].
+That's where you're going to be sending your work, so it's good to start
+getting an idea of how people use the list as soon as possible.
+
+[irc]: irc://irc.freenode.net/#mercurial
+[register]: http://freenode.net/faq.shtml#userregistration
+[subscribe]: http://www.selenic.com/mailman/listinfo/mercurial-devel/
+[mailing list]: http://www.selenic.com/pipermail/mercurial-devel/
+
+Grab the Source
+---------------
+
+Now you'll want to grab the Mercurial source code so you can start changing
+it. The repository you almost certainly want to clone is the [crew
+repository][].
+
+Several people (listed [here][crew members]) have write access to this and
+it's where most changes go before they're pulled into the main Mercurial
+repositories. Your want your changes to apply cleanly to the tip of crew if
+you want them to have the best chance of being accepted.
+
+Go ahead and clone it somewhere on your machine (replace `hg-crew` if you
+prefer a different name for the folder):
+
+    hg clone http://hg.intevation.org/mercurial/crew hg-crew
+
+It's going to take a little while. Mercurial might be fast but its repository
+has over 8,600 changesets. While you're waiting you can move on to the next
+step.
+
+[crew repository]: http://hg.intevation.org/mercurial/crew
+[crew members]: http://www.selenic.com/mercurial/wiki/CrewRepository
+
+Set Up virtualenv
+-----------------
+
+This might not seem like it's necessary, but trust me, it's a good thing to
+do. It will make things easier down the road, I promise.
+
+No, *really*, take ten minutes and do this. You'll thank me.
+
+[virtualenv][] is a tool that lets you create separate Python development
+environments that are isolated from each other. The packages and binaries for
+one won't contaminate the others. It will make testing our work on Mercurial
+painless.
+
+Open a new terminal window while the crew repository is busy cloning. Install
+virtualenv in the usual Python fashion:
+
+    sudo easy_install virtualenv
+
+Now install the [virtualenvwrapper][] tool:
+
+    sudo easy_install virtualenvwrapper
+
+This is a nifty little shell script that makes working with virtual
+environments much more pleasant. Before you can use it, you'll need to source
+it into your `~/.bashrc` or `~/.bash_profile` file, as well as choose a place
+to stick the environments themselves:
+
+    export WORKON_HOME=$HOME/lib/virtualenvs
+    source /(path to python)/bin/virtualenvwrapper_bashrc
+
+As you can see, I prefer to put the `virtualenvs` folder inside my `~/lib`
+folder. You can change that to any place you like.
+
+You'll also need to replace the `(path to python)` with the actual path to
+wherever Python is installed on your system. If you're not sure, here's a
+simple, slow, and horribly inefficient but effective command to figure it out:
+
+    find / -name 'virtualenvwrapper_bashrc' 2> /dev/null
+
+Once you've got the necessary lines in your `~/.bashrc` you can close that
+terminal window.
+
+[virtualenv]: http://pypi.python.org/pypi/virtualenv
+[virtualenvwrapper]: http://www.doughellmann.com/projects/virtualenvwrapper/
+
+Set Up A Public Repository
+--------------------------
+
+This isn't strictly required, but it's polite and only takes a minute or two.
+If you've already got a method of sharing your repositories (using hgwebdir
+with your website, for example) go ahead and use that.
+
+If not, head over to [BitBucket][], sign up for an account if you don't
+already have one (it's free), and create a new public repository there. I've
+named mine [hg-crew-sjl][] to be explicit about what it contains, but that's
+not terribly important.
+
+Why bother doing this when you're just going to email your work anyway? Some
+people (myself included) find it easier to pull changes from another
+repository than to apply them from emails. It also gets your changes out into
+a public place so other developers can view and modify *your* modifications.
+
+It's also nice to have an easily accessible clone of your personal repository
+if you're not at your own machine and want to do some more work.
+
+[BitBucket]: http://bitbucket.org/
+[hg-crew-sjl]: http://bitbucket.org/sjl/hg-crew-sjl/
+
+Set Up Your Local Clone
+-----------------------
+
+By now the crew repository should be finished cloning to your local machine.
+The first thing we want to do is set up the paths so we can push and pull
+easily. Modify the `.hg/hgrc` file inside that repository (*not* your
+`~/.hgrc` file!) to look like this:
+
+    [paths]
+    default = http://bitbucket.org/(username)/(repo name)/
+    crew = http://hg.intevation.org/mercurial/crew
+
+Replace `(username)` with your BitBucket username and `(repo name)` with the
+name of the BitBucket repository, obviously.
+
+Now you can run `hg push` to push any changes you commit locally to your
+public BitBucket repository, and `hg pull crew` to grab new changes from the
+crew repository.
+
+Build Mercurial
+---------------
+
+Make sure you're in your local crew repository, and run:
+
+    make local
+
+This will build Mercurial from the source files. It should finish fairly
+quickly. Once that's done, run the tests to make sure everything is working
+correctly:
+
+    make tests
+
+Those will take a long time to run. While you wait, move on to the next step.
+
+Create a Virtual Environment for Mercurial Development
+------------------------------------------------------
+
+While the test suite is running you're going to make a new virtual environment
+to use for testing your changes to Mercurial. First you need to create it, so
+open up a new terminal window and run:
+
+    mkvirtualenv hg-dev
+
+You can name it something else if you don't like `hg-dev`. Notice how your
+shell prompt now has `(hg-dev)` prepended to it? That's there to remind you
+that you're working in that environment.
+
+Creating the environment automatically puts you into it for that shell
+session. To get into it in the future you'll use:
+
+    workon hg-dev
+
+Now you need to link the Mercurial libraries you're going to change to this
+environment, so you can use it to test your code. Run the following three
+commands:
+
+    ln -s (full path to crew)/mercurial $WORKON_HOME/hg-dev/lib/python2.6/site-packages/
+    ln -s (full path to crew)/hgext $WORKON_HOME/hg-dev/lib/python2.6/site-packages/
+    ln -s (full path to crew)/hg $WORKON_HOME/hg-dev/bin/
+
+Replace `(full path to crew)` with the *full* path to your local crew
+repository, and `hg-dev` with the name of your virtual environment (if you
+named it differently than I did).
+
+Why Bother With a Virtual Environment?
+--------------------------------------
+
+It's probably the most work in this entire process, so why did I insist you
+set it up? Watch this:
+
+    :::console
+    sjl at ecgtheow in ~/src/hg-crew-sjl on default 
+    $ hg --version
+    Mercurial Distributed SCM (version 1.2.1)
+    
+    Copyright (C) 2005-2009 Matt Mackall <mpm@selenic.com> and others
+    This is free software; see the source for copying conditions. There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    
+    sjl at ecgtheow in ~/src/hg-crew-sjl on default 
+    $ workon hg-dev
+    
+    (hg-dev)
+    sjl at ecgtheow in ~/src/hg-crew-sjl on default 
+    $ hg --version
+    Mercurial Distributed SCM (version 7956a823daa3)
+    
+    Copyright (C) 2005-2009 Matt Mackall <mpm@selenic.com> and others
+    This is free software; see the source for copying conditions. There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    
+    (hg-dev)
+    sjl at ecgtheow in ~/src/hg-crew-sjl on default 
+    $ 
+
+Look at the version numbers. Notice how they changed?
+
+**You can now use** `workon hg-dev` **to make the** `hg` **command run
+Mercurial with your changes!**
+
+This makes it simple to test your work as you go. I keep two terminal windows
+open while working on the Mercurial source:
+
+* One is in my local crew repository to diff, commit, etc with the standard version of Mercurial.
+* The other is in a test repository.  I've run `workon hg-dev` to switch to my modified version so I can try out my changes.
+
+Get To Work!
+------------
+
+That's it for the initial setup. Now you can start adding all the wonderful
+features you have in mind. A simple workflow might go something like this:
+
+1. Open two terminal windows and use `workon hg-dev` in the second one to switch to the virtual environment.
+2. Make some changes to the Mercurial codebase.
+3. Test your changes in the second terminal window.
+4. Repeat 3 and 4, using the first terminal window to commit to the local repository as you go.
+
+Once you're finished with your shiny new feature, how do you get it into the
+main Mercurial code so we can all benefit from it?
+
+Modify the Test Suite
+---------------------
+
+Before you go off and submit a patch, you need to make sure it works with the
+current tests. You can run the tests by going to the repository and using:
+
+    cd tests
+    python run-tests.py
+
+It's going to take a while, just like before. If you changed something that
+modifies the output of a command it will probably break some of the existing
+tests. That's alright, but you'll need to fix them to reflect your changes.
+The simplest way to do this is to use the `--interactive` flag:
+
+    python run-tests.py --interactive
+
+Using `--interactive` will prompt you each time a test fails and ask if you
+want to accept the new output as the "correct" output. This makes it simple to
+update the existing tests to take your changes into account.
+
+Obviously you should **only accept these updates if they make sense**. Pay
+attention to the output and make sure you didn't accidentally break something!
+
+Add to the Test Suite
+----------------------
+
+If you've implemented an entirely new feature (as opposed to just modifying an
+existing one) you should add some tests of your own. This will make sure no
+one else will inadvertently break whatever you've added.
+
+There's a nice [guide][test-guide] to this on the Mercurial site. Follow it to
+add some tests for your changes.
+
+From what I've heard it's preferable to append to an existing set of tests (if
+it makes sense) instead of adding a brand new test file -- the tests run
+pretty slowly and adding new files make them even slower.
+
+[test-guide]: http://www.selenic.com/mercurial/wiki/WritingTests#Writing_a_shell_script_test
+
+Email Your Patches to the Mailing List
+--------------------------------------
+
+You've finally got your code working and updated the tests. It's time to share
+your changes with the rest of the Mercurial developers.
+
+If you want your patches to get accepted, you should take the time to read the
+[guide to contributing changes][] and the [guide to making successful
+patches][] on the Mercurial site. They're short but contain most of what you
+need to know.
+
+[guide to contributing changes]: http://www.selenic.com/mercurial/wiki/ContributingChanges
+[guide to making successful patches]: http://www.selenic.com/mercurial/wiki/SuccessfulPatch
+
+I prefer to use the [patchbomb][] extension to email the patches because it
+takes care of the formatting for me. To enable and configure it you'll need to
+make some additions to your `~/.hgrc` file:
+
+    :::text [extensions] hgext.patchbomb =
+    
+     [email] method = smtp from = Your Name <you@yourdomain.com>
+    
+     [smtp] host = smtp.youremailhost.com username = yourusername tls = True
+    
+    You'll need to tweak those settings with your own email address, mail
+    server, and so on. Once that's done, you can have patchbomb package up
+    your changes and email them out:
+
+    hg email --rev (your first revision):(your last revision)
+
+The command will guide you through filling out some more information, and then
+send out the patches. `hg help email` has a lot more information on how to use
+it.
+
+I usually email them to myself first just in case I mess up a revision number
+and email six thousand changesets. Flooding my own inbox is much better than
+flooding the list's.
+
+[patchbomb]: http://www.selenic.com/mercurial/wiki/PatchbombExtension
+
+That's It, Now Go Contribute!
+-----------------------------
+
+That's about the extent of my knowledge on contributing to Mercurial. As I
+said before, I've only done one patch so far, but I wanted to write this while
+everything about setting up the environment was fresh in my mind.
+
+If any of the other Mercurial developers would like to chime in and suggest
+corrections or additions -- or if anyone has any questions -- I'll be happy to
+update the post. I hope it's helpful!
+
+{% endblock %}

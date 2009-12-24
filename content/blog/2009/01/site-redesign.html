@@ -1,0 +1,45 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Site Redesign"
+    snip: "Yeah, I know.  Again."
+    created: 2009-01-11 17:58:23
+%}
+
+{% block article %}
+
+Well, I've redesigned the site again. This time it's all me. I built the site
+from the ground up with [Django][] and [Python][]. Why? Several reasons:
+
+* I already pay for hosting at [WebFaction][] for other sites so also paying [Squarespace][] for my personal one was too wasteful.
+* I wanted to practice designing another site with [Django][].
+* I wanted more flexibility than [Squarespace][] supports and I'm not afraid to get my hands dirty with code.
+
+If you want to know more about how I created the site, check out the site's
+[project page][].
+
+Moving over
+-----------
+
+I've tried to make transitioning to the new site as easy as possible. For
+example, I set up the urls so that links to the entries on the old blog will
+redirect to entries on the new one if they exist.
+
+Coming soon
+-----------
+
+I'm going to work on porting over more of the old blog entries in the next day
+or two. I don't want to bring them all over; just the best ones.
+
+I'm also going to implement an RSS feed that will encompass projects and blog
+entries.
+
+Let me know what you think!
+
+[Python]: http://python.org/
+[Django]: http://djangoproject.com/
+[WebFaction]: http://webfaction.com/
+[Squarespace]: http://www.squarespace.com/
+[project page]: /projects/stevelosh-com
+
+{% endblock %}

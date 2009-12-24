@@ -1,0 +1,216 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Deploying with Fabric &amp; Mercurial"
+    snip: "Trimming typing."
+    created: 2009-01-15 20:51:09
+%}
+
+{% block article %}
+
+Earlier tonight I added support for the [Mint][] [Bird Feeder][] plugin to my
+site's [RSS feeds][]. Bird Feeder isn't designed to work with [Django][] so I
+had to change a few things to get it up and running. I mostly followed the
+[instructions on
+Hicks-Wright.net](http://hicks-wright.net/blog/minty-django-feeds/) with a few
+tweaks.
+
+While I was trying to get things running smoothly I had to redeploy the site a
+bunch of times so I could test the changes I made. If I were simply FTP'ing
+the files over each time I wanted to redeploy it would have been a huge pain.
+Fortunately, I have another way to do it that cuts down on my typing.
+
+[Mint]: http://haveamint.com
+[Bird Feeder]: http://haveamint.com/peppermill/pepper/11/bird_feeder/
+[RSS feeds]: /rss/
+[Django]: http://djangoproject.com/
+
+[TOC]
+
+My Basic Deployment Steps
+-------------------------
+
+The code for my site is stored in a Mercurial repository. There are actually
+three copies of the repository that I use:
+
+* One is on my local machine, which I commit to as I make changes.
+* One is on [BitBucket][], which I use to share the code with the public.
+* One is on my host's webserver, and is what actually gets served as the website.
+
+When I'm ready to deploy a new version of the site, I push the changes I've
+made on my local repository to the one on BitBucket, then pull the changes
+from BitBucket down to the server. Using push/pull means I don't have to worry
+about transferring the files myself. Using BitBucket in the middle (instead of
+going right from my local machine to the server) means I don't have to worry
+about serving either repository myself and dealing with port forwarding or
+security issues.
+
+[BitBucket]: http://bitbucket.org
+
+Putting BitBucket in the Middle
+-------------------------------
+
+Using BitBucket as an intermediate repository is actually fairly simple. Here
+are the basic steps I use to get a project up and running like this.
+
+First, create a new repository on BitBucket. Make sure the name is what you
+want. Feel free to make it private if you just want it for this, or public if
+you want to [go open source][].
+
+[go open source]: /blog/entry/2009/1/13/going-open-source/
+
+### Set Up Your Local Machine
+
+Clone this new, empty repository to your local machine. If you already have
+code written you'll need to copy it into this folder after cloning. I don't
+know if there's a way to push a brand-new repository to BitBucket; if you know
+how please tell me.
+
+On your local machine, edit the `.hg/hgrc` file in the repository and change
+the default path to:
+
+	default = ssh://hg@bitbucket.org/username/repositoryname/
+
+That will let you push/pull to and from BitBucket over SSH. Doing it that way
+means you can use public/private key authentication and avoid typing your
+password every single time. A fairly comprehensive guide to that can be found
+[here](http://www.securityfocus.com/infocus/1810). You can ignore the
+server-side configuration; you just need to add your public key on BitBucket's
+account settings page and you should be set.
+
+**UPDATE:**  I didn't realize it before, but BitBucket has a [guide to using SSH with BitBucket](http://bitbucket.org/help/using-ssh/).  It's definitely worth looking at.
+
+Now you should be able to use `hg push` and `hg pull` on your local machine to
+push and pull changes to and from the BitBucket repository. The next step is
+getting it set up on the server side.
+
+### Set Up Your Server
+
+On your server, use `hg clone` to clone the BitBucket repository to wherever
+you want to serve it from. Edit the `.hg/hgrc` file in that one and change the
+default path to the same value as before:
+
+	default = ssh://hg@bitbucket.org/username/repositoryname/
+
+Once again, set up public/private key authentication; this time between the
+server and BitBucket. You can either copy your public and private keys from
+your local machine to the server (if you trust/own it) or you can create a new
+pair and add its public key to your BitBucket account as well.
+
+While you're at it, set up public/private key authentication to go from your
+local machine to your server too. It'll pay off in the long run.
+
+Now that you've got both sides working, you can develop and deploy like so:
+
+* Make changes on your local machine, committing as you go.
+* Push the changes to BitBucket.
+* SSH into your server and pull the changes down.
+* Restart the web server process if necessary.
+
+Not too bad! Instead of manually managing file transfers you can let Mercurial
+do it for you. It'll only pull down the files that have changed, and will
+always put them in exactly the right spot. That's pretty convenient, but we
+can do better.
+
+Weaving it All Together with Fabric
+-----------------------------------
+
+Being able to push and pull is all well and good, but that's still a lot of
+typing. You need to enter a command to push your changes, a command to SSH to
+the server, a command to change to the deploy directory, a command to pull the
+changes, and a command to restart the server process. That's five commands,
+which is four commands too many for me.
+
+To automate the process, I use the wonderful [Fabric][] tool. If you haven't
+seen it before you should take a look. To follow along with the rest of the
+section you should read the examples on the site and install Fabric on your
+local machine.
+
+### My Current Setup
+
+Here's the fabfile I use for deploying my site to my host ([WebFaction][]).
+It's pretty specific to my needs but I'm sure it will give you an idea of
+where to start.
+
+[Fabric]: http://www.nongnu.org/fab/
+[WebFaction]: http://www.webfaction.com?affiliate=sjl
+
+	#!python
+	def prod():
+	    """Set the target to production."""
+	    set(fab_hosts=['sjl.webfactional.com'])
+	    set(fab_key_filename='/Users/sjl/.ssh/stevelosh')
+	    set(remote_app_dir='~/webapps/stevelosh/stevelosh')
+	    set(remote_apache_dir='~/webapps/stevelosh/apache2')
+
+	def deploy():
+	    """Deploy the site."""
+	    require('fab_hosts', provided_by = [prod,])
+	    local("hg push")
+	    run("cd $(remote_app_dir); hg pull; hg update")
+	    run("cd $(remote_app_dir); python2.5 manage.py syncdb")
+	    run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
+
+	def debugon():
+	    """Turn debug mode on for the production server."""
+	    require('fab_hosts', provided_by = [prod,])
+	    run("cd $(remote_app_dir); sed -i -e 's/DEBUG = .*/DEBUG = True/' deploy.py")
+	    run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
+
+	def debugoff():
+	    """Turn debug mode off for the production server."""
+	    require('fab_hosts', provided_by = [prod,])
+	    run("cd $(remote_app_dir); sed -i -e 's/DEBUG = .*/DEBUG = False/' deploy.py")
+	    run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
+
+When I'm finished committing to my local repository and I want to deploy the
+site, I just use the command `fab prod deploy` on my local machine. Fabric
+pushes my local repository to BitBucket, logs into the server (with my public
+key&mdash;no typing in passwords), pulls down the new changes from BitBucket
+and restarts the server process.
+
+I also set up a couple of debug commands so I can type `fab prod debugon` and
+`fab prod debugoff` to change the `settings.DEBUG` option of my Django app.
+Sometimes it's useful to turn on debug to find out exactly why a page is
+breaking on the server.
+
+### Extending It
+
+The reason I split off the `prod` command is so I can set up a separate test
+app (on the server) in the future and reuse the `deploy` and `debug` commands.
+All I'd need to do is add a `test` command, which might look something like
+this:
+
+	#!python
+	def test():
+	    """Set the target to test."""
+	    set(fab_hosts=['sjl.webfactional.com'])
+	    set(fab_key_filename='/Users/sjl/.ssh/stevelosh')
+	    set(remote_app_dir = '~/webapps/stevelosh-test/stevelosh')
+	    set(remote_apache_dir = '~/webapps/stevelosh-test/apache2')
+
+Deploying the test site would then be a simple `fab test deploy` command.
+
+Why Should You Try This?
+------------------------
+
+After you've gotten all of this set up the first time it will start saving you
+time every time you deploy. It also prevents stupid mistakes like FTP'ing your
+files to the wrong directory on the server. It frees you from those headaches
+and lets you concentrate on the real work to be done instead of the busywork.
+Plus setting it up again for a second project is a breeze after you've done it
+once.
+
+Obviously the exact details of this won't be a perfect fit for everyone. Maybe
+you prefer using git and [GitHub][] for version control. I'm sure there's a
+similar way to automate the process on that side of the fence. If you decide
+to write something about the details of that please let me know and I'll link
+it here.
+
+My hope is that this will at least give you some ideas about saving yourself
+some time. If that helps you create better websites, I'll be happy. Please
+feel free to comment with any questions or thoughts you have!
+
+[GitHub]: http://github.com/
+
+{% endblock %}

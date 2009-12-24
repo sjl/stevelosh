@@ -1,0 +1,139 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Going Open Source"
+    snip: "Why I’m making the code to this website public."
+    created: 2009-01-13 20:08:56
+%}
+
+{% block article %}
+
+Well, I've finally taken the plunge and made this site open source. It's held
+in a [Mercurial][] repository, but you can view or download the source code
+from <http://bitbucket.org/sjl/stevelosh/> without any special tools.
+
+The site was built with the [Django][] framework. If you want to know more
+check out the [project page][]. This post isn't going to duplicate what's
+there; instead I want to write about why I made the site open source at all.
+There are a couple of main reasons, and not *all* of them are selfish!
+
+[Mercurial]: http://www.selenic.com/mercurial/wiki/
+[Django]: http://djangoproject.com/
+[project page]: /projects/stevelosh-com
+
+I Get More Traffic
+------------------
+
+The first reason to make a site open source is to try to get more hits. You
+certainly don't *lose* any hits from doing it, and when developers find your
+link on places like [DjangoSites][] they might be more inclined to visit if
+they knew they could look at the source code later.
+
+You also have the chance to post on [Twitter][], [Tumblr][], or other places
+about the source code of the site. Each of those posts can expose more people
+to the website. It's easy to overdo this though. I heartily agree with the
+sentiments of
+[howtousetwitterformarketingandpr.com](http://howtousetwitterformarketingandpr.com)
+on that issue.
+
+Don't worry, I won't be obnoxious about it.
+
+[DjangoSites]: http://djangosites.org/
+[Twitter]: http://twitter.com/
+[Tumblr]: http://tumblr.com/
+
+I Can Give Back to the (Programming) Community
+----------------------------------------------
+
+Yeah, I know.  It sounds cliched, but it's true.  
+
+The open source community has produced a *ridiculous* amount of software, some
+of which we use every day. Software like [Apache][], [Django][], and countless
+others simply wouldn't exist in anything remotely close to their current
+forms.
+
+Being able to look at the source code for a particular project can be
+extremely helpful to someone trying to learn how to do something similar.
+Instead of firing up an email client and sending a message to the creator they
+can simply look at how it works themselves. They can download it, tweak it,
+break it, and figure out what makes it tick. There's no substitute for that.
+
+I strongly believe that the world would be a better place if everyone shared
+their knowledge (in all fields) and we all learned from each other. In some
+cases it's simply not practical, but more often than not I think people want
+to horde their knowledge and feel superior. Sure, that might be nice for your
+ego, but does it really make the world a happier, more beautiful place to
+live?
+
+[Apache]: http://apache.org/
+
+I Might Get Free Code!
+----------------------
+
+Well, probably not, but who knows? Maybe some developer has a lot of free time
+on his or her hands?
+
+Distributed version control systems like [Mercurial][] make it extremely easy
+to help out with open source projects. For example, if you were looking
+through my code and saw a bug that you wanted to fix, you could do the
+following:
+
+* Clone the repository to your own machine. * Fix the bug in that local copy,
+committing to your local repository as you go. * Go back to the website and
+click the "Pull Request" button. * I review the changes. * If I like them I
+press a button to merge them into the main repository.
+
+Once the changes are in the main repository I just run a single script to
+redeploy the site as usual and the changes are live. It's really an almost
+painless process. Compare that to something like Subversion or (ick) CVS:
+
+* Check out the repository to your own machine.
+* Fix the bug in that local copy, without committing (don't mess up!).
+* Create a patch using diff or something similar.
+* Email me the patch.
+* I review the changes.
+* If I like them I check out a fresh copy of the repository.
+* I apply the patch to this copy.
+* I merge the patch back into the main repository.
+
+It's much more difficult because I don't want to just give any anonymous
+person commit access to my repository.
+
+It Makes Me Fix My Damn Code
+----------------------------
+
+This is probably the most tangible and important benefit of my open sourcing
+this site. It forced me to rewrite parts of the code that weren't secure and
+do it the right way.
+
+Passwords stored in source control? Yeah, *definitely* a bad thing.
+
+Of course, it *was* kind of a pain in the ass to refactor a bunch of stuff.
+Really, though, the main problem I had was my own procrastination and going
+open source was a good nudge. Plus when I start work on another site I'll know
+how to do it right the first time.
+
+Aside from major security and privacy issues, it also gives me a big incentive
+to clean up my code and make it more elegant. Clean, elegant code makes me
+happy. It's less likely to have bugs (because there are fewer places for them
+to hide) and it's far easier to maintain in the long run.
+
+It's also simply more fun to read and work with.
+
+You Should Probably Try It
+--------------------------
+
+Obviously not all software is appropriate for open sourcing, but if you've got
+a pet project that you've been working and you think it might benefit from a
+few more sets of eyes, try it!
+
+You don't need to spend money or configure much of anything to share your
+code; sites like [BitBucket][] and [GitHub][] offer free hosting and great
+interfaces for repositories of open source code.
+
+If you have any questions or comments I'd love to hear them!
+
+[BitBucket]: http://bitbucket.org/
+[GitHub]: http://github.com/
+
+{% endblock %}

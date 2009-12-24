@@ -1,0 +1,228 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "What I Hate About Mercurial"
+    snip: "Hg, I love you, but sometimes you bring me down."
+    created: 2009-05-29 19:51:05
+%}
+
+{% block article %}
+
+This entry was inspired by [Jacob Kaplan-Moss][JKM], who was inspired by
+[Titus][], who was inspired by [brian d foy][BDF]. The premise is that you
+can't really claim to know much about a piece of software until you can name a
+few things you hate about it.
+
+[JKM]: http://jacobian.org/writing/hate-python/
+[Titus]: http://ivory.idyll.org/blog/mar-07/five-things-I-hate-about-python
+[BDF]: http://use.perl.org/~brian_d_foy/journal/32556?from=rss
+
+Jacob and Titus talked about Python, and so have a bunch of other people, so I
+figured I'd write about something a bit different:
+[Mercurial](http://selenic.com/mercurial).
+
+I love Mercurial to death, but there *are* a few things about it that annoy
+me. Here they are, in no particular order.
+
+[TOC]
+
+Configuration Through a Textfile
+--------------------------------
+
+This is one of the things that [git](http://git-scm.com/) people seem to like
+to [bring up](http://jointheconversation.org/2008/11/24/on-mercurial.html):
+"It doesn't have a command to set your username and email and such? Lame."
+
+I personally don't mind editing a text file -- `vim ~/.hgrc` really isn't that
+hard to type and the format is simple enough that you get the hang of it in
+about ten seconds. It forces you to know *where* the config file is, which is
+nice when the magic "Oh man, I could put my config files under *version
+control*!" moment strikes.
+
+That said, this is on the list because I'd like to see a command to edit some
+of the common options just so people will *stop complaining* about something
+so trivial.
+
+"hg rm" is a Confusing Mess
+---------------------------
+
+Here's part of the help for the `hg rm` command:
+
+> This only removes files from the current branch, not from the entire
+> project history. -A can be used to remove only files that have already
+> been deleted, -f can be used to force deletion, and -Af can be used
+> to remove files from the next revision without deleting them.
+
+What the hell? If `-A` won't remove files that are still present, and `-f`
+forces the files to be deleted, why the fuck does combining them mean *the
+exact opposite of both*?
+
+I had to look up the syntax every single time I wanted to use this command,
+until I added this alias to my `~/.hgrc`:
+
+    [alias]
+    untrack = rm -Af
+
+Now I can use `hg untrack whatever.py` to stop tracking a file.
+
+Addremove Can Track Renames But Won't Unless You Ask It Really Nicely
+---------------------------------------------------------------------
+
+It took me a while to realize this, but Mercurial can actually record file
+renames -- not just separate adds and removes -- when using `hg addremove`.
+Here's what happens when you move a file and then use `hg addremove` normally
+to have Mercurial track the changes.
+
+    sjl at ecgtheow in ~/Desktop/test on default 
+    $ ls
+    total 16
+    -rw-r--r--  1 sjl    14B May 29 20:12 a
+    -rw-r--r--  1 sjl    12B May 29 20:12 b
+    
+    sjl at ecgtheow in ~/Desktop/test on default 
+    $ mv b c
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg addremove
+    removing b
+    adding c
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg diff
+    diff --git a/b b/b
+    deleted file mode 100644
+    --- a/b
+    +++ /dev/null
+    @@ -1,1 +0,0 @@
+    -To you too!
+    diff --git a/c b/c
+    new file mode 100644
+    --- /dev/null
+    +++ b/c
+    @@ -0,0 +1,1 @@
+    +To you too!
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg commit -m 'Normal addremove.'
+    
+    sjl at ecgtheow in ~/Desktop/test on default 
+    $ 
+
+Now watch what happens when we tell Mercurial to detect renames when using `hg
+addremove`:
+
+    sjl at ecgtheow in ~/Desktop/test on default 
+    $ ls
+    total 16
+    -rw-r--r--  1 sjl    14B May 29 20:12 a
+    -rw-r--r--  1 sjl    12B May 29 20:12 c
+    
+    sjl at ecgtheow in ~/Desktop/test on default 
+    $ mv c b
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg addremove --similarity 100
+    adding b
+    removing c
+    recording removal of c as rename to b (100% similar)
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg diff
+    diff --git a/c b/b
+    rename from c
+    rename to b
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg commit -m 'This time with rename detection.'
+    
+    sjl at ecgtheow in ~/Desktop/test on default 
+    $ 
+
+This time it notices the rename, and records it. The diff is far, far easier
+to read, and if a branch is merged in where someone else changed that file,
+the changes will follow it over.
+
+The `--similarity` option is a percentage. I have an entry in my `~/.hgrc`
+file to default that to 100, which means that renames will only be
+automatically detected if the files are *identical*. It's safer, but might not
+always catch everything.
+
+I wish I had known this earlier or that Mercurial defaulted to 100% to catch
+the obvious renames.
+
+And yes, I realize I could use `hg rename` to rename it and it *would* get
+recorded, but usually I'm moving files by some other method and using `hg
+addremove` to clean up later.
+
+Now, while we're on the topic...
+
+Why the Hell Does Status Not Show Renames?
+------------------------------------------
+
+Assuming they're recorded, I wish `hg status` would show that a file has been
+renamed. Here's what we get instead:
+
+    sjl at ecgtheow in ~/Desktop/test on default 
+    $ hg rename b c
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg stat
+    A c
+    R b
+    
+    sjl at ecgtheow in ~/Desktop/test on default! 
+    $ hg diff
+    diff --git a/b b/c
+    rename from b
+    rename to c
+
+No, `hg status`, it clearly *wasn't* an add and a remove, according to `hg
+diff`. Why doesn't `hg status` have a separate character for "renamed" files
+so we can tell them apart?
+
+Get Git Out of My Mercurial
+---------------------------
+
+I *hate* that half of Mercurial's commands need a `--git` option to be really
+useful. Is there any reason not to make this the default format and have a
+`--useless` option for backwards compatibility?
+
+I always add it to the defaults in my `~/.hgrc` but it makes me feel kind of
+dirty when I do. It adds a bunch of unnecessary lines to the config file and
+confuses new people.
+
+BitBucket Could Be Prettier
+---------------------------
+
+Don't get me wrong, [BitBucket](http://bitbucket.org/) is an awesome site, but
+compared to [GitHub](http://github.com/) it looks a bit dull and unappealing.
+
+It's definitely more usable (how the hell do I view a graph of all
+branches/merges of a given repository on GitHub?) but there's something about
+GitHub's design that just makes it pop.
+
+Mercurial's Site Could Be *Much* Prettier
+-----------------------------------------
+
+Mercurial's site is ugly. Very ugly. It seems strange to me that the ugly
+version control system (git) has a fairly good-looking site while the much
+more elegant Mercurial has something that looks so boring and dated.
+
+I know, [mercurial-scm.org](http://mercurial-scm.org/) aims to fix this. Thank
+you from the bottom of my heart but please, hurry. The wiki is hurting my
+eyes.
+
+But Hey, at Least It's Not Git!
+--------------------------------
+
+All of those things annoy me, but they're small problems compared to the
+revulsion I get when I try to use git every so often.
+
+Maybe that would be a good topic for another entry. At the very least it'll
+probably get me a ton of pageviews and comments saying: "Git's changed, man!
+It's not like it used to be, it's totally intuitive now! You just gotta learn
+how it stores the data!"
+
+I learned, and I'll still take Mercurial despite the small annoyances.
+
+{% endblock %}

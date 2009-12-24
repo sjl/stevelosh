@@ -1,0 +1,184 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Mercurial Bash Prompts"
+    snip: "Always know where you are."
+    created: 2009-03-17 21:34:55
+%}
+
+{% block article %}
+
+I've been spending a lot of time in the Terminal lately. I use bash, and it
+lets you configure the prompt pretty much however you want. I won't go into
+how to do the most basic configuration here - if you want to get up to speed
+check out this [guide][].
+
+In this post I'm just going to talk about one simple addition that I
+personally find very helpful: displaying the current branch of a [Mercurial][]
+repository.
+
+Update: the hg-prompt Extension
+---------------
+
+I swear, this is the last time I'm updating this entry. I went ahead and made
+an extension for Mercurial called
+[hg-prompt](http://stevelosh.com/projects/hg-prompt/) that does everything
+much more elegantly. **Use that instead!**
+
+[guide]: http://www.ibm.com/developerworks/linux/library/l-tip-prompt/
+[Mercurial]: http://www.selenic.com/mercurial/wiki/
+[git version]: http://gist.github.com/31631
+
+My Starting Point
+-----------------
+
+Here's what my prompt looked like a couple of days ago:
+
+![My bash prompt without the branch displayed](/site-media/storage/blog/2009-03-17-prompt/prompt-without-branch.png "My bash prompt without the branch displayed.")
+
+Here's the code in my `.bashrc` file to create it. I've stripped out the color
+information to save space.
+
+    #!bash
+    export PS1='\n\u at \h in \w\n$ '
+
+I use the same prompt on every computer I work with, so with this prompt I can
+see which user I'm logged in as, which machine I'm on, and where in the
+filesystem I am. It's a lot of useful information at a glance but doesn't seem
+too cluttered.
+
+I have a linebreak in there because the filesystem path can get pretty long.
+If I kept it all on one line most of my commands would be wrapped around
+anyway, which I find harder to read.
+
+Adding the Mercurial Branch
+---------------------------
+
+I use Mercurial for version control, and I use branches quite a bit when I'm
+developing. One problem with this is that it's easy to forget which branch I'm
+on at a given moment. I *could* just use `hg branch` to find out, but that
+gets tedious to type, even when aliased to something like `hb`.
+
+A few days ago I got the idea that I could just display the current branch on
+my prompt whenever I'm in a directory that's part of a repository. Here's what
+my prompt looks like now:
+
+![My bash prompt with the branch displayed](/site-media/storage/blog/2009-03-17-prompt/prompt-with-branch.png "My bash prompt with the branch displayed.")
+
+And here's the code in my `.bashrc` that does it:
+
+    #!bash
+    hg_in_repo() {
+        hg branch 2> /dev/null | awk '{print "on "}'
+    }
+
+    hg_branch() {
+        hg branch 2> /dev/null | awk '{print $1}'
+    }
+
+    export PS1='\n\u at \h in \w $(hg_in_repo)$(hg_branch)\n$ '
+
+The `on branchname` piece is only displayed when you're in a directory that's
+part of a Mercurial repository.
+
+I've split it up into two separate functions because I wanted to have `on` and
+`branchname` displayed in two different colors. I couldn't seem to include the
+color codes in the awk command, so I split it up and put the colors in the
+export statement with the rest of them. If you don't care about colors (or
+don't mind having both words the same color) you can just collapse it into one
+function.
+
+Updated: Is It Dirty?
+---------------------
+
+After I posted this entry Matt Kemp commented with a link to a [git
+version][]. One feature that version has is a simple indicator of whether or
+not the repository you're in is dirty. I ported it to Mercurial and here's the
+result:
+
+![My bash prompt with the branch and dirty indicator displayed](/site-media/storage/blog/2009-03-17-prompt/prompt-with-dirty.png "My bash prompt with the branch and dirty indicator displayed.")
+
+And the code in `.bashrc`:
+
+    #!bash
+    hg_dirty() {
+        hg status --no-color 2> /dev/null \
+        | awk '$1 == "?" { print "?" } $1 != "?" { print "!" }' \
+        | sort | uniq | head -c1
+    }
+    
+    hg_in_repo() {
+        [[ `hg branch 2> /dev/null` ]] && echo 'on '
+    }
+
+    hg_branch() {
+        hg branch 2> /dev/null
+    }
+
+    export PS1='\n\u at \h in \w $(hg_in_repo)$(hg_branch)$(hg_dirty)\n$ '
+
+This gives you a `?` after the branch when there are untracked files (and
+*only* untracked files), and a `!` if there are any modified, tracked files.
+
+Updated: Bookmarks Too!
+----------------
+
+I've added another piece to show bookmarks as well. I've also figured out how
+to add colors directly in the functions, so here's the (much nicer) updated
+code all at once:
+
+    #!bash
+    DEFAULT="[37;40m"
+    PINK="[35;40m"
+    GREEN="[32;40m"
+    ORANGE="[33;40m"
+    
+    hg_dirty() {
+        hg status --no-color 2> /dev/null \
+        | awk '$1 == "?" { unknown = 1 } 
+               $1 != "?" { changed = 1 }
+               END {
+                 if (changed) printf "!"
+                 else if (unknown) printf "?" 
+               }'
+    }
+    
+    hg_branch() {
+        hg branch 2> /dev/null | \
+            awk '{ printf "\033[37;0m on \033[35;40m" $1 }'
+        hg bookmarks 2> /dev/null | \
+            awk '/\*/ { printf "\033[37;0m at \033[33;40m" $2 }'
+    }
+    
+    export PS1='\n\e${PINK}\u \
+    \e${DEFAULT}at \e${ORANGE}\h \
+    \e${DEFAULT}in \e${GREEN}\w\
+    $(hg_branch)\e${GREEN}$(hg_dirty)\
+    \e${DEFAULT}\n$ '
+
+These are some pretty simple changes but they help keep me sane. One thing to
+be aware of: if you use all of these it does slow down the rendering of the
+prompt by a tiny, but noticeable, amount. I'm not the strongest bash scripter,
+so if there's a better way to do this (or a way that will make it faster and
+reduce the delay) please let me know!
+
+**UPDATE:** Matt Kemp posted a link to a [git version][] of this below. If you
+use git, check it out! One thing that version has that I didn't think of is an
+indicator of whether the repository is dirty (has uncommitted changes). I'm
+going to go ahead and steal that idea for my prompt too.
+
+**UPDATE:** By request, I've written [an entry about the
+colors](/blog/entry/2009/3/18/candy-colored-terminal/).
+
+**UPDATE:** Kevin Bullock pointed out that the Python interpreter needed to be
+started a bunch of times which will degrade performance. I've changed up the
+"dirty" code a bit to reduce the number of interpreters needed. It's still not
+as efficient as his version, but I think it's about as good as I'm going to
+get if I want separate colors for the pieces and don't want to rely on an
+external script.
+
+**FINAL UPDATE:** I made an extension for Mercurial called
+[hg-prompt](http://stevelosh.com/projects/hg-prompt/) that does everything
+much more elegantly. **Use that instead!**
+
+{% endblock %}
