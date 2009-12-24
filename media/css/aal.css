@@ -8,7 +8,6 @@
   edited for stevelosh.com by Steve Losh
   changes:
     base font-size was changed to 14px
-    list margins set to 0
 
 /* 
   Reset first. Modified version of Eric Meyer and Paul Chaplin reset 
@@ -52,7 +51,7 @@ p,ul,ol,dl,blockquote,pre {margin: 0 0 1.5em;}
 li ul,li ol {margin: 0;}
 ul {list-style: outside disc;}
 ol {list-style: outside decimal;}
-li {margin: 0 0 0 0;}
+li {margin: 0 0 0 3em;}
 dd {padding-left: 1.5em;}
 blockquote {padding: 0 1.5em;}
 

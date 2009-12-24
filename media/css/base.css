@@ -101,6 +101,7 @@ div#section-listing ol {
 }
 div#section-listing ol li {
     border-bottom: 1px solid #eee;
+    margin: 0;
 }
 div#section-listing ol a {
     color: #111;
@@ -117,4 +118,22 @@ div#section-listing ol li span.snip {
     line-height: 1em;
     margin-left: 0.5em;
     font-weight: normal;
+}
+
+code, pre {
+    font-family: Consolas, Monaco, "Courier New", monospace;
+    font-size: 12px;
+    line-height: 21px;
+}
+p code, li code {
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    padding: 1px 3px;
+}
+pre {
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    padding: 0px 5px;
+    margin-left: 2em;
+    overflow: auto;
 }
