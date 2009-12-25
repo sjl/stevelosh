@@ -151,6 +151,9 @@ blockquote {
 blockquote p:last-child {
     margin-bottom: 0;
 }
+span.dquo {
+    margin-left: -0.23em;
+}
 
 /* Table of Contents styles. */
 div.toc ul {
