@@ -152,6 +152,14 @@ blockquote p:last-child {
     margin-bottom: 0;
 }
 
+/* Table of Contents styles. */
+div.toc ul {
+    list-style: none;
+}
+div.toc ul:first-child>li {
+    margin-left: 0em;
+}
+
 /* Ampersand styles. */
 span.amp {
     font-family: "Palatino", "Constantia", "Palatino Linotype", serif;
