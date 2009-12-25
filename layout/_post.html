@@ -1,7 +1,9 @@
 {% extends "skeleton/_base.html" %}
 
 {% block content %}
-    <div id="leaf-title"><h1>{{ page.title|safe|typogrify }}</h1></div>
+    <div id="leaf-title">
+        <h1><a href="{{ page.url }}">{{ page.title|safe|typogrify }}</a></h1>
+    </div>
     
     <div id="leaf-stats"><p>Posted on {{ page.created|date:"l, F j, Y" }} ({{ page.created|timesince }} ago).</p></div>
     
