@@ -7,10 +7,10 @@ body {
 div#main-wrap {
     width: 62em;
     margin: 0 auto;
+    margin-bottom: 5em;
 }
 div#content {
     width: 48em;
-    margin-bottom: 5em;
 }
 
 /* Link styles. */
