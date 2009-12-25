@@ -5,7 +5,7 @@
     
     <div id="leaf-content">
         {% filter typogrify %}
-            {% markdown %}
+            {% markdown toc def_list %}
                 {% block article %}{% endblock %}
             {% endmarkdown %}
         {% endfilter %}

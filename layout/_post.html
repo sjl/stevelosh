@@ -7,7 +7,7 @@
         {% filter typogrify %}
             {% article %}
                 {% filter typogrify %}
-                    {% markdown %}
+                    {% markdown toc def_list %}
                         {% block article %}{% endblock %}
                     {% endmarkdown %}
                 {% endfilter %}

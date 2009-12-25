@@ -1,13 +1,15 @@
 {% extends "skeleton/_base.html" %}
 
 {% block content %}
-    <div id="splash-info">
-        <ul>
-            <li>I like writing. &raquo;</li>
-            <li>What makes me tick. &raquo;</li>
-            <li>Some things I’ve made. &raquo;</li>
-            <li>More about me. &raquo;</li>
-            <li>Feeds. &raquo;</li>
-        </ul>
-    </div>
+    {% filter typogrify %}
+        <div id="splash-info">
+            <ul>
+                <li>I like writing. &raquo;</li>
+                <li>What makes me tick. &raquo;</li>
+                <li>Some things I’ve made. &raquo;</li>
+                <li>More about me. &raquo;</li>
+                <li>Feeds. &raquo;</li>
+            </ul>
+        </div>
+    {% endfilter %}
 {% endblock %}
