@@ -13,6 +13,7 @@ TMP_DIR = os.path.join(ROOT_PATH, 'deploy_tmp')
 BACKUPS_DIR = os.path.join(ROOT_PATH, 'backups')
 
 BACKUP = False
+DEBUG = True
 
 SITE_ROOT = "/"
 SITE_WWW_URL = "http://stevelosh.com"

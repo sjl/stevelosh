@@ -1,19 +1,19 @@
 /* @override http://localhost:8080/media/css/base.css */
-* {
-    margin: 0;
-    padding: 0;
-}
-
+/* Main layout styles. */
 body {
     font-family: "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
     color: #111;
 }
-
 div#main-wrap {
-    width: 64em;
+    width: 62em;
     margin: 0 auto;
 }
+div#content {
+    width: 48em;
+    margin-bottom: 5em;
+}
 
+/* Link styles. */
 a {
     text-decoration: none;
     color: #e50053;
@@ -29,12 +29,15 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     text-decoration: none;
 }
 
+/* Page header styles. */
 #header {
     margin-top: 1.5em;
     margin-bottom: 3em;
+    overflow: visible;
+    white-space: nowrap;
 }
 #header h1 {
-	letter-spacing: -3px;
+    letter-spacing: -3px;
     font-size: 3.5em;
     font-weight: normal;
     font-family: "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
@@ -45,6 +48,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     text-transform: lowercase;
 }
 
+/* Navigation bar styles. */
 #nav {
     float: right;
     width: 10em;
@@ -69,6 +73,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     text-decoration: none;
 }
 
+/* Splash page styles. */
 #splash-info {
     font-size: 1.5em;
     line-height: 2em;
@@ -85,11 +90,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     border-bottom: none;
 }
 
-#content {
-	width: 46em;
-	margin-bottom: 5em;
-}
-
+/* Section listing styles. */
 div#section-listing {
     font-size: 1.5em;
     font-weight: bold;
@@ -120,6 +121,7 @@ div#section-listing ol li span.snip {
     font-weight: normal;
 }
 
+/* Code styles. */
 code, pre {
     font-family: Consolas, Monaco, "Courier New", monospace;
     font-size: 12px;
@@ -136,4 +138,40 @@ pre {
     padding: 0px 5px;
     margin-left: 2em;
     overflow: auto;
+}
+
+/* Quoting styles. */
+blockquote {
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    padding: 0px 5px;
+    margin-left: 2em;
+    overflow: auto;
+}
+blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* Ampersand styles. */
+span.amp {
+    font-family: "Palatino", "Constantia", "Palatino Linotype", serif;
+    font-style: italic;
+}
+div#section-listing ol li a span.amp {
+    font-weight: bold;
+    line-height: 0.85em;
+    font-size: 1.25em;
+    color: inherit;
+}
+h1 span.amp, h2 span.amp, h3 span.amp, h4 span.amp, h5 span.amp, h6 span.amp {
+    font-weight: bold;
+    line-height: 0.5em;
+    font-size: 1.25em;
+    color: inherit;
+    
+}
+span.page-title span.amp {
+	font-weight: normal;
+    font-size: 1.1em;
+	line-height: 0.5em;
 }
