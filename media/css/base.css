@@ -179,7 +179,14 @@ h1 span.amp, h2 span.amp, h3 span.amp, h4 span.amp, h5 span.amp, h6 span.amp {
     
 }
 span.page-title span.amp {
-	font-weight: normal;
+    font-weight: normal;
     font-size: 1.1em;
-	line-height: 0.5em;
+    line-height: 0.5em;
+}
+
+/* Article styles. */
+div#leaf-stats p {
+    color: #666;
+    margin-top: -1em;
+    margin-bottom: 1em;
 }

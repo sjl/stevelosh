@@ -3,6 +3,8 @@
 {% block content %}
     <div id="leaf-title"><h1>{{ page.title|safe|typogrify }}</h1></div>
     
+    <div id="leaf-stats"><p>Posted on {{ page.created|date:"l, F j, Y" }} ({{ page.created|timesince }} ago).</p></div>
+    
     <div id="leaf-content">
         {% filter typogrify %}
             {% article %}
