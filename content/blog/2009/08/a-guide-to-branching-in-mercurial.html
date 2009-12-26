@@ -47,7 +47,7 @@ Prologue
 Before I start explaining the different branching models, here's a simple
 repository I'll use as an example:
 
-![Basic Repository Diagram](/site-media/storage/blog/2009-08-30-branching/branch-base.png "Basic Repository")
+![Basic Repository Diagram](/media/images{{ parent_url }}/branch-base.png "Basic Repository")
 
 The repository is in the `~/src/test-project` folder. It has three changesets
 in it: numbers 0, 1 and 2.
@@ -84,7 +84,7 @@ Now you've got two copies of the repository. You can commit separately in each
 one and push/pull changesets between them as often as you like. Once you've
 made some changes in each one, the result might look like this:
 
-![Clone Diagram](/site-media/storage/blog/2009-08-30-branching/branch-clone.png "Branching with Clones")
+![Clone Diagram](/media/images{{ parent_url }}/branch-clone.png "Branching with Clones")
 
 We've got two copies of the repository. Both contain the changesets that
 existed at the time we branched/cloned. If we push from `test-project` into
@@ -194,11 +194,14 @@ to the tip changeset of that branch and mark yourself as working on that
 branch. When you commit, it will move the bookmark to the newly created
 changeset.
 
-**Note:** for more detailed information on actually using bookmarks day-to-day please read the [bookmarks page][bookmark].  This guide is meant to show the different branching models, and bookmarks have a few quirks that you should know about if you're going to use them.
+**Note:** for more detailed information on actually using bookmarks day-to-day
+please read the [bookmarks page][bookmark]. This guide is meant to show the
+different branching models, and bookmarks have a few quirks that you should
+know about if you're going to use them.
 
 Here's what the repository would look like with this method:
 
-![Bookmark Diagram](/site-media/storage/blog/2009-08-30-branching/branch-bookmark.png "Branching with Bookmarks")
+![Bookmark Diagram](/media/images{{ parent_url }}/branch-bookmark.png "Branching with Bookmarks")
 
 The diagram of the changesets is pretty simple: the branch point was at
 changeset 2 and each branch has one new changeset on it.
@@ -260,7 +263,7 @@ parent, unless you've used `hg branch` to mark it as being on a different one.
 
 Here's what a repository using named branches might look like:
 
-![Named Branch Diagram](/site-media/storage/blog/2009-08-30-branching/branch-named.png "Branching with Named Branches")
+![Named Branch Diagram](/media/images{{ parent_url }}/branch-named.png "Branching with Named Branches")
 
 An important difference with this method is that the branch name is
 permanently recorded as part of the changeset's metadata (as you can see in
@@ -317,7 +320,7 @@ changeset's parent will be the parent of the working directory.
 
 The result of updating and committing without doing anything else would be:
 
-![Anonymous Diagram](/site-media/storage/blog/2009-08-30-branching/branch-anon.png "Branching Anonymously")
+![Anonymous Diagram](/media/images{{ parent_url }}/branch-anon.png "Branching Anonymously")
 
 How do you switch back and forth between branches once you do this? Just use
 `hg update --check REV` with the revision number (or hash) (you can shorten
@@ -367,7 +370,8 @@ One More Difference Between Mercurial and git
 There's one more *big* difference between Mercurial's branching and git's
 branching:
 
-**Mercurial will push/pull *all* branches by default, while git will push/pull only the *current* branch.**
+**Mercurial will push/pull *all* branches by default, while git will push/pull
+only the *current* branch.**
 
 This is important if you're a git user working with Mercurial. If you want to
 push/pull only a single branch with Mercurial you can use the `--rev` option

@@ -51,7 +51,11 @@
             </div>
             
             <div id="content">
-                {% block content %}{% endblock %}
+                {% with page.node.ancestors|last as parent_node %}
+                    {% with parent_node.url as parent_url %}
+                        {% block content %}{% endblock %}   
+                    {% endwith %}
+                {% endwith %}
             </div>
         </div>
     </body>
