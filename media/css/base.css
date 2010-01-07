@@ -203,7 +203,7 @@ div.with-diagrams img {
     border: none;
 }
 div#leaf-content img {
-	display: block;
+    display: block;
     margin-left: auto;
     margin-right: auto;
     border: 1.43em solid #e5e5e5;
@@ -221,16 +221,11 @@ div#leaf-content img.left {
 div#leaf-content img.right {
     margin: 0 0 .75em 1em;
 }
-div#leaf-content div.gallery > img {
-    display: inline;
-    padding: 0px;
+div#leaf-content div.gallery img {
+    background: none;
+    padding: 0;
     border: none;
-    margin-left: 0px;
-    margin-right: 0px;
-}
-div#leaf-content div.gallery-pane {}
-div#leaf-content div.gallery-pane img.gallery-display {
-	display: block;
-    margin: 0px;
-    padding: 0px;
+    display: inline;
+    margin-bottom: 1.5em;
+    margin-right: 1.5em;
 }

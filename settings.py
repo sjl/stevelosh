@@ -38,11 +38,15 @@ APPEND_SLASH = True
 
 MEDIA_PROCESSORS = {
     '*': {
-        '.css':( 'hydeengine.media_processors.TemplateProcessor',
-                 'hydeengine.media_processors.YUICompressor', ),
-        '.js':( 'hydeengine.media_processors.TemplateProcessor',
-                'hydeengine.media_processors.YUICompressor', )
-    } 
+        '.css': ('hydeengine.media_processors.TemplateProcessor',
+                 'hydeengine.media_processors.YUICompressor',),
+        '.js': ('hydeengine.media_processors.TemplateProcessor',
+                'hydeengine.media_processors.YUICompressor',)
+    },
+    'images/': {
+        '.png': ('hydeengine.media_processors.Thumbnail',),
+        '.jpg': ('hydeengine.media_processors.Thumbnail',),
+    }
 }
 
 CONTENT_PROCESSORS = {}
@@ -70,6 +74,9 @@ FILTER = {
 
 YUI_COMPRESSOR = os.path.join(HYDE_FOLDER, 'lib', 'yuicompressor-2.4.1.jar')
 HSS_PATH = None # if you don't want to use HSS
+THUMBNAIL_MAX_WIDTH = 140
+THUMBNAIL_MAX_HEIGHT = 300
+THUMBNAIL_FILENAME_POSTFIX = '-thumb'
 
 # Django settings
 
