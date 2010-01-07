@@ -1,0 +1,6 @@
+Some notes on the design, mostly for myself.
+
+Images
+======
+
+Full images for posts should be 600 pixels wide (or less).

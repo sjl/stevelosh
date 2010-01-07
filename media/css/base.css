@@ -195,3 +195,42 @@ div#leaf-stats p {
 }
 
 /* Image styles. */
+div.with-diagrams img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background: none;
+    border: none;
+}
+div#leaf-content img {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1.43em solid #e5e5e5;
+    padding: 1px;
+    background: black;
+}
+div#leaf-content img.left, div#leaf-content img.right {
+    border: none;
+    background: none;
+    padding: none;
+}
+div#leaf-content img.left {
+     margin: 0 1.5em 1em 0;
+}
+div#leaf-content img.right {
+    margin: 0 0 .75em 1em;
+}
+div#leaf-content div.gallery > img {
+    display: inline;
+    padding: 0px;
+    border: none;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+div#leaf-content div.gallery-pane {}
+div#leaf-content div.gallery-pane img.gallery-display {
+	display: block;
+    margin: 0px;
+    padding: 0px;
+}
