@@ -171,19 +171,19 @@ span.amp {
 div#section-listing ol li a span.amp {
     font-weight: bold;
     line-height: 0.85em;
-    font-size: 1.25em;
+    font-size: 1.1em;
     color: inherit;
 }
 h1 span.amp, h2 span.amp, h3 span.amp, h4 span.amp, h5 span.amp, h6 span.amp {
     font-weight: bold;
     line-height: 0.5em;
-    font-size: 1.25em;
+    font-size: 1.1em;
     color: inherit;
     
 }
 span.page-title span.amp {
     font-weight: normal;
-    font-size: 1.1em;
+    font-size: 1em;
     line-height: 0.5em;
 }
 
