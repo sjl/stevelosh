@@ -23,11 +23,15 @@
             <link rel="stylesheet"
                   href="{{ site.url }}/media/css/base.css"
                   type="text/css" media="screen" charset="utf-8" />
+            <link rel="stylesheet"
+                  href="{{ site.url }}/media/css/colorbox.css"
+                  type="text/css" media="screen" charset="utf-8" />
             {% block extra_css %}{% endblock %}
         {% endblock %}
         
         {% block js %}
-            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+            <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+            <script src="/media/js/jquery.colorbox.js"></script>
             <script src="/media/js/sjl-gallery.js"></script>
             {% block extra_js %}{% endblock %}
         {% endblock %}
