@@ -1,3 +1,7 @@
+{% hyde
+    exclude: True
+%}
+
 {% if GENERATE_CLEAN_URLS %}
 RewriteEngine on
 RewriteBase {{ node.site.settings.SITE_ROOT }}
