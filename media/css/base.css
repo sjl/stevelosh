@@ -229,3 +229,43 @@ div#leaf-content div.with-diagrams img {
     background: none;
     border: none;
 }
+
+/* Comment styles. */
+h1#comment-header {
+    margin-top: 1.5em;
+}
+div#disqus_thread ul#dsq-comments li div div {
+    font-size: 14px;
+}
+div#disqus_thread ul#dsq-comments li {
+    margin-bottom: 2em;
+}
+div#dsq-comments-title h3 {
+    font-size: 14px;
+    font-weight: normal;
+    color: #666;
+    margin-top: -1em;
+    margin-bottom: 1em;
+}
+div.dsq-options {
+    display: none;
+}
+div#content div#disqus_thread ul#dsq-comments li div table tbody tr {
+    background: #eee;
+}
+div#content div#disqus_thread ul#dsq-comments li div table {
+    background: #e5e5e5;
+    border: 1px solid #bbb;
+}
+div#dsq-new-post.dsq-post-area {
+    margin-top: 2.25em;
+}
+div#dsq-thread-settings.dsq-thread-settings {
+    margin-top: 2em;
+    margin-bottom: 0em;
+    font-size: 14px;
+}
+div#disqus_thread table tbody tr td.dsq-request-user-name small,
+#dsq-new-post div.dsq-request-user-info a {
+    font-size: 14px;
+}
