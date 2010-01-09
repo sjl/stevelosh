@@ -12,9 +12,8 @@ class Project(models.Model):
     posted = models.DateTimeField(blank=False, default=datetime.datetime.now)
     slug = models.SlugField()
     
-    @models.permalink
     def get_absolute_url(self):
-        return ('project-view', (self.slug,),)
+        return u'/projects/%s/' % (self.slug,)
     
     def __unicode__(self):
         return u"%s" % (self.name,)

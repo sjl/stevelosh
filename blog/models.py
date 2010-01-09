@@ -14,10 +14,8 @@ class Entry(models.Model):
         verbose_name = 'entry'
         verbose_name_plural = 'entries'
     
-    @models.permalink
     def get_absolute_url(self):
-        return ('blog-entry', (self.pub_date.year, self.pub_date.month, 
-                               self.pub_date.day, self.slug),)
+        return u'/blog/%d/%d/%s/' % (self.pub_date.year, self.pub_date.month, self.slug)
     
     def __unicode__(self):
         return u'%s' % (self.title,)

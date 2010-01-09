@@ -94,9 +94,13 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.markup',
     'django.contrib.flatpages',
+    'django.contrib.comments',
     'stevelosh.blog',
     'stevelosh.projects',
     'stevelosh.messengerbag',
     'mobileadmin',
     'typogrify',
+    'disqus',
 )
+
+from deploy import *
