@@ -55,6 +55,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     font-size: 1.5em;
     font-weight: bold;
     line-height: 2em;
+    -webkit-text-size-adjust: 100%;
 }
 #nav ul li {
     list-style: none;
@@ -80,6 +81,7 @@ h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
     text-align: right;
     color: #888;
     font-family: "Helvetica Neue Light", HelveticaNeue-Light, Arial, Helvetica, sans-serif;
+    -webkit-text-size-adjust: 100%;
 }
 #splash-info ul li {
     margin: 0;
@@ -96,6 +98,7 @@ div#section-listing {
     font-weight: bold;
     line-height: 2em;
     color: #888;
+    -webkit-text-size-adjust: 100%;
 }
 div#section-listing ol {
     list-style: none;
