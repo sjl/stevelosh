@@ -195,13 +195,6 @@ div#leaf-stats p {
 }
 
 /* Image styles. */
-div.with-diagrams img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    background: none;
-    border: none;
-}
 div#leaf-content img {
     display: block;
     margin-left: auto;
@@ -228,4 +221,11 @@ div#leaf-content div.gallery img {
     display: inline;
     margin-bottom: 1.5em;
     margin-right: 1.5em;
+}
+div#leaf-content div.with-diagrams img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background: none;
+    border: none;
 }
