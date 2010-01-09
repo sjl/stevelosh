@@ -3,8 +3,8 @@ RewriteEngine on
 RewriteBase {{ node.site.settings.SITE_ROOT }}
 
 # Old URLs
-RewriteRule ^blog/entry/(\d+)/(\d\d)/\d+/(.*)/$ /blog/$1/$2/$3/ [R=301,L]
-RewriteRule ^blog/entry/(\d+)/(\d)/\d+/(.*)/$ /blog/$1/0$2/$3/ [R=301,L]
+RewriteRule ^blog/entry/(\d+)/(\d\d)/\d+/(.*)$ /blog/$1/$2/$3/ [R=301,L]
+RewriteRule ^blog/entry/(\d+)/(\d)/\d+/(.*)$ /blog/$1/0$2/$3/ [R=301,L]
 
 {% hyde_listing_page_rewrite_rules %}
 
