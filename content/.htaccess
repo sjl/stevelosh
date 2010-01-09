@@ -1,0 +1,19 @@
+{% if GENERATE_CLEAN_URLS %}
+RewriteEngine on
+RewriteBase {{ node.site.settings.SITE_ROOT }}
+
+# Old URLs
+RewriteRule ^blog/entry/(\d+)/(\d\d)/\d+/(.*)/$ /blog/$1/$2/$3/ [R=301,L]
+RewriteRule ^blog/entry/(\d+)/(\d)/\d+/(.*)/$ /blog/$1/0$2/$3/ [R=301,L]
+
+{% hyde_listing_page_rewrite_rules %}
+
+# listing pages whose names are the same as their enclosing folder's
+RewriteCond %{REQUEST_FILENAME}/$1.html -f
+RewriteRule ^([^/]*)/$ %{REQUEST_FILENAME}/$1.html
+
+# regular pages
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^.*$ %{REQUEST_FILENAME}.html
+
+{% endif %}
