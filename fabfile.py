@@ -13,3 +13,6 @@ def serve():
 def reserve():
     regen()
     serve()
+
+def smush():
+    local('smusher ./media/images')
