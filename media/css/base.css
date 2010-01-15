@@ -134,6 +134,7 @@ p code, li code {
     border: 1px solid #ccc;
     background-color: #fafafa;
     padding: 1px 3px;
+    white-space: nowrap;
 }
 pre {
     border: 1px solid #ccc;
