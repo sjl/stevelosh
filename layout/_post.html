@@ -1,5 +1,11 @@
 {% extends "skeleton/_base.html" %}
 
+{% block extra_css %}
+    <link rel="stylesheet"
+          href="{{ site.url }}/media/css/pygments-monokai-light.css"
+          type="text/css" media="screen" charset="utf-8" />
+{% endblock %}
+
 {% block content %}
     <div id="leaf-title">
         <h1><a href="{{ page.url }}">{{ page.title|safe|typogrify }}</a></h1>
@@ -11,7 +17,7 @@
         {% filter typogrify %}
             {% article %}
                 {% filter typogrify %}
-                    {% markdown toc def_list %}
+                    {% markdown toc def_list codehilite %}
                         {% block article %}{% endblock %}
                     {% endmarkdown %}
                 {% endfilter %}

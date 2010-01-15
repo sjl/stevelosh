@@ -128,7 +128,7 @@ Putting it in a Bash Prompt
 To put it in your bash prompt, edit your `~/.bashrc` file to include something
 like this:
 
-    #!bash
+    :::bash
     hg_ps1() {
         hg prompt "{ on {branch}}{ at {bookmark}}{status}" 2> /dev/null
     }
@@ -139,11 +139,13 @@ like this:
 repository or you won't see anything. This little prompt will give you
 something like this:
 
+    :::text
     steve at myhost in ~/src/hg-prompt on default at feature-bookmark?
     $
 
 How about something a little more interesting?
 
+    :::bash
     hg_ps1() {
         hg prompt "{[+{incoming|count}]-->}{root|basename}{/{branch}}{-->[+{outgoing|count}]}{ at {bookmark}}{status}" 2> /dev/null
     }
@@ -152,6 +154,7 @@ How about something a little more interesting?
 
 And the result (this example assumes one incoming changeset and two outgoing):
 
+    :::text
     [+1]-->hg-prompt/default-->[+2] at feature-bookmark
     steve at myhost in ~/src/hg-prompt
     $
