@@ -61,7 +61,21 @@ SITE_POST_PROCESSORS = {
 }
 
 CONTEXT = {
-    'GENERATE_CLEAN_URLS': GENERATE_CLEAN_URLS
+    'GENERATE_CLEAN_URLS': GENERATE_CLEAN_URLS,
+    'links': {
+        'python': 'http://python.org/',
+        'django': 'http://www.djangoproject.com/',
+        'cherrypy': 'http://cherrypy.org/',
+        'hyde': 'http://github.com/lakshmivyas/hyde/',
+        'markdown': 'http://daringfireball.net/projects/markdown/',
+        'fabric': 'http://fabfile.org/',
+        'blatter': 'http://bitbucket.org/jek/blatter/',
+        'webfaction': 'http://www.webfaction.com?affiliate=sjl',
+        'mercurial': 'http://mercurial.selenic.com/',
+        'aardvarklegs': 'http://fecklessmind.com/2009/01/20/aardvark-css-framework/',
+        'hgtip': 'http://hgtip.com/',
+        'lesscss': 'http://lesscss.org/',
+    },
 }
 
 FILTER = { 
