@@ -1,0 +1,22 @@
+{% extends "skeleton/_base.html"%}
+
+{% block extra_title %}{{ page.category|capfirst }} / {% endblock %}
+{% block extra_header %} / {{ page.category }}{% endblock %}
+
+{% block content %}
+    <div id="section-listing">
+        <ol>
+            {% with page.node.ancestors|last as cat_root_node %}
+                {% for cat_name, cat in cat_root_node.categories.items %}
+                    {% ifequal cat_name page.category %}
+                        {% for list_page in cat.posts|dictsortreversed:"created" %}
+                            {% if not list_page.exclude %}
+                                {% include "skeleton/_listingitem.html" %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endifequal %}
+                {% endfor %}
+            {% endwith %}
+        </ol>
+    </div>
+{% endblock %}

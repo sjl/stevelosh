@@ -8,7 +8,7 @@
     <head>
         <meta http-equiv="content-type" content="text/html; charset=utf-8">
         
-        <title>{% block title %}{{ page.title|safe }} / {{ site.name }}{% endblock %}</title>
+        <title>{% block title %}{% block extra_title %}{% endblock %}{{ page.title|safe }} / {{ site.name }}{% endblock %}</title>
         
         {% block feeds %}
             <link href="{{ site.url }}/blog/atom.xml"
@@ -43,8 +43,9 @@
         <div id="main-wrap">
             <div id="header">
                 <h1>
-                    <a href="/">steve losh</a> <span class="page-title">/ {{ page.title|safe|typogrify }}</span>
+                    <a href="/">steve losh</a> <span class="page-title">/ {{ page.title|safe|typogrify }}{% block extra_header %}{% endblock %}</span>
                 </h1>
+                {% block after_header %}{% endblock %}
             </div>
             
             <div id="nav">

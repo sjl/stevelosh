@@ -1,0 +1,8 @@
+<li>
+    <a href="{{ list_page.url }}">
+        {% with list_page.name_without_extension|remove_date_prefix|unslugify as default_title %}
+            {{ list_page.title|default_if_none:default_title|safe|typogrify }}
+        {%endwith%}
+    </a>
+    <span class="snip">{{ list_page.snip|safe|typogrify }}</span>
+</li>

@@ -11,7 +11,15 @@
         <h1><a href="{{ page.url }}">{{ page.title|safe|typogrify }}</a></h1>
     </div>
     
-    <div id="leaf-stats"><p>Posted on {{ page.created|date:"l, F j, Y" }} ({{ page.created|timesince }} ago).</p></div>
+    <div id="leaf-stats">
+        <p>
+            Posted {{ page.created|timesince }} ago on {{ page.created|date:"F j, Y" }}
+            {% if page.categories %}
+                and tagged as
+{% for category in page.categories %}{% if not forloop.first %}{% if forloop.last %} and {% else %}, {% endif %}{% endif %}<a href="{{ page.node.ancestors.1.url }}/{{ category }}/">{{ category }}</a>{% endfor %}.
+            {% endif %}
+        </p>
+    </div>
     
     <div id="leaf-content">
         {% filter typogrify %}

@@ -51,6 +51,15 @@ MEDIA_PROCESSORS = {
 
 CONTENT_PROCESSORS = {}
 
+SITE_PRE_PROCESSORS = {
+    'blog': {
+        'hydeengine.site_pre_processors.CategoriesManager': {},
+    },
+    'projects': {
+        'hydeengine.site_pre_processors.CategoriesManager': {},
+    },
+}
+
 SITE_POST_PROCESSORS = {
     # 'media/js': {
     #        'hydeengine.site_post_processors.FolderFlattener' : {

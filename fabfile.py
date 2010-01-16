@@ -15,7 +15,7 @@ def regen():
     local('hyde -g -s .')
 
 def serve():
-    local('hyde -w -s .')
+    local('hyde -w -s . -k')
 
 def reserve():
     regen()
