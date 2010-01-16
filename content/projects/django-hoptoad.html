@@ -40,14 +40,17 @@ Installation
 Grab the the django-hoptoad code by cloning the [Mercurial][] repository (or
 just [download the latest version][tip-dl] and unzip it somewhere):
 
+    :::text
     hg clone http://bitbucket.org/sjl/django-hoptoad/
 
 There's a git mirror too if you *really* want it.
 
+    :::text
     git clone git://github.com/sjl/django-hoptoad.git
 
 Once you download it, you can install it in the usual manner:
 
+    :::text
     cd django-hoptoad
     python setup.py install
 
@@ -55,10 +58,12 @@ If you'd prefer to be able to update at any time by pulling down changes with
 Mercurial or git, you can symlink the module into your `site-packages`
 directory instead of using `python setup.py install`:
 
+    :::text
     ln -s /full/path/to/django-hoptoad/hoptoad /full/path/to/site-packages/
 
 To make sure it works you can run:
 
+    :::text
     python -c 'import hoptoad'
 
 [Mercurial]: {{links.mercurial}}
@@ -73,6 +78,7 @@ things in the `settings.py` file.
 First, add the `HoptoadNotifierMiddleware` as the last item in your
 `MIDDLEWARE_CLASSES` setting:
 
+    :::python
     MIDDLEWARE_CLASSES = (
         # ... other middleware classes ...
         'hoptoad.middleware.HoptoadNotifierMiddleware',
@@ -81,6 +87,7 @@ First, add the `HoptoadNotifierMiddleware` as the last item in your
 Next, you'll need to add a `HOPTOAD_API_KEY` setting. You can get the key from
 the Hoptoad project page.
 
+    :::python
     HOPTOAD_API_KEY = 'Your Hoptoad API key.'
 
 Optional Settings
@@ -97,6 +104,7 @@ see the error information right in the browser you probably don't need to see
 it in Hoptoad too. If you want to always notify Hoptoad of errors, even while
 in `DEBUG` mode, add the following setting:
 
+    :::python
     HOPTOAD_NOTIFY_WHILE_DEBUG = True
 
 ### Specify a Default Timeout
@@ -112,6 +120,7 @@ the [documentation][urllib2docs] does not see fit to explain that to me.
 If you'd like to change that amount you can use the `HOPTOAD_TIMEOUT` setting.
 You **must** be running Python 2.6+ to use this.
 
+    :::python
     HOPTOAD_TIMEOUT = 5
 
 The number is the number of seconds the notifier will wait before timing out.
@@ -124,6 +133,7 @@ Yes, you can use a float like `0.5` to specify fractions of a second.
 By default Hoptoad will **not** be notified of 404 (page not found) errors. If
 you'd like to change this you'll need to add the following setting:
 
+    :::python
     HOPTOAD_NOTIFY_404 = True
 
 **IMPORTANT**: If you are using Django's `flatpages` app and want to track 404
@@ -134,6 +144,7 @@ of 404 errors even if the user actually sees a Flatpage.
 To track 404s while using the `flatpages` app your `MIDDLEWARE_CLASSES`
 setting should look like this:
 
+    :::python
     MIDDLEWARE_CLASSES = (
         # ... other middleware classes ...
         'hoptoad.middleware.HoptoadNotifierMiddleware',
@@ -150,6 +161,7 @@ A couple of things to note:
 By default Hoptoad will **not** be notified of 403 (forbidden) errors. If
 you'd like to change this you'll need to add the following setting:
 
+    :::python
     HOPTOAD_NOTIFY_403 = True
 
 Note:
@@ -162,6 +174,7 @@ Note:
 If you'd like to ignore all errors from certain User Agents you can use the
 following setting:
 
+    :::python
     HOPTOAD_IGNORE_AGENTS = ['MSIE 6.0', 'Trident']
 
 If any of the strings in the list appear *anywhere* in the User Agent string,
@@ -170,6 +183,7 @@ Hoptoad will not be notified of the error.
 The strings are actually regular expressions, so you can be more specific if
 you like:
 
+    :::python
     HOPTOAD_IGNORE_AGENTS = [r'^Mozilla.*compatible; MSIE \d+\.\d+.*$']
 
 One thing this is useful for (aside from hating on IE) is ignoring errors from
@@ -178,6 +192,7 @@ you'll see a *lot* of errors that you probably don't care about.
 
 This would probably be a good starting point for ignoring crawlers:
 
+    :::python
     HOPTOAD_IGNORE_AGENTS = ['Googlebot', 'Yahoo! Slurp', 'YahooSeeker']
 
 Troubleshooting
@@ -187,6 +202,7 @@ If things don't go smoothly, the first thing to do is run the tests to see if
 they can determine what's wrong. To enable the tests you'll need to add
 django-hoptoad to your `INSTALLED_APPS` setting:
 
+    :::python
     INSTALLED_APPS = (
         # ... other apps ...
         'hoptoad',
@@ -195,6 +211,7 @@ django-hoptoad to your `INSTALLED_APPS` setting:
 
 Once you've done that you can run the unit tests:
 
+    :::text
     python manage.py test hoptoad
 
 **NOTE**: The unit tests are very simple at the moment. I'm working on more,

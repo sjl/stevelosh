@@ -27,10 +27,12 @@ Installing
 
 Clone the repository:
 
+    :::text
     hg clone http://bitbucket.org/sjl/hg-paste/
 
 Edit the `[extensions]` section in your `~/.hgrc` file:
 
+    :::ini
     [extensions]
     paste = (path to)/hg-paste/paste.py
 
@@ -39,20 +41,24 @@ Using the Command
 
 To paste a diff of all uncommitted changes in the working directory:
 
+    :::text
     hg paste
 
 To paste the changes that revision `REV` made:
 
+    :::text
     hg paste -r REV
 
 To paste the changes between revisions `REV1` and `REV2`:
 
+    :::text
     hg paste -r REV1:REV2
 
 If any files are specified only those files will be included in the diffs.
 
 Several options can be used to specify more metadata about the paste:
 
+    :::text
     hg paste --user Steve --title 'Progress on feature X' --keep
 
 The pastebin website to use can be specified with `--dest`. Currently only

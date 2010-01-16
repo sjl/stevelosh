@@ -96,11 +96,13 @@ clone http://bitbucket.org/sjl/t/` ). Put it anywhere you like.
 Next, decide where you want to keep your todo lists. I put mine in `~/tasks`.
 Create that directory:
 
+    :::text
     mkdir ~/tasks
 
 Finally, set up an alias to run `t`. Put something like this in your
 `~/.bashrc` file:
 
+    :::bash
     alias t='python ~/path/to/t.py --task-dir ~/tasks --list tasks'
 
 Make sure you run `source ~/.bashrc` or restart your terminal window to make
@@ -115,6 +117,7 @@ Using t
 
 To add a task, use `t [task description]`:
 
+    :::console
     $ t Clean the apartment.
     $ t Write chapter 10 of the novel.
     $ t Buy more beer.
@@ -124,6 +127,7 @@ To add a task, use `t [task description]`:
 
 Listing your tasks is even easier -- just use `t`:
 
+    :::console
     $ t
     9  - Buy more beer.
     30 - Clean the apartment.
@@ -136,6 +140,7 @@ Listing your tasks is even easier -- just use `t`:
 
 After you're done with something, use `t -f ID` to finish it:
 
+    :::console
     $ t -f 31
     $ t
     9  - Buy more beer.
@@ -147,6 +152,7 @@ After you're done with something, use `t -f ID` to finish it:
 Sometimes you might want to change the wording of a task. You can use `t -e ID
 [new description]` to do that:
 
+    :::console
     $ t -e 30 Clean the entire apartment.
     $ t
     9  - Buy more beer.
@@ -155,6 +161,7 @@ Sometimes you might want to change the wording of a task. You can use `t -e ID
 
 Yes, nerds, you can use sed-style substitution strings:
 
+    :::console
     $ t -e 9 /more/a lot more/
     $ t
     9  - Buy a lot more beer.
@@ -170,6 +177,7 @@ Tips and Tricks
 
 Counting your tasks is simple using the `wc` program:
 
+    :::console
     $ t | wc -l
           2
     $
@@ -178,10 +186,12 @@ Counting your tasks is simple using the `wc` program:
 
 Want a count of your tasks right in your prompt?  Edit your `~/.bashrc` file:
 
+    :::bash
     export PS1="[$(t | wc -l | sed -e's/ *//')] $PS1"
 
 Now you've got a prompt that looks something like this:
 
+    :::console
     [2] $ t -f 30
     [1] $ t Feed the cat.
     [2] $
@@ -192,6 +202,7 @@ Now you've got a prompt that looks something like this:
 sometimes it's useful to be able to have at least *one* level of organization.
 To split up your tasks into different lists you can add a few more aliases:
 
+    :::bash
     alias g='python ~/path/to/t.py --task-dir ~/tasks --list groceries'
     alias m='python ~/path/to/t.py --task-dir ~/tasks --list music-to-buy'
     alias w='python ~/path/to/t.py --task-dir ~/tasks --list wines-to-try'
@@ -203,6 +214,7 @@ want to use such a heavyweight system? You can use `t` instead.
 
 Add another alias to your `~/.bashrc` file:
 
+    :::bash
     alias b='python ~/path/to/t.py --task-dir . --list bugs'
 
 Now when you're in your project directory you can use `b` to manage the list

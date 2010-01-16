@@ -24,6 +24,7 @@ Installing
 To install it, you can [download][] the latest version, or clone the Mercurial
 repository:
 
+    :::text
     hg clone http://bitbucket.org/sjl/grabtweets/
 
 You can put it anywhere you like.
@@ -38,6 +39,7 @@ archived.
 
 To back up your tweets, run `grabtweets` like this:
 
+    :::console
     $ grabtweets.py -u USERNAME FILE
 
 `grabtweets` will pull down the 200 newest tweets from USERNAME and store them in FILE.
@@ -57,6 +59,7 @@ your tweets. Just set it up and forget about it.
 
 To print the tweets that `grabtweets` has already backed up, run it like this:
 
+    :::console
     $ grabtweets.py -p FILE
 
 [Python]: {{links.python}}

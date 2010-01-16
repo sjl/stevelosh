@@ -31,28 +31,32 @@ ranging from easy and ugly to slightly less easy and more elegant.
 
 ### OPTION 1: Easy, Ugly
 
-Copy the contents of hgtab-bash.sh into your ~/.bashrc file.
+Copy the contents of `hgtab-bash.sh` into your `~/.bashrc` file.
 
 ### OPTION 2: Harder, Less Ugly
 
-Download hgtab-bash.sh and place the following line somewhere in your
-~/.bashrc file:
+Download `hgtab-bash.sh` and place the following line somewhere in your
+`~/.bashrc` file:
 
+    :::bash
     source ~/path/to/hgtab/hgtab-bash.sh
 
 ### OPTION 3: Hardest, Elegant
 
 Clone this repository somewhere with this command:
 
+    :::text
     hg clone http://bitbucket.org/sjl/hgtab/
 
-Add the following line to your ~/.bashrc file:
+Add the following line to your `~/.bashrc` file:
 
+    :::bash
     source ~/path/to/hgtab/hgtab-bash.sh
 
 If you use this method you can update the file by pulling down the changes
 from this repository:
 
+    :::text
     cd ~/path/to/hgtab
     hg pull
 
@@ -61,7 +65,7 @@ from this repository:
 Once hgtab is sourced it'll add some nifty tab completion features in your
 shell. For example, you can tab complete Mercurial commands:
 
-    #!console
+    :::console
     sjl at grendel in test $  hg re<tab(s)>
     recover  remove   rename   resolve  revert
     sjl at grendel in test $  hg re
@@ -69,7 +73,7 @@ shell. For example, you can tab complete Mercurial commands:
 When you're using a command that wants a revision as a parameter, hitting tab
 will complete on tags (and bookmarks) and branches.
 
-    #!console
+    :::console
     sjl at grendel in test $  hg branches
     blue                          20:f05ca6eb51a1
     red                           16:8262f0345f41 (inactive)
@@ -94,7 +98,7 @@ will complete on tags (and bookmarks) and branches.
 
 It will also complete remote paths when you're pushing or pulling.
 
-    #!console
+    :::console
     sjl at grendel in test $  hg paths
     alice-dev = http://alice-dev
     alice-stable = http://alice-stable
