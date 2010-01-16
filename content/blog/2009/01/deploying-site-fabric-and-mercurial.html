@@ -69,7 +69,8 @@ how please tell me.
 On your local machine, edit the `.hg/hgrc` file in the repository and change
 the default path to:
 
-	default = ssh://hg@bitbucket.org/username/repositoryname/
+    :::ini
+    default = ssh://hg@bitbucket.org/username/repositoryname/
 
 That will let you push/pull to and from BitBucket over SSH. Doing it that way
 means you can use public/private key authentication and avoid typing your
@@ -90,7 +91,8 @@ On your server, use `hg clone` to clone the BitBucket repository to wherever
 you want to serve it from. Edit the `.hg/hgrc` file in that one and change the
 default path to the same value as before:
 
-	default = ssh://hg@bitbucket.org/username/repositoryname/
+    :::ini
+    default = ssh://hg@bitbucket.org/username/repositoryname/
 
 Once again, set up public/private key authentication; this time between the
 server and BitBucket. You can either copy your public and private keys from
@@ -133,35 +135,35 @@ It's pretty specific to my needs but I'm sure it will give you an idea of
 where to start.
 
 [Fabric]: {{links.fabric}}
-[WebFaction]: http://www.webfaction.com?affiliate=sjl
+[WebFaction]: {{links.webfaction}}
 
-	#!python
-	def prod():
-	    """Set the target to production."""
-	    set(fab_hosts=['sjl.webfactional.com'])
-	    set(fab_key_filename='/Users/sjl/.ssh/stevelosh')
-	    set(remote_app_dir='~/webapps/stevelosh/stevelosh')
-	    set(remote_apache_dir='~/webapps/stevelosh/apache2')
+    :::python
+    def prod():
+        """Set the target to production."""
+        set(fab_hosts=['sjl.webfactional.com'])
+        set(fab_key_filename='/Users/sjl/.ssh/stevelosh')
+        set(remote_app_dir='~/webapps/stevelosh/stevelosh')
+        set(remote_apache_dir='~/webapps/stevelosh/apache2')
 
-	def deploy():
-	    """Deploy the site."""
-	    require('fab_hosts', provided_by = [prod,])
-	    local("hg push")
-	    run("cd $(remote_app_dir); hg pull; hg update")
-	    run("cd $(remote_app_dir); python2.5 manage.py syncdb")
-	    run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
+    def deploy():
+        """Deploy the site."""
+        require('fab_hosts', provided_by = [prod,])
+        local("hg push")
+        run("cd $(remote_app_dir); hg pull; hg update")
+        run("cd $(remote_app_dir); python2.5 manage.py syncdb")
+        run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
 
-	def debugon():
-	    """Turn debug mode on for the production server."""
-	    require('fab_hosts', provided_by = [prod,])
-	    run("cd $(remote_app_dir); sed -i -e 's/DEBUG = .*/DEBUG = True/' deploy.py")
-	    run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
+    def debugon():
+        """Turn debug mode on for the production server."""
+        require('fab_hosts', provided_by = [prod,])
+        run("cd $(remote_app_dir); sed -i -e 's/DEBUG = .*/DEBUG = True/' deploy.py")
+        run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
 
-	def debugoff():
-	    """Turn debug mode off for the production server."""
-	    require('fab_hosts', provided_by = [prod,])
-	    run("cd $(remote_app_dir); sed -i -e 's/DEBUG = .*/DEBUG = False/' deploy.py")
-	    run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
+    def debugoff():
+        """Turn debug mode off for the production server."""
+        require('fab_hosts', provided_by = [prod,])
+        run("cd $(remote_app_dir); sed -i -e 's/DEBUG = .*/DEBUG = False/' deploy.py")
+        run("$(remote_apache_dir)/bin/stop; sleep 1; $(remote_apache_dir)/bin/start")
 
 When I'm finished committing to my local repository and I want to deploy the
 site, I just use the command `fab prod deploy` on my local machine. Fabric
@@ -181,13 +183,13 @@ app (on the server) in the future and reuse the `deploy` and `debug` commands.
 All I'd need to do is add a `test` command, which might look something like
 this:
 
-	#!python
-	def test():
-	    """Set the target to test."""
-	    set(fab_hosts=['sjl.webfactional.com'])
-	    set(fab_key_filename='/Users/sjl/.ssh/stevelosh')
-	    set(remote_app_dir = '~/webapps/stevelosh-test/stevelosh')
-	    set(remote_apache_dir = '~/webapps/stevelosh-test/apache2')
+    :::python
+    def test():
+        """Set the target to test."""
+        set(fab_hosts=['sjl.webfactional.com'])
+        set(fab_key_filename='/Users/sjl/.ssh/stevelosh')
+        set(remote_app_dir = '~/webapps/stevelosh-test/stevelosh')
+        set(remote_apache_dir = '~/webapps/stevelosh-test/apache2')
 
 Deploying the test site would then be a simple `fab test deploy` command.
 

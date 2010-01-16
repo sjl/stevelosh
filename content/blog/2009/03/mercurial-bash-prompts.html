@@ -39,7 +39,7 @@ Here's what my prompt looked like a couple of days ago:
 Here's the code in my `.bashrc` file to create it. I've stripped out the color
 information to save space.
 
-    #!bash
+    :::bash
     export PS1='\n\u at \h in \w\n$ '
 
 I use the same prompt on every computer I work with, so with this prompt I can
@@ -67,7 +67,7 @@ my prompt looks like now:
 
 And here's the code in my `.bashrc` that does it:
 
-    #!bash
+    :::bash
     hg_in_repo() {
         hg branch 2> /dev/null | awk '{print "on "}'
     }
@@ -100,7 +100,7 @@ result:
 
 And the code in `.bashrc`:
 
-    #!bash
+    :::bash
     hg_dirty() {
         hg status --no-color 2> /dev/null \
         | awk '$1 == "?" { print "?" } $1 != "?" { print "!" }' \
@@ -127,7 +127,7 @@ I've added another piece to show bookmarks as well. I've also figured out how
 to add colors directly in the functions, so here's the (much nicer) updated
 code all at once:
 
-    #!bash
+    :::bash
     DEFAULT="[37;40m"
     PINK="[35;40m"
     GREEN="[32;40m"

@@ -60,6 +60,7 @@ exact opposite of both*?
 I had to look up the syntax every single time I wanted to use this command,
 until I added this alias to my `~/.hgrc`:
 
+    :::ini
     [alias]
     untrack = rm -Af
 
@@ -73,6 +74,7 @@ renames -- not just separate adds and removes -- when using `hg addremove`.
 Here's what happens when you move a file and then use `hg addremove` normally
 to have Mercurial track the changes.
 
+    :::console
     sjl at ecgtheow in ~/Desktop/test on default 
     $ ls
     total 16
@@ -111,6 +113,7 @@ to have Mercurial track the changes.
 Now watch what happens when we tell Mercurial to detect renames when using `hg
 addremove`:
 
+    :::console
     sjl at ecgtheow in ~/Desktop/test on default 
     $ ls
     total 16
@@ -162,6 +165,7 @@ Why the Hell Does Status Not Show Renames?
 Assuming they're recorded, I wish `hg status` would show that a file has been
 renamed. Here's what we get instead:
 
+    :::console
     sjl at ecgtheow in ~/Desktop/test on default 
     $ hg rename b c
     
