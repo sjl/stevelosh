@@ -9,8 +9,8 @@
 {% block article %}
 
 Almost exactly one year ago I posted a blog entry about how I [rewrote this
-site][rewrite] using [Django][]. It's a new year, and once again I've rewritten
-the site.
+site][rewrite] using [Django][]. It's a new year, and once again I've
+rewritten the site.
 
 If you've visited my site before you may have noticed some small style tweaks.
 I've cleaned up a few things and I think the site looks better overall. The
@@ -43,38 +43,64 @@ There are a couple of reasons I decided to switch to a static site.
 
 ### Less Memory Needed
 
-I use [WebFaction][] for my web hosting, and with my current plan I have a limit on how much memory I can use at any given time.  Each Django site takes up around 20mb of memory on the server.
+I use [WebFaction][] for my web hosting, and with my current plan I have a
+limit on how much memory I can use at any given time. Each Django site takes
+up around 20mb of memory on the server.
 
-By switching to a static set of HTML pages for my site I save those 20mb so I can use them for something else (like a staging site for another project).  My site doesn't particularly *need* all of the functionality Django can provide, so I figured I'd switch to a static site and save the memory.
+By switching to a static set of HTML pages for my site I save those 20mb so I
+can use them for something else (like a staging site for another project). My
+site doesn't particularly *need* all of the functionality Django can provide,
+so I figured I'd switch to a static site and save the memory.
 
 [WebFaction]: {{links.webfaction}}
 
 ### Static Pages are Faster
 
-My site doesn't get an enormous amount of traffic, so the Django instances weren't really working very hard.  Still, serving a static page through Apache or nginx is always going to be faster than running it through Django.  Faster-loading pages is always a good thing, even if the speed increase isn't very large.
+My site doesn't get an enormous amount of traffic, so the Django instances
+weren't really working very hard. Still, serving a static page through Apache
+or nginx is always going to be faster than running it through Django.
+Faster-loading pages is always a good thing, even if the speed increase isn't
+very large.
 
 ### Easier to Maintain
 
-This is the main reason I switched.  Previously, to edit a blog entry I would log in through Django's admin interface and edit the entry.  With Hyde, I simply edit a file (or create a new one) on my machine and then run a single command to publish it.
+This is the main reason I switched. Previously, to edit a blog entry I would
+log in through Django's admin interface and edit the entry. With Hyde, I
+simply edit a file (or create a new one) on my machine and then run a single
+command to publish it.
 
-Another problem with the old site is that I needed to be connected to the internet to get to the admin interface, so I couldn't update entries (or publish new ones) offline.  I usually have an internet connection, but occasionally I don't.  Now I can edit as much as I like on my own machine and only need a connection to publish the finished product.
+Another problem with the old site is that I needed to be connected to the
+internet to get to the admin interface, so I couldn't update entries (or
+publish new ones) offline. I usually have an internet connection, but
+occasionally I don't. Now I can edit as much as I like on my own machine and
+only need a connection to publish the finished product.
 
 ### Easier to Backup
 
-One more advantage of Hyde is that the site structure *and* content are all held in the same place.  I keep everything in a [Mercurial][] repository, and so every time I push that repository somewhere it creates a full backup of the site's code *and* content.  If WebFaction's server catches on fire I still have everything on my local machine (and on BitBucket).
+One more advantage of Hyde is that the site structure *and* content are all
+held in the same place. I keep everything in a [Mercurial][] repository, and
+so every time I push that repository somewhere it creates a full backup of the
+site's code *and* content. If WebFaction's server catches on fire I still have
+everything on my local machine (and on BitBucket).
 
-I've toyed around with backing up Django's database tables when I had my old site, but this new method is far less work.
+I've toyed around with backing up Django's database tables when I had my old
+site, but this new method is far less work.
 
 [Mercurial]: {{links.mercurial}}
 
 Getting Started
 ---------------
 
-I wanted a fresh start when I was rewriting the site, so I went ahead and created a brand new folder and Mercurial repository for it.
+I wanted a fresh start when I was rewriting the site, so I went ahead and
+created a brand new folder and Mercurial repository for it.
 
-I used `hyde --init` to lay out a skeleton in the new folder.  Then I stripped out a lot of the default items that get added with `--init` and created the directory structure I wanted to use, with stubs for each of the main content files I knew I'd need.
+I used `hyde --init` to lay out a skeleton in the new folder. Then I stripped
+out a lot of the default items that get added with `--init` and created the
+directory structure I wanted to use, with stubs for each of the main content
+files I knew I'd need.
 
-Finally, I went ahead and filled some of the basic values in the `settings.py` file.
+Finally, I went ahead and filled some of the basic values in the `settings.py`
+file.
 
 Layout and Styling
 ------------------
@@ -83,19 +109,34 @@ Once I had a skeleton in place I started working on layout of the site.
 
 ### Cleanup
 
-The templates created by `hyde --init` are functional, but when you look at the code they're a mess.  The indentation is strange and inconsistent and there's trailing whitespace all over the place.  I like clean code so I sat down and cleaned everything up before I started making any real changes.
+The templates created by `hyde --init` are functional, but when you look at
+the code they're a mess. The indentation is strange and inconsistent and
+there's trailing whitespace all over the place. I like clean code so I sat
+down and cleaned everything up before I started making any real changes.
 
 ### Rewriting the Layout and Styles
 
-After I finished cleaning up the templates I duplicated the HTML structure and styles of the old site from scratch.  The old site had gone through a bunch of iterations and I was a bit sloppy in my editing, so there was a lot of cruft that had snuck in.  I wanted a truly *fresh* start for the site, so I buckled down and did it all again.
+After I finished cleaning up the templates I duplicated the HTML structure and
+styles of the old site from scratch. The old site had gone through a bunch of
+iterations and I was a bit sloppy in my editing, so there was a lot of cruft
+that had snuck in. I wanted a truly *fresh* start for the site, so I buckled
+down and did it all again.
 
 ### A New CSS Framework
 
-Previously I used the [Blueprint CSS framework][blueprint] to make laying out the site easier.  Blueprint is a great framework, but it's more powerful than I need for a site as simple as this one.  The site now uses [Aardvark Legs][aal], which is a much simpler framework that simply sets up a great vertical rhythm and leaves you free to lay out the horizontal structure yourself.
+Previously I used the [Blueprint CSS framework][blueprint] to make laying out
+the site easier. Blueprint is a great framework, but it's more powerful than I
+need for a site as simple as this one. The site now uses [Aardvark Legs][aal],
+which is a much simpler framework that simply sets up a great vertical rhythm
+and leaves you free to lay out the horizontal structure yourself.
 
 ### Pagination
 
-Before the rewrite the list of blog entries used to be paginated.  Hyde supports pagination but I decided against using it because I simply don't write enough to make it necessary.  All the blog entries are now listed on a single page, which means that you can use Cmd+F to find an article if you're looking for something specific.
+Before the rewrite the list of blog entries used to be paginated. Hyde
+supports pagination but I decided against using it because I simply don't
+write enough to make it necessary. All the blog entries are now listed on a
+single page, which means that you can use Cmd+F to find an article if you're
+looking for something specific.
 
 [blueprint]: http://www.blueprintcss.org/
 [aal]: {{links.aarkvarklegs}}
@@ -103,11 +144,16 @@ Before the rewrite the list of blog entries used to be paginated.  Hyde supports
 Using Fabric to Type Less
 -------------------------
 
-I realized very quickly that typing `hyde -g -s . && hyde -w -s .` would get old pretty quickly, so I installed [Fabric][] and wrote a fabfile.
+I realized very quickly that typing `hyde -g -s . && hyde -w -s .` would get
+old pretty quickly, so I installed [Fabric][] and wrote a fabfile.
 
-Fabric is a tool written in Python that lets you define tasks and execute them by running `fab taskname`.  Fabfiles are pure Python, so you can build larger tasks out of smaller ones very easily and do just about anything you want.  It's similar to [ant][], but without the excessive over-engineering.
+Fabric is a tool written in Python that lets you define tasks and execute them
+by running `fab taskname`. Fabfiles are pure Python, so you can build larger
+tasks out of smaller ones very easily and do just about anything you want.
+It's similar to [ant][], but without the excessive over-engineering.
 
-You can view the [current fabfile][fabfile] on BitBucket.  At the time of this entry it looks like this:
+You can view the [current fabfile][fabfile] on BitBucket. At the time of this
+entry it looks like this:
 
     :::python
     from fabric.api import *
@@ -145,11 +191,14 @@ You can view the [current fabfile][fabfile] on BitBucket.  At the time of this e
             delete=True
         )
 
-The task I use most often while developing is `fab reserve`, which regenerates the site and then starts serving it so I can view the result in a browser.
+The task I use most often while developing is `fab reserve`, which regenerates
+the site and then starts serving it so I can view the result in a browser.
 
-I use `fab smush` whenever I add new images.  This runs [smusher][] on all of the images to optimize them without reducing quality.
+I use `fab smush` whenever I add new images. This runs [smusher][] on all of
+the images to optimize them without reducing quality.
 
-When I'm ready to publish changes to the live site I run `fab publish`, which will regenerate my local version and copy it up to the WebFaction server.
+When I'm ready to publish changes to the live site I run `fab publish`, which
+will regenerate my local version and copy it up to the WebFaction server.
 
 [Fabric]: {{links.fabric}}
 [ant]: http://ant.apache.org/
@@ -159,9 +208,15 @@ When I'm ready to publish changes to the live site I run `fab publish`, which wi
 Moving the Content
 ------------------
 
-The content of the old site (blog entries, projects, and static pages like the [about page][]) was fairly easy to migrate over to the new one, because both version use [Markdown][] to format the text.
+The content of the old site (blog entries, projects, and static pages like the
+[about page][]) was fairly easy to migrate over to the new one, because both
+version use [Markdown][] to format the text.
 
-First I created an empty file for each page with a filename that matched the "slug" (last part of the URL) of the old page.  Then I manually copied over the title, creation time and content for every page.  I could have written a script to do this, but I don't have enough pages on the site to make it worth the time.
+First I created an empty file for each page with a filename that matched the
+"slug" (last part of the URL) of the old page. Then I manually copied over the
+title, creation time and content for every page. I could have written a script
+to do this, but I don't have enough pages on the site to make it worth the
+time.
 
 [about page]: /about/
 [Markdown]: {{links.markdown}}
@@ -169,15 +224,29 @@ First I created an empty file for each page with a filename that matched the "sl
 Converting the Comments
 -----------------------
 
-At this point the new site was looking very much like the old one.  The styles were (roughly) matching and the blog posts, entries, and static pages were all rendered nicely.
+At this point the new site was looking very much like the old one. The styles
+were (roughly) matching and the blog posts, entries, and static pages were all
+rendered nicely.
 
-The next big task was migrating all of the comments.  Since the new site is static it can't handle dynamic content like comments on its own, so I decided to use [Disqus][].  I use Disqus for the comments on the [hg tip][] site and it's very nice.  For that site I used it from the beginning, but for this rewrite I needed to somehow import all the old comments.
+The next big task was migrating all of the comments. Since the new site is
+static it can't handle dynamic content like comments on its own, so I decided
+to use [Disqus][]. I use Disqus for the comments on the [hg tip][] site and
+it's very nice. For that site I used it from the beginning, but for this
+rewrite I needed to somehow import all the old comments.
 
-To migrate the comments over I used [django-disqus][], but there was a small snag that I needed to deal with first.
+To migrate the comments over I used [django-disqus][], but there was a small
+snag that I needed to deal with first.
 
-When I first wrote the old site I was just getting back into Django after not using it for a long time.  I didn't know about Django's built-in comment models, so I created my own.  They weren't as good as Django's, but they did the job and I didn't care enough to change them.
+When I first wrote the old site I was just getting back into Django after not
+using it for a long time. I didn't know about Django's built-in comment
+models, so I created my own. They weren't as good as Django's, but they did
+the job and I didn't care enough to change them.
 
-This became a problem when it was time to import the old comments into Disqus.  django-disqus only supports importing comments from Django's built-in comment models.  To work around this I first had to convert the old comments into Django's built-in ones.  I wrote a [small, hacky Python script][convert-comments] to do it:
+This became a problem when it was time to import the old comments into Disqus.
+django-disqus only supports importing comments from Django's built-in comment
+models. To work around this I first had to convert the old comments into
+Django's built-in ones. I wrote a [small, hacky Python
+script][convert-comments] to do it:
 
     :::python
     #!/usr/bin/env python
@@ -223,9 +292,13 @@ This became a problem when it was time to import the old comments into Disqus.  
         c.save()
         # print 'http://%s%s' % (site.domain, c.content_object.get_absolute_url())
 
-Yes, it's ugly.  No, I don't care.  It was run once or twice locally and once on the live server.  It worked and I'll never need to run it again.
+Yes, it's ugly. No, I don't care. It was run once or twice locally and once on
+the live server. It worked and I'll never need to run it again.
 
-Once I had the comments converted I could use django-disqus to migrate them.  The import went very smoothly -- I ran one command and after a couple of minutes everything was in Disqus.  Once that finished it was just a matter of adding the Disqus JavaScript to one of the templates.
+Once I had the comments converted I could use django-disqus to migrate them.
+The import went very smoothly -- I ran one command and after a couple of
+minutes everything was in Disqus. Once that finished it was just a matter of
+adding the Disqus JavaScript to one of the templates.
 
 [Disqus]: http://disqus.com/
 [hg tip]: {{links.hgtip}}
@@ -235,19 +308,27 @@ Once I had the comments converted I could use django-disqus to migrate them.  Th
 Rewriting the Old URLs
 ----------------------
 
-Since I was pretty much starting from scratch with this rewrite I decided to clean up the URL structure of my blog.  Previously a blog entry's URL looked like this:
+Since I was pretty much starting from scratch with this rewrite I decided to
+clean up the URL structure of my blog. Previously a blog entry's URL looked
+like this:
 
     :::text
     http://stevelosh.com/blog/entry/2009/08/30/a-guide-to-branching-in-mercurial/
 
-The `/entry/` part of the URL was useless -- it just took up space, so I got rid of it.  The year and month are useful to get an idea of how old an entry is just by looking at the link, so I left them in.  The day, however, probably doesn't matter that much, so I took it out.
+The `/entry/` part of the URL was useless -- it just took up space, so I got
+rid of it. The year and month are useful to get an idea of how old an entry is
+just by looking at the link, so I left them in. The day, however, probably
+doesn't matter that much, so I took it out.
 
 The new URLs look like this:
 
     :::text
     http://stevelosh.com/blog/2009/08/a-guide-to-branching-in-mercurial/
 
-The problem with rewriting the URL structure is that there are already links around the web pointing at my entries.  I didn't want those old links to break, so I crafted an [`.htaccess` file][htaccess] that would rewrite the old URLs into the new ones:
+The problem with rewriting the URL structure is that there are already links
+around the web pointing at my entries. I didn't want those old links to break,
+so I crafted an [`.htaccess` file][htaccess] that would rewrite the old URLs
+into the new ones:
 
     {% templatetag openblock %} if GENERATE_CLEAN_URLS {% templatetag closeblock %}
     RewriteEngine on
@@ -269,68 +350,99 @@ The problem with rewriting the URL structure is that there are already links aro
     
     {% templatetag openblock %} endif {% templatetag closeblock %}
 
-Most of that file is the stock Hyde `.htaccess` file -- the two lines under `# Old URLs` are the ones that I added.  It took me a while to get it right because I don't work with Apache's `mod_rewrite` very often, but it was worth it to avoid breaking all of the old links.
+Most of that file is the stock Hyde `.htaccess` file -- the two lines under `#
+Old URLs` are the ones that I added. It took me a while to get it right
+because I don't work with Apache's `mod_rewrite` very often, but it was worth
+it to avoid breaking all of the old links.
 
 [htaccess]: http://bitbucket.org/sjl/stevelosh/src/tip/content/.htaccess
 
 Creating an RSS Feed
 --------------------
 
-I had an RSS feed for the old site which Django made very easy to set up.  I definitely needed a feed for the new site, and fortunately Hyde provides a simple sample template that can be used to make an ATOM feed.
+I had an RSS feed for the old site which Django made very easy to set up. I
+definitely needed a feed for the new site, and fortunately Hyde provides a
+simple sample template that can be used to make an ATOM feed.
 
-I cleaned up the whitespace and formatting of that template a bit, adjusted a few variables for my needs, put it on [FeedBurner][] and everything was ready.
+I cleaned up the whitespace and formatting of that template a bit, adjusted a
+few variables for my needs, put it on [FeedBurner][] and everything was ready.
 
 [FeedBurner]: http://www.feedburner.com/
 
 Merging the Repositories
 ------------------------
 
-The last step before I was finished was to merge the old and new repositories together so I wouldn't lose any of the history.  It's probably not *too* important to keep the old site's history around, but I put a lot of work into it over the past year and it has some sentimental value.
+The last step before I was finished was to merge the old and new repositories
+together so I wouldn't lose any of the history. It's probably not *too*
+important to keep the old site's history around, but I put a lot of work into
+it over the past year and it has some sentimental value.
 
-Fortunately it's very easy to [combine Mercurial repositories][combinerepos].  I just pulled the old repository into the new one, merged the old head into the new one while discarding all the changes, and pushed it up to BitBucket.
+Fortunately it's very easy to [combine Mercurial repositories][combinerepos].
+I just pulled the old repository into the new one, merged the old head into
+the new one while discarding all the changes, and pushed it up to BitBucket.
 
 [combinerepos]: http://hgtip.com/tips/advanced/2009-11-17-combining-repositories/
 
 Still to Come
 -------------
 
-At this point I felt the site was ready to be released, so I set up a new site on WebFaction and used Fabric to deploy it.
+At this point I felt the site was ready to be released, so I set up a new site
+on WebFaction and used Fabric to deploy it.
 
-I'm very happy with the result, but there are still a few things I'm going to fix/change in the future.
+I'm very happy with the result, but there are still a few things I'm going to
+fix/change in the future.
 
 ### "Ago" Dates
 
-If you look at the top of each blog entry and project there's a line beneath the title that looks something like:
+If you look at the top of each blog entry and project there's a line beneath
+the title that looks something like:
 
     :::text
     Posted on Monday, November 16, 2009 (1 month, 3 weeks ago).
 
-The `(1 month, 3 weeks ago)` part of that line is something that I really appreciate on blogs.  When they just list the date I always have to do the math in my head to figure out roughly how old something is.
+The `(1 month, 3 weeks ago)` part of that line is something that I really
+appreciate on blogs. When they just list the date I always have to do the math
+in my head to figure out roughly how old something is.
 
-With a static site, however, those times will quickly become inaccurate if I don't regenerate and publish the site regularly.  I'm still thinking about the best way to work this out.
+With a static site, however, those times will quickly become inaccurate if I
+don't regenerate and publish the site regularly. I'm still thinking about the
+best way to work this out.
 
-One option is to use a cron job on the WebFaction server to regenerate the site every day, which would keep the times *fairly* accurate.
+One option is to use a cron job on the WebFaction server to regenerate the
+site every day, which would keep the times *fairly* accurate.
 
-Another option would be to use a bit of JavaScript to calculate and render the time when the page is loaded.  This would make it *completely* accurate but wouldn't work if someone is browsing with JavaScript turned off.
+Another option would be to use a bit of JavaScript to calculate and render the
+time when the page is loaded. This would make it *completely* accurate but
+wouldn't work if someone is browsing with JavaScript turned off.
 
 ### Categories
 
-Right now all the blog entries (and projects) are listed in a single chronological list.  It would be great to break them up into categories so people can easily find the articles they're interested in.
+Right now all the blog entries (and projects) are listed in a single
+chronological list. It would be great to break them up into categories so
+people can easily find the articles they're interested in.
 
-Hyde supports categories but I haven't spent the time to learn how to use them yet.  I also need to figure out a way to work a list of categories into the design without cluttering things up too much.
+Hyde supports categories but I haven't spent the time to learn how to use them
+yet. I also need to figure out a way to work a list of categories into the
+design without cluttering things up too much.
 
 ### Use LessCSS
 
-[LessCSS][] is a language that extends CSS with some useful features like variables, mixins, operations and nested rules.  It can make the styles of a site much, much cleaner.
+[LessCSS][] is a language that extends CSS with some useful features like
+variables, mixins, operations and nested rules. It can make the styles of a
+site much, much cleaner.
 
-Hyde includes a LessCSS "processor" that will automatically render your LessCSS files into normal CSS.  I'm planning on rewriting the site's styles in LessCSS and using the processor once I get some free time.
+Hyde includes a LessCSS "processor" that will automatically render your
+LessCSS files into normal CSS. I'm planning on rewriting the site's styles in
+LessCSS and using the processor once I get some free time.
 
 [lesscss]: {{links.lesscss}}
 
 View the Code
 -------------
 
-The code is on [BitBucket][bb-repo] and [GitHub][gh-repo].  Feel free to poke around and see how I've set things up.  If you have questions or suggestions I'd love to hear them!
+The code is on [BitBucket][bb-repo] and [GitHub][gh-repo]. Feel free to poke
+around and see how I've set things up. If you have questions or suggestions
+I'd love to hear them!
 
 [bb-repo]: http://bitbucket.org/sjl/stevelosh/
 [gh-repo]: http://github.com/sjl/stevelosh/

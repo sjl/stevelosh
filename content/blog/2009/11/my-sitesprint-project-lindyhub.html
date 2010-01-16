@@ -64,12 +64,25 @@ design. At the beginning of this year I started to notice a trend: most
 websites for Lindy Hop and blues events are very basic and unpolished. Some of
 the things I've noticed about almost every event site:
 
-* They have a form for you to register for the event, but the form almost never has any nice inline validation of your input.
-* Every site's form is different -- you have to read every single one carefully to see exactly what they want.
-* You end up entering the same information every single time for every event: name, phone number, email, etc.
-* Housing is a toss up.  Sometimes they have a place for it in the registration form, other times they just say "Email aaa@bbb.com if you need housing."  That's a lot of emails for the housing coordinator to sort through and quite often it can become a mess.
-* Some of them list addresses for each venue, which is great for those of us that have GPSes.  Sometimes they just give driving directions to and from each one, which is terrible if you just want to type each one into your GPS or print off directions from Google Maps before you go.
-* Only one event that I've gone to ([Blues Muse][] in Philly) has had a "Who's Coming" list so you could see who else was going to the event (you could choose whether or not to let them show your name when you registered). Sometimes you can figure this out from Facebook event pages, but that's pretty unreliable.
+* They have a form for you to register for the event, but the form almost
+  never has any nice inline validation of your input.
+* Every site's form is different -- you have to read every single one
+  carefully to see exactly what they want.
+* You end up entering the same information every single time for every event:
+  name, phone number, email, etc.
+* Housing is a toss up. Sometimes they have a place for it in the registration
+  form, other times they just say "Email aaa@bbb.com if you need housing."
+  That's a lot of emails for the housing coordinator to sort through and quite
+  often it can become a mess.
+* Some of them list addresses for each venue, which is great for those of us
+  that have GPSes. Sometimes they just give driving directions to and from
+  each one, which is terrible if you just want to type each one into your GPS
+  or print off directions from Google Maps before you go.
+* Only one event that I've gone to ([Blues Muse][] in Philly) has had a "Who's
+  Coming" list so you could see who else was going to the event (you could
+  choose whether or not to let them show your name when you registered).
+  Sometimes you can figure this out from Facebook event pages, but that's
+  pretty unreliable.
 
 There are other things, but those are the big ones.
 
@@ -117,17 +130,30 @@ and open it up for public use.
 
 Here are some of the things the site can do *right now*:
 
-* Users can sign up and create profiles for themselves.  "Forgot my password" and such is supported.
-* They can view (and search for) events that are happening in the future, and comment on them.
+* Users can sign up and create profiles for themselves. "Forgot my password"
+  and such is supported.
+* They can view (and search for) events that are happening in the future, and
+  comment on them.
 * They can create a new event and add things to its schedule.
-* The schedule is formatted nicely.  If an event starts before 5 AM it's grouped with the previous day's events because it's probably a late night dance.
+* The schedule is formatted nicely. If an event starts before 5 AM it's
+  grouped with the previous day's events because it's probably a late night
+  dance.
 * Venues will add links to Google Maps if the organizers put in the address.
-* Organizers can let LindyHub handle event registration for them.  They specify how they want to be paid: door, check, and/or PayPal.  If it's PayPal, LindyHub takes the email address that should receive the money and handles creating the PayPal "Buy Now" button.
-* Early registration is supported -- organizers can specify a cutoff date and the early/late prices if they like.
-* LindyHub doesn't *have* to be used for the registration.  Organizers can opt to handle registration themselves and just put the event on LindyHub to help more people find it.
-* Users can register for events quickly and easily.  LindyHub will ask them how they want to pay and tell them how to do it.
-* When they register they can allow other people to see that they're going to the event.  If they do, they'll show up in the list on the event page.
-* Organizers can see nicely formatted lists of registration/payment information and housing requests.
+* Organizers can let LindyHub handle event registration for them. They specify
+  how they want to be paid: door, check, and/or PayPal. If it's PayPal,
+  LindyHub takes the email address that should receive the money and handles
+  creating the PayPal "Buy Now" button.
+* Early registration is supported -- organizers can specify a cutoff date and
+  the early/late prices if they like.
+* LindyHub doesn't *have* to be used for the registration. Organizers can opt
+  to handle registration themselves and just put the event on LindyHub to help
+  more people find it.
+* Users can register for events quickly and easily. LindyHub will ask them how
+  they want to pay and tell them how to do it.
+* When they register they can allow other people to see that they're going to
+  the event. If they do, they'll show up in the list on the event page.
+* Organizers can see nicely formatted lists of registration/payment
+  information and housing requests.
 
 My Goals for the Sprint (and Beyond)
 ------------------------------------
@@ -135,17 +161,41 @@ My Goals for the Sprint (and Beyond)
 Some of the things I'm planning on adding to the site in during the sprint
 are:
 
-* Redesign the interface.  I'm not a designer, but I can certainly do better than the spartan design I've thrown together during development.
-* Better, Javascript-based form fields.  They'll validate the input before you even click "Submit" (so you can correct mistakes immediately) and provide nice date/time pickers for the date and time fields.  I wanted to make sure the site works 100% for people with JavaScript turned off before I started relying on it to make things pretty.
+* Redesign the interface. I'm not a designer, but I can certainly do better
+  than the spartan design I've thrown together during development.
+* Better, Javascript-based form fields. They'll validate the input before you
+  even click "Submit" (so you can correct mistakes immediately) and provide
+  nice date/time pickers for the date and time fields. I wanted to make sure
+  the site works 100% for people with JavaScript turned off before I started
+  relying on it to make things pretty.
 * Mobile stylesheets for iPhone users.
-* Tagging events with tags like "lindyhop, blues, workshop, exchange, gordonwebster, etc."  This will make it easier to find events you're interested in.  This will also be easy to add.
-* "Friending" other users.  This would let you see what your friends are going to and would be awesome (for me, at least).
-* Location-based features.  LindyHub can already store your hometown and the locations of events.  It wouldn't be terribly difficult to parse this information into a latitude and longitude.  Once that's done it's simple to calculate the distance to events and say "Show me all events within 300 miles of my hometown" or "Show me everyone going to this event that lives within 30 miles of me because we might want to carpool."
-* Automatically email reminders to people a week before the event.  The emails could include links to Google Maps for the first (and other) venues to make it take only one click to print directions.  There are a lot of other things that would be nice to include too -- I've been holding off on this because it really requires the attention of a copywriter to get right.
-* Provide an easy-to-use interface for organizers to assign people that have requested housing to people that offer it.
-* Send emails to guest/host groups automatically to make sure guests have their host's contact information (and vice versa).
-* Translations into different languages.  This will be pretty simple if someone wants to volunteer to translate (I only speak English and American Sign Language myself).
-* Suggesting events a user might like.  This is something for the far future, but it would give me a chance to play around in another favorite area of mine: artificial intelligence.  I have some ideas on how to implement it but it's not critical so I'm not looking at it right now.
+* Tagging events with tags like "lindyhop, blues, workshop, exchange,
+  gordonwebster, etc." This will make it easier to find events you're
+  interested in. This will also be easy to add.
+* "Friending" other users. This would let you see what your friends are going
+  to and would be awesome (for me, at least).
+* Location-based features. LindyHub can already store your hometown and the
+  locations of events. It wouldn't be terribly difficult to parse this
+  information into a latitude and longitude. Once that's done it's simple to
+  calculate the distance to events and say "Show me all events within 300
+  miles of my hometown" or "Show me everyone going to this event that lives
+  within 30 miles of me because we might want to carpool."
+* Automatically email reminders to people a week before the event. The emails
+  could include links to Google Maps for the first (and other) venues to make
+  it take only one click to print directions. There are a lot of other things
+  that would be nice to include too -- I've been holding off on this because
+  it really requires the attention of a copywriter to get right.
+* Provide an easy-to-use interface for organizers to assign people that have
+  requested housing to people that offer it.
+* Send emails to guest/host groups automatically to make sure guests have
+  their host's contact information (and vice versa).
+* Translations into different languages. This will be pretty simple if someone
+  wants to volunteer to translate (I only speak English and American Sign
+  Language myself).
+* Suggesting events a user might like. This is something for the far future,
+  but it would give me a chance to play around in another favorite area of
+  mine: artificial intelligence. I have some ideas on how to implement it but
+  it's not critical so I'm not looking at it right now.
 
 There are a whole slew of other things I have tumbling about in my head, but
 those should be enough to give you an idea of where the site can go.
