@@ -17,3 +17,5 @@ RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^.*$ %{REQUEST_FILENAME}.html
 
 {% endif %}
+
+ErrorDocument 404 /404.html
