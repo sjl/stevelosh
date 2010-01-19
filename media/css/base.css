@@ -145,6 +145,15 @@ pre {
     margin-left: 2em;
     overflow: auto;
 }
+.dsq-comment-message code {
+    display: block;
+    white-space: pre;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    padding: 0px 5px;
+    margin-left: 2em;
+    overflow: auto;
+}
 
 /* Quoting styles. */
 blockquote {
