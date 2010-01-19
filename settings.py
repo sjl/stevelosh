@@ -81,9 +81,12 @@ CONTEXT = {
         'blatter': 'http://bitbucket.org/jek/blatter/',
         'webfaction': 'http://www.webfaction.com?affiliate=sjl',
         'mercurial': 'http://mercurial.selenic.com/',
+        'git': 'http://git-scm.com/',
         'aardvarklegs': 'http://fecklessmind.com/2009/01/20/aardvark-css-framework/',
         'hgtip': 'http://hgtip.com/',
         'lesscss': 'http://lesscss.org/',
+        'bitbucket': 'http://bitbucket.org/',
+        'github': 'http://github.com/',
     },
 }
 
