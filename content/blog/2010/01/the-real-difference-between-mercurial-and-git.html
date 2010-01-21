@@ -1,0 +1,137 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "The Real Difference Between Mercurial and Git"
+    snip: "It’s not their features."
+    created: 2010-01-19 21:22:23
+    categories: ["programming"]
+%}
+
+{% block article %}
+
+There are a
+[lot](http://nubyonrails.com/articles/five-features-from-mercurial-that-would-make-git-suck-less)
+of
+[other](http://www.rockstarprogrammer.org/post/2008/apr/06/differences-between-mercurial-and-git/)
+[blog](http://importantshock.wordpress.com/2008/08/07/git-vs-mercurial/)
+[posts](http://jointheconversation.org/2008/11/24/on-mercurial.html)
+and
+[web sites](http://www.whygitisbetterthanx.com/)
+comparing [Mercurial][] and [git][].
+
+Some of them are just plain outdated or wrong
+([whygitisbetterthanx.com](http://whygitisbetterthanx.com/) for example, lists
+"cheap local branching" as a git advantage over Mercurial, when Mercurial
+actually has [*cheaper* branching][hgbranch] than git!).
+
+Even the ones that aren't factually incorrect often seem to focus on features
+and speed. While this may have been relevant in the past, both systems have
+borrowed so much from each other that I don't think it's a very big deal
+today.
+
+This post is about what I feel are the last, most *important* differences
+between git and Mercurial.
+
+[Mercurial]: {{links.mercurial}}
+[git]: {{links.git}}
+[hgbranch]: /blog/2009/08/a-guide-to-branching-in-mercurial/#branching-anonymously
+
+[TOC]
+
+The Big Difference
+------------------
+
+I think there's still one very, very important difference left: **the systems
+*feel* very different to use**.
+
+This might sound trivial, but I don't think it is. How a system "feels"
+matters. Version control is something you use *constantly*, so it's important
+to find a system that fits your way of thinking.
+
+I'm a visual learner, so I find it helpful to make visual analogies when I'm
+trying to explain something. Here's how I visualize the difference between
+Mercurial and git:
+
+![Swiss Army Knife and Kitchen Utensils](/media/images{{parent_url}}/mercurial-vs-git.jpg "Mercurial vs. Git")
+
+Each git command is like a Swiss Army knife. For example, `git checkout` can
+switch the working directory to a new branch, update file contents to that of
+a previous revision, and even create a new branch. It's an efficient way to
+work once you learn all the arguments and how they interact with each other.
+
+Mercurial is like a well-equipped kitchen -- it has a lot of tools that each
+do one simple, well-defined thing, and do it well. To switch the working
+directory you use `hg update`. To update file contents to what they were at a
+previous revision you use `hg revert`. To create a new branch you use `hg
+branch`. This means there are more commands to learn, but each command is much
+simpler and more specific to a single conceptual task.
+
+I personally find Mercurial's philosophy easier to work with. It's easy for me
+to wrap my head around commands when they're more modular and less monolithic.
+
+For example, I find Mercurial's `help` entries easier to understand. This
+might just be because git's `help` entries are simply too long to read and
+digest when I'm in the middle of coding:
+
+    :::console
+    $ git help checkout | wc -l
+    236
+    
+    $ (hg help update && hg help branch && hg help revert) | wc -l
+    100
+
+I realize that not everyone feels the same way as I do. If you like git's way
+of thinking better, you should certainly use it.
+
+Other Differences
+-----------------
+
+Aside from their "feels" I see two other big differences that still remain
+between git and Mercurial.
+
+### BitBucket and GitHub
+
+A major difference between the two systems is their most popular hosting
+sites: [BitBucket][] and [GitHub][]. GitHub is leaps and bounds above
+BitBucket in pretty much any aspect you look at: graphic design, popularity,
+speed, and/or features. Every time I've seriously considered moving to git it
+was purely because of this disparity.
+
+I don't like using git itself (though it's *far* better than SVN or CVS), but
+GitHub is such an awesome site that I've considered switching just to use it.
+You can chalk it up to "popularity" (i.e. git has more users, so GitHub is
+more profitable and so has more money to spend on development), but the fact
+is that GitHub is still far better than BitBucket.
+
+[BitBucket]: {{links.bitbucket}}
+[GitHub]: {{links.github}}
+
+### Git's Index
+
+One of the features that git users talk about often is git's
+[index][gitindex]. Mercurial has the [record][] extension, but it's not really
+the same thing.
+
+I personally don't like the index. I feel that git encourages people to check
+in changesets that contain code which they've never tested (or even built)
+because the index is such a prominent part of git's workflow.
+
+Yes, one can argue that you don't actually *push* changes until you've got a
+working state. The problem is that when you then try to run `git bisect` later
+to find a bug you'll have to waste time skipping over changesets that don't
+build. You could use `git rebase --interactive` to fold partial changesets
+into one big one, but again, my gut feeling is that few people actually bother
+*testing* the results.
+
+With all that said, I've [considered][] creating a Mercurial extension that
+adds git's index functionality to Mercurial, because I think it would make the
+transition to Mercurial easier for git users. I've had enough experience with
+Mercurial's internals to know that such a thing is *possible*, but I simply
+don't have the time to do it *all* myself. If you're interested in helping out
+please let me know!
+
+[gitindex]: http://book.git-scm.com/1_the_git_index.html
+[record]: http://mercurial.selenic.com/wiki/RecordExtension
+[considered]: http://twitter.com/stevelosh/status/7106305374
+
+{% endblock %}
