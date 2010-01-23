@@ -1,6 +1,9 @@
-{% if GENERATE_CLEAN_URLS %}
 RewriteEngine on
 RewriteBase {{ node.site.settings.SITE_ROOT }}
+
+# www is evil and must be abolished
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
 
 # Old URLs
 RewriteRule ^blog/entry/(\d+)/(\d\d)/\d+/([^/]*)/?$ /blog/$1/$2/$3/ [R=301,L]
@@ -15,7 +18,5 @@ RewriteRule ^([^/]*)/$ %{REQUEST_FILENAME}/$1.html
 # regular pages
 RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^.*$ %{REQUEST_FILENAME}.html
-
-{% endif %}
 
 ErrorDocument 404 /404.html
