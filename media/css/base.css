@@ -293,7 +293,7 @@ ul#section-tags {
     font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
 }
 ul#section-tags li {
-    font-size: 1.2em;
+    font-size: 1.1em;
     line-height: 1.05em;
     margin: 0;
 }
@@ -304,7 +304,7 @@ ul#section-tags li a:hover {
 	color: #e50053;
 	text-decoration: none;
 }
-ul#section-tags span.section-tags-col {
+ul#section-tags div.section-tags-col {
     display: inline-block;
     margin-right: 1em;
 }

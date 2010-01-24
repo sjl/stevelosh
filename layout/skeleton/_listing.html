@@ -5,16 +5,16 @@
 {% block after_header %}
     {% if page.node.categories %}
         <ul id="section-tags">
-            <span class="section-tags-col">
+            <div class="section-tags-col">
             {% for category in page.node.categories.keys %}
                 <li><a href="{{ page.url }}{{ category }}">{{ category }}</a></li>
                 {% if forloop.counter|divisibleby:2 %}
                     {% if not forloop.last %}
-                        </span><span class="section-tags-col">
+                        </div><div class="section-tags-col">
                     {% endif %}
                 {% endif %}
             {% endfor %}
-            </span>
+            </div>
         </ul>
     {% endif %}
 {% endblock %}
