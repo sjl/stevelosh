@@ -286,25 +286,24 @@ div#disqus_thread table tbody tr td.dsq-request-user-name small,
 }
 
 /* Tag styles. */
-ul#section-tags {
-    list-style: none;
+div#section-tags {
     margin: 0 0 0 0.4em;
     display: inline-block;
     font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
 }
-ul#section-tags li {
+div#section-tags p {
     font-size: 1.1em;
     line-height: 1.05em;
     margin: 0;
 }
-ul#section-tags li a {
+div#section-tags p a {
 	color: #666;
 }
-ul#section-tags li a:hover {
+div#section-tags p a:hover {
 	color: #e50053;
 	text-decoration: none;
 }
-ul#section-tags div.section-tags-col {
+div#section-tags div.section-tags-col {
     display: inline-block;
     margin-right: 1em;
 }
