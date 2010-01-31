@@ -216,4 +216,104 @@ feel free to comment with any questions or thoughts you have!
 
 [GitHub]: http://github.com/
 
+Update
+------
+
+It's been over a year since I originally wrote this entry and I've learned
+quite a bit since then. I don't have the time right now to go back and rewrite
+the entire article, but here are some of the main things that have changed:
+
+* I now use [virtualenv and pip][venv] when deploying Django sites. It
+  sandboxes each site very nicely and makes it easy to deploy.
+
+[venv]: http://clemesha.org/blog/2009/jul/05/modern-python-hacker-tools-virtualenv-fabric-pip/
+
+* I no longer go "through" BitBucket when deploying -- I push directly from my
+  local machine to the server. This eliminates an extra step, and I can always
+  push to BitBucket once I'm done with a series of changes.
+
+* Fabric is completely different. "Ownership/maintenance" of the project has
+  transferred to a new person and the format of fabfiles has drastically
+  changed.
+
+Here's a sample fabfile from one of the projects I'm working on now. There are
+no comments, but I think most things should be self-explanitory. If you have
+any questions just post a comment and I'll be glad to answer them.
+
+    from fabric.api import *
+    
+    REMOTE_HG_PATH = '/home/sjl/bin/hg'
+    
+    def prod():
+        """Set the target to production."""
+        env.hosts = ['sjl.webfactional.com']
+        env.remote_app_dir = 'webapps/SAMPLE/SAMPLE'
+        env.remote_apache_dir = '~/webapps/SAMPLE/apache2'
+        env.local_settings_file = 'local_settings-prod.py'
+        env.remote_push_dest = 'ssh://webf/%s' % env.remote_app_dir
+        env.tag = 'production'
+        env.venv_name = 'SAMPLE_prod'
+    
+    def test():
+        """Set the target to test."""
+        env.hosts = ['sjl.webfactional.com']
+        env.remote_app_dir = 'webapps/SAMPLE_test/lindyhub'
+        env.remote_apache_dir = '~/webapps/SAMPLE_test/apache2'
+        env.local_settings_file = 'local_settings-test.py'
+        env.remote_push_dest = 'ssh://webf/%s' % env.remote_app_dir
+        env.tag = 'test'
+        env.venv_name = 'SAMPLE_test'
+    
+    def deploy():
+        """Deploy the site.
+        
+        This will also add a local Mercurial tag with the name of the environment
+        (test or production) to your the local repository, and then sync it to
+        the remote repo as well.
+        
+        This is nice because you can easily see which changeset is currently
+        deployed to a particular environment in 'hg glog'.
+        """
+        require('hosts', provided_by=[prod, test])
+        require('remote_app_dir', provided_by=[prod, test])
+        require('remote_apache_dir', provided_by=[prod, test])
+        require('local_settings_file', provided_by=[prod, test])
+        require('remote_push_dest', provided_by=[prod, test])
+        require('tag', provided_by=[prod, test])
+        require('venv_name', provided_by=[prod, test])
+        
+        local("hg tag --local --force %s" % env.tag)
+        local("hg push %s --remotecmd %s" % (env.remote_push_dest, REMOTE_HG_PATH))
+        put(".hg/localtags", "%s/.hg/localtags" % env.remote_app_dir)
+        run("cd %s; hg update -C %s" % (env.remote_app_dir, env.tag))
+        put("%s" % env.local_settings_file, "%s/local_settings.py" % env.remote_app_dir)
+        
+        run("workon %s; cd %s; python manage.py syncdb" % (env.venv_name, env.remote_app_dir))
+        restart()
+    
+    def restart():
+        """Restart apache on the server."""
+        require('hosts', provided_by=[prod, test])
+        require('remote_apache_dir', provided_by=[prod, test])
+        
+        run("%s/bin/stop; sleep 2; %s/bin/start" % (env.remote_apache_dir, env.remote_apache_dir))
+    
+    def debugon():
+        """Turn debug mode on for the server."""
+        require('hosts', provided_by=[prod, test])
+        require('remote_app_dir', provided_by=[prod, test])
+        require('remote_apache_dir', provided_by=[prod, test])
+        
+        run("cd %s; sed -i -e 's/DEBUG = .*/DEBUG = True/' local_settings.py" % env.remote_app_dir)
+        restart()
+    
+    def debugoff():
+        """Turn debug mode off for the server."""
+        require('hosts', provided_by=[prod, test])
+        require('remote_app_dir', provided_by=[prod, test])
+        require('remote_apache_dir', provided_by=[prod, test])
+        
+        run("cd %s; sed -i -e 's/DEBUG = .*/DEBUG = False/' local_settings.py" % env.remote_app_dir)
+        restart()
+
 {% endblock %}
