@@ -171,6 +171,13 @@ After adding in the colors this piece of my `PROMPT` variable looks like this:
     :::text
     in %{$fg_bold[green]%}$(collapse_pwd)%{$reset_color%}
 
+**UPDATE:** In a comment Juliano pointed out a better way to do this. I've
+gotten rid of the `collapse_pwd` function and put this into my `PROMPT`
+variable instead:
+
+    :::bash
+    ${PWD/#$HOME/~}
+
 My Right-Prompt: Battery Capacity
 ---------------------------------
 
