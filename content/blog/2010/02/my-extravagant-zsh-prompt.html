@@ -1,0 +1,478 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "My Extravagant Zsh Prompt"
+    snip: "It’s big, but my monitor isn’t running out of ink."
+    created: 2010-02-01 01:05:00
+    categories: ["programming"]
+%}
+
+{% block article %}
+
+I spend a lot of time in a Terminal window at a command line. Up until about a
+month ago I was using [bash][] for my shell. I decided to try switching to
+[Zsh][] after hearing a lot of good things about it and I'm very happy with
+the change.
+
+A few days ago I [tweeted][] my current Zsh prompt and the general response
+was: "Cool, but how did you do it?" I promised to write more about it when I
+got some free time, and it looks like that time is now.
+
+**One quick note:** This entry is about the prompt that *I* find useful. You
+are not me, so you'll almost certainly have different needs. That's great!
+Take this prompt and hack it to make whatever works for you. If you're feeling
+generous you should post a comment explaining what you changed -- I might want
+to steal/appropriate your changes.
+
+**Another quick note:** I've customized the colors of my Terminal. They're
+based on the [Monokai][] TextMate theme, and I think they look very nice. The
+colors will be different for you. If you want colors like mine you should take
+a look at the [entry][candy] I wrote about it.
+
+[bash]: http://en.wikipedia.org/wiki/Bash
+[Zsh]: http://www.zsh.org/
+[tweeted]: http://twitter.com/stevelosh/status/8259755151
+[Monokai]: http://www.monokai.nl/blog/2006/07/15/textmate-color-theme/
+[candy]: /blog/2009/03/candy-colored-terminal/
+
+[TOC]
+
+Why Should You Care?
+--------------------
+
+Many people use the command line every day and never bother to customize their
+prompts. It's just a bit of text that's printed before every command -- why
+should you waste time learning how to customize it?
+
+I feel that the *most* important aspect of my command line work is the prompt.
+Your prompt is something you'll see *literally* thousands of times a day. Why
+not take 30 minutes and customize it into something that's much more useful?
+
+I firmly believe I'm right in thinking this way. 30 minutes (or even 3 hours)
+of customization to make your work easier for the **rest of your life** (or at
+least however long you stay with your current shell) *is* worth it.
+
+This Entry is About Zsh Prompts
+-------------------------------
+
+As I mentioned earlier I now use Zsh as my command line shell. If you use bash
+(the default on most modern systems) the syntax to create the shell will be
+different.
+
+I'm willing to port the syntax over to bash if there's enough interest. If you
+want me to do that just post a comment and if more than two people want it I
+promise I'll do it.
+
+Really, though, you should give Zsh a try.
+
+Screenshots
+-----------
+
+I can write all day, but in the end I think a screenshot will be more helpful
+than anything I write.
+
+Here's a sample of my current Zsh prompt:
+
+![My Zsh Prompt](/media/images{{parent_url}}/zsh-prompt.png "My Zsh Prompt")
+
+And here's a version of that screenshot with some comments added to explain
+things:
+
+![My Zsh Prompt with Comments](/media/images{{parent_url}}/zsh-prompt-comments.png "My Zsh Prompt with Comments")
+
+If you want to know *how* I created that prompt, read on!
+
+Oh My Zsh!
+----------
+
+The first thing I'd do when starting out with Zsh is to install
+[robbyrussell's][robr] [oh-my-zsh][omz]. It's a great collection of very
+useful Zsh configurations and aliases which set some sane defaults and make
+working with Zsh much nicer.
+
+The instructions for installing it are on the project page.
+
+[robr]: http://github.com/robbyrussell
+[omz]: http://github.com/robbyrussell/oh-my-zsh
+
+Define a "Theme"
+----------------
+
+oh-my-zsh uses [theme files][themes] to specify how your prompt looks.
+
+An oh-my-zsh theme file is just a Zsh script which sets a few variables that
+the oh-my-zsh scripts use to render your prompt.
+
+Go ahead and create a new theme file for your prompt. Call it whatever you
+like. I called my theme "prose" because it's more verbose than the others.
+Copy the contents of one of the other themes to get started.
+
+The `PROMPT` variable is what you'll be modifying to change how your prompt
+looks. That's the `PROMPT=whatever` line of the theme file.
+
+Once you're done making your awesome prompt you should fork oh-my-zsh on
+GitHub and commit/push your new theme so other people can see and use your
+prompt.
+
+[themes]: http://github.com/robbyrussell/oh-my-zsh/tree/master/themes/
+
+Username and Hostname
+---------------------
+
+The first two pieces of my prompt are the simplest: username and hostname. I
+SSH between machines pretty frequently so I find it nice to have these in my
+prompt to remind me of where I am.
+
+These are things that you'll find in many, many Zsh prompts. For more
+information about this kind of stuff check out [this page][zshpr].
+
+After adding in the colors this piece of my `PROMPT` variable looks like this:
+
+    :::text
+    %{$fg[magenta]%}%n%{$reset_color%} at %{$fg[yellow]%}%m%{$reset_color%}
+
+[zshpr]: http://www.acm.uiuc.edu/workshops/zsh/prompt/escapes.html
+
+Current Directory
+-----------------
+
+I like to have the current working directory displayed in my prompt. Zsh has
+two built-in ways to show the current directory:
+
+* **%d** shows the *entire* path.
+* **%~** shows the path with any variables replaced.
+
+Unfortunately neither of these work for me.
+
+If I'm in a directory that's under my home directory I want to see `~` instead
+of the full path. This would seem to mean that I should use `%~`, but there's
+a catch.
+
+The `%~` sequence also replaces any directories that happen to be environment
+variables. That means if I'm in something under my `virtualenvs` directory
+I'll see `~WORKON_HOME/venv_name` which is extremely ugly.
+
+To get around this I defined a simple function that implements the behavior I
+want.
+
+To add this to your prompt you'll first need to add the following function to
+your theme:
+
+    :::bash
+    function collapse_pwd {
+        echo $(pwd | sed -e "s,^$HOME,~,")
+    }
+
+Then add `$(collapse_pwd)` to your `PROMPT` variable wherever you'd like the
+directory to show up.
+
+After adding in the colors this piece of my `PROMPT` variable looks like this:
+
+    :::text
+    in %{$fg_bold[green]%}$(collapse_pwd)%{$reset_color%}
+
+My Right-Prompt: Battery Capacity
+---------------------------------
+
+The next piece of my prompt I'll talk about is the most stand-alone one: the
+battery charge.
+
+I work exclusively on laptops. I don't own a desktop machine -- I have a
+Macbook, Macbook Pro and Asus EEE PC and my work machine is a Macbook Pro. I
+work from coffeeshops and client meetings pretty often, so it's nice to have a
+reminder of my remaining battery power to know when I need to plug in.
+
+On the right-hand side of the prompt in the screenshot you can see a series of
+green triangles. These represent my current battery charge and they turn to
+empty triangles as the battery becomes depleted. Once the battery reaches 60%
+they turn yellow and once it reaches 40% they turn red.
+
+To do this I wrote a *very* simple Python script to output my current battery
+capacity. The entire script is shown below.
+
+**Note: this script will *only* work on OS X systems!** If you port it to
+Linux/Windows please post a comment and tell me how you did it!
+
+    :::python
+    #!/usr/bin/env python
+    # coding=UTF-8
+    
+    import math, subprocess
+    
+    p = subprocess.Popen(["ioreg", "-rc", "AppleSmartBattery"], stdout=subprocess.PIPE)
+    output = p.communicate()[0]
+    
+    o_max = [l for l in output.splitlines() if 'MaxCapacity' in l][0]
+    o_cur = [l for l in output.splitlines() if 'CurrentCapacity' in l][0]
+    
+    b_max = float(o_max.rpartition('=')[-1].strip())
+    b_cur = float(o_cur.rpartition('=')[-1].strip())
+    
+    charge = b_cur / b_max
+    charge_threshold = int(math.ceil(10 * charge))
+    
+    # Output
+    
+    total_slots, slots = 10, []
+    filled = int(math.ceil(charge_threshold * (total_slots / 10.0))) * u'▸'
+    empty = (total_slots - len(filled)) * u'▹'
+    
+    out = (filled + empty).encode('utf-8')
+    import sys
+    
+    color_green = '%{[32m%}'
+    color_yellow = '%{[1;33m%}'
+    color_red = '%{[31m%}'
+    color_reset = '%{[00m%}'
+    color_out = (
+        color_green if len(filled) > 6
+        else color_yellow if len(filled) > 4
+        else color_red
+    )
+    
+    out = color_out + out + color_reset
+    sys.stdout.write(out)
+
+**Note:** The `color_*` variables contain UTF-8 characters which don't show up
+in a normal web browser. They *should* be preserved when copying and pasting
+from a decent browser. If the colors don't work post a comment and I'll put
+the raw script up somewhere so you can download it.
+
+I've put this script in a file named `batcharge.py` in my `~/bin/` directory.
+You can of course name it and place it anything/anywhere you like.
+
+No, it's not perfect. No, I don't care. It gets the job done and any
+brainpower I could spend on making it more efficient could be better spent on
+writing or working on something else.
+
+If you want to improve it, feel free and *please* post a link to your work in
+the comments so I can use it!
+
+Now that you've got the script, it's time to add it to your prompt.
+
+If you want this to appear on the right-hand side of your screen (like mine
+does) you'll need to add two things to your theme file. The first is a
+function that calls the script:
+
+    :::bash
+    function battery_charge {
+        echo `$BAT_CHARGE` 2>/dev/null
+    }
+
+After that you'll need to define the Zsh `RPROMPT` variable:
+
+    :::bash
+    RPROMPT='$(battery_charge)'
+
+Once those are in your theme file any new Terminal windows you open should
+show the battery capacity to the right of your prompt!
+
+Repository Types
+----------------
+
+In my personal work and my full-time job I work with both
+[Mercurial][mercurial] and [git][] repositories. I find it helpful to have a
+visual reminder of what kind of repository I'm working in.
+
+To do this I've replaced the standard `$` character in my prompt with
+different Unicode characters depending on what kind of repository I'm
+currently in:
+
+* `○` means "I'm not in any repository."
+* `☿` means "I'm in a Mercurial repository."
+* `±` means "I'm in a git repository."
+
+Those particular characters are meant to reflect the logos of the various
+projects. You can of course change them to anything that makes sense to you.
+
+[mercurial]: {{links.mercurial}}
+[git]: {{links.git}}
+
+To add this feature to your prompt you'll need to do two things in your theme
+file. First, add the following function:
+
+    :::bash
+    function prompt_char {
+        git branch >/dev/null 2>/dev/null && echo '±' && return
+        hg root >/dev/null 2>/dev/null && echo '☿' && return
+        echo '○'
+    }
+
+Then add `$(prompt_char)` somewhere inside your `PROMPT` variable -- wherever
+you want the character to be displayed (probably at the end).
+
+Mercurial Repository Information
+--------------------------------
+
+I use Mercurial at work and for my own personal projects and I find it very
+handy to have some information about the current repository right in my
+prompt. It keeps me "oriented," especially when I'm using [MQ][] and
+manipulating the state of a repo.
+
+[MQ]: http://mercurial.selenic.com/wiki/MqExtension
+
+In the past I toyed around with some shell scripts to do this but eventually I
+got fed up with the poor performance and horrible readability of that
+solution.
+
+To fix this I wrote a small Mercurial extension called [hg-prompt][]. It adds
+an `hg prompt` command to Mercurial that will let you output information about
+the current repository. It's designed especially for use in shell prompts
+(hence the name).
+
+I open sourced the code a while ago and since then a few people have made
+feature requests and/or contributed patches. It's grown into a nice, flexible
+little tool. You can check out the [documentation][hgpdoc] to see all the
+things it can do.
+
+[hg-prompt]: /projects/hg-prompt/
+[hgpdoc]: http://sjl.bitbucket.org/hg-prompt/
+
+I only use a few of the features myself:
+
+* The current repository branch.
+* The "dirty" state of the repo (whether there are untracked/uncommitted files).
+* Any tags pointing at the current revision.
+* An "update" character to show whether running `hg update` would do anything.
+* A list of MQ patches (if any are present).
+
+To put this into my prompt I've added a function to my theme:
+
+    :::bash
+    function hg_prompt_info {
+        hg prompt --angle-brackets "\
+    < on <branch>>\
+    < at <tags|, >>\
+    <status|modified|unknown><update><
+    patches: <patches|join( → )>>" 2>/dev/null
+    }
+
+Inside my `PROMPT` variable I use `$(hg_prompt_info)` to show the information.
+The `2>/dev/null` makes sure no output is shown if I don't happen to be in a
+Mercurial repository.
+
+Of course this isn't nearly as pretty or readable without color. Unfortunately
+adding color codes makes the actual code almost unreadable:
+
+    :::bash
+    function hg_prompt_info {
+        hg prompt --angle-brackets "\
+    < on %{$fg[magenta]%}<branch>%{$reset_color%}>\
+    < at %{$fg[yellow]%}<tags|%{$reset_color%}, %{$fg[yellow]%}>%{$reset_color%}>\
+    %{$fg[green]%}<status|modified|unknown><update>%{$reset_color%}<
+    patches: <patches|join( → )|pre_applied(%{$fg[yellow]%})|post_applied(%{$reset_color%})|pre_unapplied(%{$fg_bold[black]%})|post_unapplied(%{$reset_color%})>>" 2>/dev/null
+    }
+
+**Small note:** My favorite part of this prompt is that applied MQ patches are
+orange while unapplied patches are grey. It makes it very obvious what's going
+on.
+
+Showing all the MQ patches isn't something that will work for everyone. If you
+work on repositories that ever have more than 5 or 6 patches at a time the
+output is going to be too overwhelming. There are some other MQ-related
+hg-prompt keywords that you might find useful though.
+
+Git Repository Information
+--------------------------
+
+Unfortunately I can't *always* use Mercurial. Many projects that I contribute
+to use git.
+
+I could try to use the [hg-git][] extension to let me use Mercurial to work
+with them, but the extension just isn't fast or mature enough for my taste.
+I've ended up buckling down and jumping down the rabbit hole that is git's
+CLI.
+
+[hg-git]: http://hg-git.github.com/
+
+Git doesn't seem to have any equivalent to hg-prompt, but I still wanted to
+have some information in my prompt so I don't get disoriented. oh-my-zsh has a
+bit of support for this, but it wasn't quite enough for me so I [hacked
+something together][omzgitcommit] to add the last bit of functionality I
+wanted.
+
+[omzgitcommit]: http://github.com/sjl/oh-my-zsh/commit/3d22ee248c6bce357c018a93d31f8d292d2cb4cd
+
+When I'm in a git repository my prompt now shows:
+
+* The current git branch.
+* Whether there are any changes in the index.
+* Whether there are any changes *not* in the index.
+
+Adding this to your prompt is very simple because oh-my-zsh has built-in
+support for it. All you need to do is define a few variables in your theme:
+
+    :::bash
+    ZSH_THEME_GIT_PROMPT_PREFIX=" on %{$fg[magenta]%}"
+    ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
+    ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[green]%}!"
+    ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[green]%}?"
+    ZSH_THEME_GIT_PROMPT_CLEAN=""
+
+Once you do that you can put `$(git_prompt_info)` into your `PROMPT` variable
+to make it show up.
+
+**Note:** The `ZSH_THEME_GIT_PROMPT_UNTRACKED` variable is the part I added.
+If your want to use that one (to be able to see indexed and unindexed changes
+separately) you'll need to use [my fork of oh-my-zsh][omzfork].
+
+[omzfork]: http://github.com/sjl/oh-my-zsh/
+
+The Whole Thing
+---------------
+
+Here's what my new "prose" theme file currently looks like in its entirety:
+
+    :::bash
+    function collapse_pwd {
+        echo $(pwd | sed -e "s,^$HOME,~,")
+    }
+    
+    function prompt_char {
+        git branch >/dev/null 2>/dev/null && echo '±' && return
+        hg root >/dev/null 2>/dev/null && echo '☿' && return
+        echo '○'
+    }
+    
+    function battery_charge {
+        echo `$BAT_CHARGE` 2>/dev/null
+    }
+    
+    function virtualenv_info {
+        [ $VIRTUAL_ENV ] && echo '('`basename $VIRTUAL_ENV`') '
+    }
+    
+    function hg_prompt_info {
+        hg prompt --angle-brackets "\
+    < on %{$fg[magenta]%}<branch>%{$reset_color%}>\
+    < at %{$fg[yellow]%}<tags|%{$reset_color%}, %{$fg[yellow]%}>%{$reset_color%}>\
+    %{$fg[green]%}<status|modified|unknown><update>%{$reset_color%}<
+    patches: <patches|join( → )|pre_applied(%{$fg[yellow]%})|post_applied(%{$reset_color%})|pre_unapplied(%{$fg_bold[black]%})|post_unapplied(%{$reset_color%})>>" 2>/dev/null
+    }
+    
+    PROMPT='
+    %{$fg[magenta]%}%n%{$reset_color%} at %{$fg[yellow]%}%m%{$reset_color%} in %{$fg_bold[green]%}$(collapse_pwd)%{$reset_color%}$(hg_prompt_info)$(git_prompt_info)
+    $(virtualenv_info)$(prompt_char) '
+    
+    RPROMPT='$(battery_charge)'
+    
+    ZSH_THEME_GIT_PROMPT_PREFIX=" on %{$fg[magenta]%}"
+    ZSH_THEME_GIT_PROMPT_SUFFIX="%{$reset_color%}"
+    ZSH_THEME_GIT_PROMPT_DIRTY="%{$fg[green]%}!"
+    ZSH_THEME_GIT_PROMPT_UNTRACKED="%{$fg[green]%}?"
+    ZSH_THEME_GIT_PROMPT_CLEAN=""
+
+The file is also [on GitHub][prosetheme]. Remember, you'll need
+[my fork of oh-my-zsh][omzfork] to use the `ZSH_THEME_GIT_PROMPT_UNTRACKED`
+feature.
+
+[prosetheme]: http://github.com/sjl/oh-my-zsh/blob/master/themes/prose.zsh-theme
+
+A shell prompt is something that we'll each see thousands of times a day, so
+it's something that you should take the time to customize into a useful tool.
+Feel free to use my prompt as a starting point or just as a source of ideas.
+
+If you have any questions, suggestions, or examples of your own please post a
+comment -- I'd love to hear them!
+
+{% endblock %}
