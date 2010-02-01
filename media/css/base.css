@@ -255,6 +255,9 @@ div#disqus_thread ul#dsq-comments li div div {
 div#disqus_thread ul#dsq-comments li {
     margin-bottom: 2em;
 }
+div#disqus_thread div.dsq-comment-message blockquote {
+    margin-bottom: 0em;
+}
 div#dsq-comments-title h3 {
     font-size: 14px;
     font-weight: normal;
