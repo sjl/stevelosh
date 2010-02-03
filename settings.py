@@ -38,8 +38,7 @@ APPEND_SLASH = True
 
 MEDIA_PROCESSORS = {
     '*': {
-        '.css': ('hydeengine.media_processors.TemplateProcessor',
-                 'hydeengine.media_processors.YUICompressor',),
+        '.less': ('hydeengine.media_processors.LessCSS',),
         '.js': ('hydeengine.media_processors.TemplateProcessor',
                 'hydeengine.media_processors.YUICompressor',)
     },
@@ -100,6 +99,7 @@ FILTER = {
 
 YUI_COMPRESSOR = os.path.join(HYDE_FOLDER, 'lib', 'yuicompressor-2.4.1.jar')
 HSS_PATH = None # if you don't want to use HSS
+LESS_CSS_PATH = '/Users/sjl/.gem/ruby/1.8/bin/lessc'
 THUMBNAIL_MAX_WIDTH = 140
 THUMBNAIL_MAX_HEIGHT = 300
 THUMBNAIL_FILENAME_POSTFIX = '-thumb'
