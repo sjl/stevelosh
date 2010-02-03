@@ -13,7 +13,11 @@
     
     <div id="leaf-stats">
         <p>
-            Posted {{ page.created|timesince }} ago on {{ page.created|date:"F j, Y" }}
+            Posted
+            <span class="timeago"
+                  title="{{ page.created|date:"Y-m-d" }}T{{ page.created|date:"H:i:s" }}">
+            </span>
+            on {{ page.created|date:"F j, Y" }}
             {% if page.categories %}
                 and tagged as
 {% for category in page.categories %}{% if not forloop.first %}{% if forloop.last %} and {% else %}, {% endif %}{% endif %}<a href="{{ page.node.ancestors.1.url }}/{{ category }}/">{{ category }}</a>{% endfor %}.
