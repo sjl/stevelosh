@@ -1,8 +1,12 @@
 /* @override http://localhost:8080/media/css/base.css */
+
+@pink: #e50053;
+@bodytext: #111111;
+
 /* Main layout styles. */
 body {
     font-family: "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
-    color: #111;
+    color: @bodytext;
 }
 div#main-wrap {
     width: 62em;
@@ -12,118 +16,129 @@ div#main-wrap {
 div#content {
     width: 48em;
 }
-
-/* Link styles. */
-a {
-    text-decoration: none;
-    color: #e50053;
-}
-a:hover {
-    text-decoration: underline;
-}
-h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
-    color: #111;
-}
-h1 a:hover, h2 a:hover, h3 a:hover, h4 a:hover, h5 a:hover, h6 a:hover {
-    color: #e50053;
-    text-decoration: none;
-}
-
-/* Page header styles. */
 div#header {
     margin-bottom: 1.5em;
     overflow: visible;
     white-space: nowrap;
+    
+    h1 {
+        margin-top: 0.5em;
+        margin-bottom: 0;
+        letter-spacing: -3px;
+        font-size: 3em;
+        font-weight: normal;
+        font-family: "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
+        display: inline;
+        line-height: 1.5em;
+    }
+    
+    span.page-title {
+        color: #666;
+        text-transform: lowercase;
+    }
 }
-div#header h1 {
-	margin-top: 0.5em;
-	margin-bottom: 0;
-    letter-spacing: -3px;
-    font-size: 3em;
-    font-weight: normal;
-    font-family: "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
-    display: inline;
-    line-height: 1.5em;
-}
-div#header span.page-title {
-    color: #666;
-    text-transform: lowercase;
-}
-
-/* Navigation bar styles. */
-#nav {
+div#nav {
     float: right;
     width: 10em;
     font-size: 1.5em;
     font-weight: bold;
     line-height: 2em;
     -webkit-text-size-adjust: 100%;
+    
+    ul {
+        li {
+            list-style: none;
+            border-bottom: 1px solid #eee;
+        }
+        
+        li:last-child {
+            border-bottom: none;
+        }
+    }
+    
+    a {
+        border: none;
+        font-style: normal;
+        color: @bodytext;
+    }
+    
+    a:hover {
+        color: @pink;
+        text-decoration: none;
+    }
 }
-#nav ul li {
-    list-style: none;
-    border-bottom: 1px solid #eee;
-}
-#nav ul li:last-child {
-    border-bottom: none;
-}
-#nav a {
-    border: none;
-    font-style: normal;
-    color: #111;
-}
-#nav a:hover {
-    color: #e50053;
-    text-decoration: none;
-}
-
-/* Splash page styles. */
-#splash-info {
+div#splash-info {
     font-size: 1.5em;
     line-height: 2em;
     text-align: right;
     color: #888;
     font-family: "Helvetica Neue Light", HelveticaNeue-Light, Arial, Helvetica, sans-serif;
     -webkit-text-size-adjust: 100%;
+    
+    ul li {
+        margin: 0;
+        list-style: none;
+        border-bottom: 1px solid #eee;
+    }
+    
+    ul li:last-child {
+        border-bottom: none;
+    }
 }
-#splash-info ul li {
-    margin: 0;
-    list-style: none;
-    border-bottom: 1px solid #eee;
-}
-#splash-info ul li:last-child {
-    border-bottom: none;
-}
-
-/* Section listing styles. */
 div#section-listing {
     font-size: 1.5em;
     font-weight: bold;
     line-height: 2em;
     color: #888;
     -webkit-text-size-adjust: 100%;
+    
+    ol {
+        list-style: none;
+        
+        li {
+            border-bottom: 1px solid #eee;
+            margin: 0;
+            
+            a {
+                color: @bodytext;
+            }
+            
+            a:hover {
+                color: @pink;
+                text-decoration: none;
+            }
+            
+            span.snip {
+                font-size: 0.65em;
+                line-height: 1em;
+                margin-left: 0.5em;
+                font-weight: normal;
+            }
+        }
+        
+        li:last-child {
+            border-bottom: none;
+        }
+    }
 }
-div#section-listing ol {
-    list-style: none;
-}
-div#section-listing ol li {
-    border-bottom: 1px solid #eee;
-    margin: 0;
-}
-div#section-listing ol a {
-    color: #111;
-}
-div#section-listing ol a:hover {
-    color: #e50053;
+
+/* Link styles. */
+a {
     text-decoration: none;
+    color: @pink;
 }
-div#section-listing ol li:last-child {
-    border-bottom: none;
+a:hover {
+    text-decoration: underline;
 }
-div#section-listing ol li span.snip {
-    font-size: 0.65em;
-    line-height: 1em;
-    margin-left: 0.5em;
-    font-weight: normal;
+h1, h2, h3, h4, h5, h6 {
+    a {
+        color: @bodytext;
+    }
+    
+    a:hover {
+        color: @pink;
+        text-decoration: none;
+    }
 }
 
 /* Code styles. */
@@ -162,20 +177,24 @@ blockquote {
     padding: 0px 5px;
     margin-left: 2em;
     overflow: auto;
-}
-blockquote p:last-child {
-    margin-bottom: 0;
+    
+    p:last-child {
+        margin-bottom: 0;
+    }
 }
 span.dquo {
     margin-left: -0.23em;
 }
 
 /* Table of Contents styles. */
-div.toc ul {
-    list-style: none;
-}
-div.toc ul:first-child>li {
-    margin-left: 0em;
+div.toc {
+    ul {
+        list-style: none;
+    }
+    
+    ul:first-child>li {
+        margin-left: 0em;
+    }
 }
 
 /* Ampersand styles. */
@@ -189,12 +208,13 @@ div#section-listing ol li a span.amp {
     font-size: 1.1em;
     color: inherit;
 }
-h1 span.amp, h2 span.amp, h3 span.amp, h4 span.amp, h5 span.amp, h6 span.amp {
-    font-weight: bold;
-    line-height: 0.5em;
-    font-size: 1.1em;
-    color: inherit;
-    
+h1, h2, h3, h4, h5, h6 {
+    span.amp {
+        font-weight: bold;
+        line-height: 0.5em;
+        font-size: 1.1em;
+        color: inherit;
+    }
 }
 span.page-title span.amp {
     font-weight: normal;
@@ -210,53 +230,57 @@ div#leaf-stats p {
 }
 
 /* Image styles. */
-div#leaf-content img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    border: 1.43em solid #e5e5e5;
-    padding: 1px;
-    background: black;
-}
-div#leaf-content img.left, div#leaf-content img.right {
-    border: none;
-    background: none;
-    padding: none;
-}
-div#leaf-content img.left {
-     margin: 0 1.5em 1em 0;
-}
-div#leaf-content img.right {
-    margin: 0 0 .75em 1em;
-}
-div#leaf-content div.gallery img {
-    background: none;
-    padding: 0;
-    border: none;
-    display: inline;
-    margin-bottom: 1.5em;
-    margin-right: 1.5em;
-}
-div#leaf-content div.with-diagrams img {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    background: none;
-    border: none;
+div#leaf-content {
+    img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border: 1.43em solid #e5e5e5;
+        padding: 1px;
+        background: black;
+    }
+    img.left, img.right {
+        border: none;
+        background: none;
+        padding: none;
+    }
+    img.left {
+         margin: 0 1.5em 1em 0;
+    }
+    img.right {
+        margin: 0 0 .75em 1em;
+    }
+    div.gallery img {
+        background: none;
+        padding: 0;
+        border: none;
+        display: inline;
+        margin-bottom: 1.5em;
+        margin-right: 1.5em;
+    }
+    div.with-diagrams img {
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        background: none;
+        border: none;
+    }
 }
 
 /* Comment styles. */
 h1#comment-header {
     margin-top: 1.5em;
 }
-div#disqus_thread ul#dsq-comments li div div {
-    font-size: 14px;
-}
-div#disqus_thread ul#dsq-comments li {
-    margin-bottom: 2em;
-}
-div#disqus_thread div.dsq-comment-message blockquote {
-    margin-bottom: 0em;
+div#disqus_thread {
+    ul#dsq-comments li div div {
+        font-size: 14px;
+    }
+    ul#dsq-comments li {
+        margin-bottom: 2em;
+    }
+    div.dsq-comment-message blockquote {
+        margin-bottom: 0em;
+    }
 }
 div#dsq-comments-title h3 {
     font-size: 14px;
@@ -293,20 +317,21 @@ div#section-tags {
     margin: 0 0 0 0.4em;
     display: inline-block;
     font-family: "Helvetica Neue Light", HelveticaNeue-Light, "Helvetica Neue", HelveticaNeue, Arial, Helvetica, sans-serif;
-}
-div#section-tags p {
-    font-size: 1.1em;
-    line-height: 1.05em;
-    margin: 0;
-}
-div#section-tags p a {
-	color: #666;
-}
-div#section-tags p a:hover {
-	color: #e50053;
-	text-decoration: none;
-}
-div#section-tags div.section-tags-col {
-    display: inline-block;
-    margin-right: 1em;
+    p {
+        font-size: 1.1em;
+        line-height: 1.05em;
+        margin: 0;
+           
+        a {
+            color: #666;
+        }
+        a:hover {
+            color: @pink;
+            text-decoration: none;
+        }
+    }
+    div.section-tags-col {
+        display: inline-block;
+        margin-right: 1em;
+    }
 }
