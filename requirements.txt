@@ -1,0 +1,10 @@
+-e svn+http://code.djangoproject.com/svn/django/branches/releases/1.1.X/#egg=django
+-e git://github.com/bitprophet/fabric.git@0.9rc2#egg=fabric
+-e svn+http://typogrify.googlecode.com/svn/trunk/#egg=typogrify
+-e svn+http://svn.cherrypy.org/tags/cherrypy-3.2.0rc1#egg=cherrypy
+
+pyYAML
+markdown
+smartypants
+Pygments
+PIL
