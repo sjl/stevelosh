@@ -4,3 +4,9 @@ Images
 ======
 
 Full images for posts should be 600 pixels wide (or less).
+
+Headers
+=======
+
+Blog and project content block should use h2 and lower. h1 elements are
+reserved for the layout.

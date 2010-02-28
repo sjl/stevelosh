@@ -2,9 +2,9 @@
 -e git://github.com/bitprophet/fabric.git@0.9rc2#egg=fabric
 -e svn+http://typogrify.googlecode.com/svn/trunk/#egg=typogrify
 -e svn+http://svn.cherrypy.org/tags/cherrypy-3.2.0rc1#egg=cherrypy
+-e git://gitorious.org/python-markdown/mainline.git#egg=markdown
 
 pyYAML
-markdown
 smartypants
 Pygments
 PIL
