@@ -1,0 +1,276 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "A Faster Feed Apart"
+    snip: "Rethinking A Feed Apart’s backend."
+    created: 2010-04-30 22:55:00
+    categories: ["programming"]
+%}
+
+{% block article %}
+
+[An Event Apart][aea] is a conference for web developers and designers that happens a few times a year in various cities.  [A Feed Apart][afa] is a site that aggregates tweets during each conference and displays them in a live stream so attendees can follow them during the conference, and people not attending can see what the attendees are talking about.
+
+A Feed Apart was originally written by [Nick Sergeant][nick] and [Pete Karl][pete] of [Lionburger][lionburger] during one of the conferences.  Since then a lot of people have used it and love it.
+
+The current A Feed Apart site is not without its problems.  It was written in a single night so it's not perfect.  During the last conference it went down several times and lost some tweets along the way.
+
+I work at [Dumbwaiter Design][dwaiter] with Nick and one day he mentioned that it would be cool if we rewrote A Feed Apart from the ground up.  He's learned a lot about how people use the site and what the big problems are, so we'd have a better idea of what we need to accomplish.
+
+Nick, myself and [Ali Ali][ali] have risen to the challenge and started rewriting A Feed Apart.  Ali is a designer and is taking care of the design of the new site.  Nick is handling all the frontend HTML, CSS and Javascript.  My job is the backend.
+
+Ali posted a [blog entry][aliblog] about the design of the new version so I figured I'd write about the backend to show how I'm trying to improve it.  If you have any advice I'd love to hear it -- the next An Event Apart conference is about three weeks away so there's still time to add improvements.
+
+[aea]: http://aneventapart.com/
+[afa]: http://afeedapart.com/
+[nick]: http://nicksergeant.com/
+[pete]: http://pkarl.com/
+[lionburger]: http://lionburger.com/
+[dwaiter]: http://dwaiter.com/
+[ali]: http://alialithinks.com/
+[aliblog]: http://www.dcamm.com/blog/archives/765
+
+[TOC]
+
+How AFA is Used
+---------------
+
+You can't hope to improve on a site unless you know how people are going to use it.  AFA has been around for a while and Nick has learned a lot about what people want to get out of it.
+
+There are three main kinds of users of AFA:
+
+* People attending the conference
+* People that wish they were attending the conference
+* The speakers/organizers of the conference
+
+### People Attending the Conference
+
+People that attend AEA are web developers and designers.  They're up-to-date on the latest technology and almost all of them use [Twitter][].
+
+During the conference you'll see a sea of laptops in the audience.  Attendees will tweet about whatever is happening *right now*.  There's a huge amount of conversation that happens between attendees that AFA is trying to collect and present.
+
+A simple example is one that Nick mentioned to me: if a presenter mentions a website during her presentation someone will tweet the URL so other people can have a link to easily click on.  Attendees will also tweet their agreement or disagreement with what the presenter is saying *as they're speaking*.
+
+The most important aspect of AFA for this group of people is the *real time conversation*.  If AFA doesn't show tweets until a minute after they've been posted it's useless to these people.
+
+Another important part of AFA for attendees is that it's a one-stop-shop for the conversation behind AEA.  Switching between windows/tabs/applications to read and contribute is annoying.
+
+### People That Wish They Were Attending the Conference
+
+The next group of users is those that can't attend the conference for a variety of reasons but are still interested in what's going on.
+
+For this group the real time nature of AFA is unimportant.  They're probably not going to be following the conversation 24/7 so if a tweet takes a few minutes to display it's not a big deal.
+
+What these people *do* care about is the integrity of the stream.  They don't want to miss any part of the conversation.  If AFA loses tweets they're better off doing a simple search on Twitter because they'll get the whole story.
+
+### Speakers and Organizers
+
+The last main group of users is the speakers and organizers of AEA.
+
+Any speaker worth their salt will want to know what people are said about their presentation.  Obviously they can't be reading AFA while they're presenting, but afterword they'll certainly want to go back and see what people were saying during their specific presentation.
+
+Likewise, organizers want to know which presentations people liked and which ones people didn't enjoy.  This could easily influence who they choose to invite to future conferences.
+
+For this group the most important aspect of AFA is the organization of the conversation into chunks, each of which applies to a single presentation.  By reading through each chunk of conversation they can get an idea of the general response to each presentation.
+
+[Twitter]: http://twitter.com/
+
+Goals
+-----
+
+Once we identified the main users of AFA we were able to come up with the goals for the new version of the site:
+
+* **Stay sane while developing.**  Ali, Nick and myself are rewriting the site as a side project, so we don't want it to take *too* much of our time or cause *too* much stress.
+
+* **Provide the real time conversation.**  The site needs to be fast and responsive, so people at the conferences can use it to converse.
+
+* **Don't miss anything.**  People following along from home shouldn't feel like they're missing anything.  We want to provide a *complete* version of the conversation happening behind the event.
+
+* **Organize the conversation.**  Presenters and speakers need a way to see what people are saying about them.  They want to know what people think about each "chunk" of the event.
+
+* **Grease the wheels of (physical) social interaction.**  This is something that AFA hasn't tried to address before, but that we'd like to work on with this version.  There are a lot of people at each conference and we'd like to help them get together.  Whether it's going out for dinner or meeting up at the [Media Temple][mt] party we want to get people talking to each other.  I won't talk about this goal in this post because we're still figuring out the best way to do it.
+
+[mt]: http://mediatemple.net/
+
+Staying Sane
+------------
+
+If the three of us tried to create the site with nothing more than a couple of laptops and a few chats in person we'd go crazy.  We use a few tools to help us manage the development of the site.
+
+To create **wireframes of the design** we're using a free account at [Hot Gloo][hotgloo].  Hot Gloo is a great tool that lets us quickly sketch out ideas and comment on them.
+
+To share **design comps** we're using [Dropbox][].  It's simple to set up a shared Dropbox folder and Nick and I can get real time updates when Ali makes changes to the design.
+
+To **work together on the code** Nick and I use [Mercurial][] repositories.  Mercurial lets us work on the same code bases simultaneously and we almost never have to worry about merging.  We use [Codebase][] for hosting and issue tracking.
+
+[hotgloo]: http://hotgloo.com/
+[Dropbox]: http://dropbox.com/
+[Mercurial]: http://hg-scm.org/
+[Codebase]: http://codebasehq.com/
+
+Being Real Time
+---------------
+
+The previous version of AFA wasn't *truly* real time.  When you went to the site your browser would ask AFA for the newest updates every 10 seconds.
+
+There are two main problems with this approach.  The first is that it's not really *real time*.  I've noticed this being an issue in my own experience.
+
+When I watch any of the various "live streams" of [Apple][] press conferences I'm usually at work where other people are also watching.  We very rarely load the pages of the streaming sites like Gizmodo at the exact same second, so our browsers will be out of sync with each other.  Nick might get an update that I would have to wait 8 more seconds to see.
+
+When I glance over at his screen and see an update that I don't have I instinctively refresh the page to get it.  This defeats the purpose of the "live updating" code that the developers of these sites worked on.  They may as well have just made a static page and told me to refresh.
+
+The second problem is that querying every 10 seconds can be taxing on the site's database.  We're doing this as a side project so we don't have unlimited funding for a hefty database server.  If 1,000 people are querying for updates every 10 seconds that's 100 requests per second to the database.  This means we need to have some kind of in-memory cacheing if we want the site to feel snappy on modest hardware.
+
+We want the new AFA to be truly real time.  To do this we need to use [long polling][longpolling] by users' browsers to wait for updates and return them as soon as they come in.  We also need to retrieve the updates as fast as we possibly can, and they need to be stored in memory to avoid hitting the database constantly.
+
+[Apple]: http://apple.com/
+[longpolling]: http://en.wikipedia.org/wiki/Push_technology#Long_polling
+
+### Retrieving Updates
+
+The bulk of the conversation about AEA conferences comes from Twitter.  Tweets are the most important items that we need to display on the site, so we're using Twitter's streaming API to pull them in.
+
+Since we don't want to tie up an entire server to pull in tweets I've decided to create a [Diesel][]-based application called **The Nozzletron** to parse the streaming API.  Diesel is a [Python][] framework that takes an elegant approach to asynchronous communication with clients and servers.
+
+Twitter's streaming API accepts HTTP requests and returns "chunked" responses, each of which is a tweet.  Unfortunately the Diesel's built-in HTTP client doesn't handle chunked HTTP responses so I had to write some code to handle them myself.
+
+The Nozzletron will connect to Twitter's streaming API and wait for data to come in.  If there's no data to process it will relinquish the server's processor so it can do other things.  Processing a single tweet that comes in doesn't take much time, so the server is free to do other things most of the time.
+
+I've also created another application called **The Flickrtron** to pull in [Flickr][] photos.  Unfortunately Flickr doesn't have a streaming API like Twitter so I have to resort to polling Flickr's API every few minutes for new photos.  Flickr is much less of a real time medium than Twitter though, so I don't think this is a very big problem.
+
+I'm using a Python library called [Beej's Flickr API][flickrapi] to talk to Flickr.  It is horrible.  It calls itself an "API" but is really just a thin wrapper around calls to the Flickr API.  The objects it returns for API calls are Elementtree objects representing the XML of the response.
+
+I wish I could do something like:
+
+    :::python
+    thumb_url = photo.thumbnail_url
+
+Instead I have to use this monstrosity:
+
+    :::python
+    thumb_url = "http://farm%s.static.flickr.com/%s/%s_%s_s.jpg" % (
+        photo.get('farm'), photo.get('server'), photo.get('id'),
+        photo.get('secret'),
+    )
+
+I wish there were a better Python Flickr API out there but there doesn't seem to be one.  If I've missed it please let me know!
+
+[Diesel]: http://dieselweb.org/
+[Python]: http://python.org/
+[Flickr]: http://flickr.com/
+[flickrapi]: http://stuvel.eu/projects/flickrapi
+
+### Storing Updates
+
+We need a fast way to store and retrieve updates so AFA can provide a real time view of the conversation happening at AEA.  With this in mind I've chosen [Redis][] to store the updates of the currently-happening event.
+
+Redis is an easy-to-set-up, disgustingly-fast, in-memory data store.  It's similar to [memcached][] but has more intelligent data structures that make my life easier for this project.
+
+As updates (tweets and flickr photos) are scraped by The Nozzletron and The Flickrtron they're placed at the tail end of a Redis list.  That means I can quickly and easily get all the items since item `N` when a user's browser requests them with a single `LRANGE {list-key} N -1` call.
+
+I'm also keeping a few other pieces of information in Redis.  For example, there's a set of photo IDs held in the `{item-key}:flickrtron:grabbed_photos` key that keeps track of all of the photos we've already seen.
+
+This makes it easy to tell if we've already seen a photo (and therefore don't need to query Flickr for more information) -- it's a simple `SISMEMBER {item-key}:flickrtron:grabbed_photos {photo-id}` call.
+
+I'm also using Redis to store statistics about the site like:
+
+* How many tweets we've scraped.
+* How many photos we've scraped.
+* How many people are currently waiting for updates.
+
+This kind of information will be extremely valuable in the future when we're planning improvements to the site.  Redis makes it fast and safe to update this information using the `INCRBY` and `DECR` commands.
+
+There's one more component to The Nozzletron and The Flickrton that I haven't mentioned.  Both use Redis' `PUBLISH` command to push new updates out to users' browsers as they arrive.  I'll talk more about that in the next section.
+
+[Redis]: http://code.google.com/p/redis/
+[memcached]: http://memcached.org/
+
+### Sending Updates to Users
+
+As I mentioned before we want to send updates to users *as soon as they're received*.  To do this I've created another Diesel-based application called **Halley** to handle this [Comet][]-style communication.
+
+Halley has a few components.  The first uses Diesel's [Redis API][dieselredis] to subscribe to a Redis channel like `live:{event-id}:items` and [fire][dieselfire] off messages whenever something new comes in.  As soon as a new update comes in from The Nozzletron or The Flickrtron all of Halley's clients will get it.
+
+When I started working on AFA Diesel's Redis client didn't support the very new `PUBLISH`/`SUBSCRIBE`/`UNSUBSCRIBE` commands.  I implemented them, put my changes on [BitBucket][], sent a pull request, and started talking to the Diesel crew on IRC.
+
+One of the maintainers pulled my patches and made them even better.  Now Diesel's Redis client has full `PUBLISH`/`SUBSCRIBE`/`UNSUBSCRIBE` support.  It's a great example of how open source projects can produce awesome results.
+
+The other main component of Halley is an HTTP server that listens for connections from browsers.  The Javascript on the site will call Halley and say "I need updates since number `X`", where `X` is the length of the Redis list of updates at the last time it spoke to the server.
+
+Halley uses Diesel's [HTTP Server][dieselhttp] to manage these requests.
+
+If a client is asking for everything since `X` and `X` is a smaller number than the current number of items it will return the updates that have happened since then.  This might happen if we return an update and then two more updates happen before the browser gets around to sending another request.
+
+If a client is asking for everything since `X` and `X` is equal to the current number of items Halley will wait for a new message to be fired from the [Loop][dieselloop] that's watching the Redis channel.  While Halley waits she relinquishes the processor to the server so other requests can be handled.
+
+There's a bit of code to prevent DoS attacks that request every item in the queue over and over again, of course.
+
+[Comet]: http://en.wikipedia.org/wiki/Comet_(programming)
+[dieselredis]: http://bitbucket.org/boomplex/diesel/src/tip/diesel/protocols/redis.py
+[dieselfire]: http://bitbucket.org/boomplex/diesel/src/tip/diesel/core.py#cl-90
+[BitBucket]: http://bitbucket.org/
+[dieselhttp]: http://bitbucket.org/boomplex/diesel/src/tip/diesel/protocols/http.py#cl-156
+[dieselloop]: http://bitbucket.org/boomplex/diesel/src/tip/diesel/core.py#cl-179
+
+Organizing the Conversation
+---------------------------
+
+The live stream is an important component of AFA, but it's not the only one.  We also need to organize updates into logical chunks by event and presentation, and provide archives of old events so people can see what happened.
+
+The main AFA site is built with [Django][] and served with [Gunicorn][] and [Nginx][].  It uses a [Postgresql][] database to store data that's not "live".  Because queries for live data are handled with Diesel and Redis we don't need to send those request through the full Django/Postgresql stack.  Django and Postgresql are only involved when you load a fresh page, and they're *more* than capable of handling the amount of traffic that AFA gets for those kind of requests.
+
+I've created an application called **The Strainer** to copy data from the live stream to the Postgresql database.  The Strainer looks at the list of live items in Redis, parses those items into Django models and saves them to the Postgresql database.
+
+Using two different types of stores (Redis and Postgresql) means we can get the best of both worlds for AFA:
+
+* We can keep the live data that's accessed *constantly* in an in-memory Redis datastore which makes it blazingly fast.
+
+* We can keep the less-frequently-used data in an on-disk Postgresql database which lets us to keep our memory usage low and hosting costs down.
+
+Django's models and managers make it very easy to separate updates out into the various sessions and presentations that happen at the conferences.
+
+Sessions and presentations are much less in-demand than the live stream so we can take advantage of Django's abstractions without worrying about the extra memory/CPU usage we incur by doing so.
+
+[Django]: http://djangoproject.com/
+[Gunicorn]: http://gunicorn.org/
+[Nginx]: http://nginx.org/
+[Postgresql]: http://www.postgresql.org/
+
+Staying Consistent
+------------------
+
+Another problem AFA has faced in the past is losing tweets.  No code is perfect (and mine *certainly* is not) so we need to anticipate that some of the applications we're using will crash at some point.
+
+I'm using [Supervisord][] to monitor the various processes of AFA on the server.  If a process crashes for some reason it will be restarted automatically.
+
+Supervisord also has a wonderful Python API, so I've created a simple Dashboard view in the Django site that lets us stop/start/restart each individual process with a simple web interface. The dashboard also shows us the current memory usage of the server and some other statistics so we can monitor how things are working through a web browser (instead of SSH'ing into the server, which is a pain on a phone).
+
+[Supervisord]: http://supervisord.org/
+
+Getting Bigger
+--------------
+
+An Event Apart is a large event, but it's not a *huge* event.  Despite this I've been trying to build the backend in a way that can be easily scaled.
+
+Right now it's hosted on a single server, but each of the individual components could be moved to a separate server with less than an hour of work each:
+
+* Redis
+* Postgresql
+* Django, Nginx and Gunicorn
+* The Nozzletron
+* The Flickrtron
+* The Strainer
+* Halley
+
+Moving Django/Gunicorn, Nginx, Redis, Halley, and Postgresql to dedicated servers would increase the performance of the site *immensely*.  I can't imagine an event that would provide enough traffic to require more than that.
+
+Even if there were an event that needed that kind of throughput, we could easily split the single Halley and Redis servers into multiple load-balanced servers.
+
+A Work in Progress
+------------------
+
+This new version of A Feed Apart is still being built.  I'm learning new things every time I work on it, and I'm sure there's still room for improvement.
+
+If you have any questions, advice, or want me to go more in-depth about a specific aspect of the site's backend please let me know!
+
+{% endblock %}
