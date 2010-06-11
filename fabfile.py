@@ -10,9 +10,12 @@ DEPLOY_PATH = os.path.join(ROOT_PATH, 'deploy')
 def clean():
     local('rm -rf ./deploy')
 
+def generate():
+    local('hyde -g -s .')
+
 def regen():
     clean()
-    local('hyde -g -s .')
+    generate()
 
 def serve():
     local('hyde -w -s . -k')
