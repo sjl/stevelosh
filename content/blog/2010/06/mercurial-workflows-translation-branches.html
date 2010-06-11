@@ -1,0 +1,123 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Mercurial Workflows: Translation Branches"
+    snip: "Uncommon but useful."
+    created: 2010-06-11 08:15:00
+    categories: ["programming"]
+%}
+
+{% block article_class %}with-diagrams{% endblock %}
+
+{% block article %}
+
+This entry is the third in my series describing various [Mercurial][] workflows.
+The [first][branch-as-needed] describes the simplest one: branching only when
+necessary, and the [second][default-and-stable] describes the classic "default
+and stable" workflow.
+
+I've been experimenting with another workflow lately and it's proven itself to
+be pretty useful, so I wanted to write about it.
+
+[Mercurial]: {{ links.mercurial }}
+[branch-as-needed]: /blog/2010/02/mercurial-workflows-branch-as-needed/
+[default-and-stable]: /blog/2010/05/mercurial-workflows-stable-default/
+
+[TOC]
+
+A Real Example
+--------------
+
+I created the [hgtip.com][] site a while back as a resource for all those tiny
+little tips that make working with Mercurial easier. People seemed to like it
+and eventually there was some interest in translating the site to other
+languages.
+
+The site itself is a collection of flat files that are run through [Hyde][] to
+generate a set of static HTML pages. The content of the site is held in
+a [subrepo][] which people can clone to contribute without worrying about the
+site's structure.
+
+When coming up with a strategy for managing translations I had the following
+requirements:
+
+* Translations need to be version controlled. Version control is extremely
+  helpful, so we need to use it.
+* Contributing translations should be (almost) as easy as contributing to the
+  main site. I didn't want it to be much more work than a simple clone, commit,
+  push.
+* I make typos when creating tips, and sometimes people comment with ideas
+  I hadn't thought of, which I then add to the tips. When the main (English)
+  version of a tip is updated it needs to be easy for translators to see
+  exactly what changed so they can update their translations.
+
+After thinking about the problem for a while I settled on using Mercurial's
+named branches to manage translations.
+
+[hgtip.com]: http://hgtip.com/
+[Hyde]: {{ links.hyde }}
+[subrepo]: http://mercurial.selenic.com/wiki/subrepos
+
+
+Branch Structure
+----------------
+
+For the content of hgtip I (currently) have three branches: `default`, `ja`,
+and `de`.
+
+`default` contains the English version of the tips, while `ja` and `de` contain
+the Japanese and German translations.
+
+As other people translate the existing tips they commit to the appropriate
+branch. When I publish the site to the server I can easily update to each
+branch to render the content, one at a time.
+
+When I add new tips I commit them to the `default` branch and merge `default`
+into all the translation branches. This adds the new file to the translation
+branches so it gets rendered (in English) on the other versions of the site.
+
+When a translator is ready to translate any new tips, they can run `hg log -b
+THEIRBRANCH` to see what's been merged into the branch and find the tips they
+need to translate.
+
+Here's a diagram to help explain what's going on. As new tips are added they
+get merged into the translation branches. When a translator has time to
+translate a tip, they commit to their branch.
+
+![Translation Branching Diagram](/media/images{{ parent_url }}/translation-branches.png "Translation Branches")
+
+
+Linebreaks
+----------
+
+There's one small issue that arises with a workflow like this, and it happens
+when I fix a typo (or add an update) in an existing tip.
+
+If I fix a typo in `beginner/sometip.html`, it will cause a merge conflict when
+someone tries to merge it into a translation branch. This is generally a good
+thing because it shows the translator where the change was. They can then fix
+the conflict by changing the translation, commit, and everything works.
+
+The tricky part is that Mercurial will only show line-by-line diffs. If each
+paragraph of a tip is a single line, Mercurial will only tell you the paragraph
+that changed. For large paragraphs this is annoying because you need to figure
+out by hand exactly which word was modified.
+
+To avoid this I always make sure that lines are hard-wrapped with linebreaks.
+You can do this easily by pressing `Ctrl-Q` in TextMate or using `gqip` in vim.
+I'm sure Emacs has an equivalent as well.
+
+This doesn't affect the output because hgtip uses [Markdown][] and Markdown
+ignores single linebreaks. If you're using another markup language this might
+be a bigger problem for you than it is for me.
+
+[Markdown]: {{ links.markdown }}
+
+A Work in Progress
+------------------
+
+This is the first time I've ever used this branching structure and I haven't
+hear about other people using it.  I'm sure there are some tricks that might
+make things smoother, so if you have any advice I'd love to hear it!
+
+{% endblock %}
