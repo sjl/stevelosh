@@ -2,8 +2,8 @@ from fabric.api import *
 import os
 import fabric.contrib.project as project
 
-PROD = 'sjl.webfactional.com'
-DEST_PATH = '/home/sjl/webapps/slc/'
+PROD = 'sl'
+DEST_PATH = '/var/www/stevelosh.com/'
 ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
 DEPLOY_PATH = os.path.join(ROOT_PATH, 'deploy')
 
