@@ -19,27 +19,25 @@
     
     <id>{{ site.full_url }}/</id>
     
-    {% for node_page in page.node.walk_pages %}
-        {% ifnotequal node_page page %}
-            {% if not node_page.listing and not node_page.exclude %}
-                {% ifnotequal node_page.name ".htaccess" %}
-                    <entry>
-                        <title type="html">{{ node_page.title }}</title>
-                        <author><name>{{ site.author }}</name></author>
-                        <link href="{{ node_page.full_url }}"/>
-                        <updated>{{ node_page.created|xmldatetime }}</updated>
-                        <published>{{ node_page.created|xmldatetime }}</published>
-                        <id>{{ node_page.full_url }}</id>
-                        {% block entry_extra %}{% endblock %}
-                        <content type="html">
-                            {% filter force_escape %}
-                                {% render_article node_page %}
-                            {% endfilter %}
-                        </content>
-                    </entry>
-                {% endifnotequal %}
-            {%endif%}
-        {%endifnotequal%}
+    {% recent_posts recents 4 page.blog_node %}
+
+    {% for post in recents %}
+        {% if not post.listing and not post.exclude %}
+            <entry>
+                <title type="html">{{ post.title }}</title>
+                <author><name>{{ site.author }}</name></author>
+                <link href="{{ post.full_url }}"/>
+                <updated>{{ post.created|xmldatetime }}</updated>
+                <published>{{ post.created|xmldatetime }}</published>
+                <id>{{ post.full_url }}</id>
+                {% block entry_extra %}{% endblock %}
+                <content type="html">
+                    {% filter force_escape %}
+                        {% render_article post %}
+                    {% endfilter %}
+                </content>
+            </entry>
+        {% endif %}
     {% endfor %}
 </feed>
 
