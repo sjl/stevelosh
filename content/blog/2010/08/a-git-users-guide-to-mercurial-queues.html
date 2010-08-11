@@ -1,0 +1,266 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "A Git User's Guide to Mercurial Queues"
+    snip: "MQ is git's index on steroids."
+    created: 2010-08-10 21:00:00
+    categories: ["programming"]
+%}
+
+{% block article_class %}with-diagrams{% endblock %}
+
+{% block article %}
+
+I've been using [Mercurial Queues][MQ] more and more lately. At the last
+Mercurial sprint [Brendan Cully][brendan] said something that made me realize
+that MQ behaves very much like a souped-up version of [git][]'s index.
+
+I wanted to write a blog post about the similarities between the two concepts
+so that git users could understand [Mercurial][]'s MQ extension a bit better
+and see how it can take that concept even further than git does.
+
+This post is *not* intended to be a guide to MQ's day-to-day commands -- it's
+simply trying to explain MQ in a way that git users might find more
+understandable.  For a primer on MQ commands you can check out [the MQ chapter
+in the hg book][mq-book].
+
+[MQ]: http://mercurial.selenic.com/wiki/MqExtension
+[brendan]: http://cs.ubc.ca/~brendan/
+[git]: {{links.git}}
+[Mercurial]: {{links.mercurial}}
+[mq-book]: http://hgbook.red-bean.com/read/managing-change-with-mercurial-queues.html
+
+[TOC]
+
+Git Basics
+----------
+
+Let's take a few moments to review how git works so we're all on the same page
+with our terminology.
+
+When you're working with a git repository you have three "layers" to work with:
+
+* The working directory
+* The index
+* The git repository
+
+You use `git add` to shove changes from the working directory into the index
+and `git commit` to shove changes from the index into the repository:
+
+![Git Basics Diagram](/media/images{{ parent_url }}/git-basics.png "Git Basics")
+
+This is a very powerful model because it lets you build your changesets
+piece-by-piece and commit them permanently only when you're ready.
+
+Mercurial Basics
+----------------
+
+With basic, stock Mercurial you only have two "layers" to work with:
+
+* The working directory
+* The Mercurial repository
+
+You use `hg commit` to shove changes from the working directory into the
+repository:
+
+![Mercurial Basics Diagram](/media/images{{ parent_url }}/mercurial-basics.png "Mercurial Basics")
+
+This model doesn't give you as much flexibility in creating changesets as
+git's does. You can use the [record extension][record] to get closer, but it's still
+not the same.
+
+[record]: http://mercurial.selenic.com/wiki/RecordExtension
+
+Let's take a look at MQ to see how it can give us everything git's index does
+*and more.*
+
+Using MQ with a Single Patch
+----------------------------
+
+The most basic way to use MQ is to create a single patch with `hg qnew NAME`.
+You can make changes in your working directory and use `hg qrefresh` (or `hg
+qrecord`) to put them into the patch. Once you're done with your patch and
+ready for it to become a commit you can run `hg qfinish`:
+
+![MQ with One Patch](/media/images{{ parent_url }}/mq-one.png "MQ with One Patch")
+
+This looks a lot like the diagram of how git works, doesn't it?  MQ gives you an
+"intermediate" area to put changes, similar to how git's index works.
+
+Using MQ with Two (or More) Patches
+-----------------------------------
+
+This single "intermediate" area is where git stops.  For many workflows it's
+enough, but if you want more power MQ has you covered.
+
+MQ is called Mercurial *Queues* for a reason.  You can have more than one patch
+in your queue, which means you can have multiple "intermediate" areas if you
+need them.
+
+For example: say you're adding a feature that requires some API changes to your
+project.  You'd like to commit the changes to the API in one changeset, and the
+changes to the interface in another changeset.  You can do this by creating two
+patches with `hg qnew api-changes; hg qnew interface-changes`:
+
+![MQ with Two Patches](/media/images{{ parent_url }}/mq-two.png "MQ with Two Patches")
+
+You can move back and forth between these patches with `hg qpop` and `hg
+qpush`. If you're working on the interface and realize you forgot to make
+a necessary change to the API you can:
+
+* `hg qpop` the `interface-changes` patch to get to the `api-changes` patch.
+* Make your API changes.
+* `hg qrefresh` to put those changes into the `api-changes` patch.
+* `hg qpush` to get back to work on the interface.
+
+Using multiple patches is like having multiple git indexes to store related
+changes until you're ready to commit them permanently.
+
+Multiple Patch Queues
+---------------------
+
+What happens when you want to work on two features, each with two patches, at
+the same time?  You *could* simply create four patches and let the second
+feature live on top of the first, but there's a better way.
+
+Mercurial 1.6 (I think) added the `hg qqueue` command, which lets you create
+*multiple* patch queues, each one living in its own directory. That means you
+can create a separate queue (with its own set of patches) with `hg qqueue -c
+NAME` for each feature:
+
+![MQ with Multiple Queues](/media/images{{ parent_url }}/mq-multiple.png "MQ with Multiple Queues")
+
+You can switch patch queues with `hg qqueue NAME`.  This gives you multiple
+sets of "intermediate" areas like git's index to work with.  This is probably
+not something you'll need very often, but it's there when you *do* need it.
+
+You can see that MQ is already quite a bit more flexible than git's index, but
+it has one more trick up its sleeve.
+
+Versioned Patch Queues
+----------------------
+
+Let me prefix this section by saying: "You might think you need to use versioned
+patch queues, but you probably don't."  Versioned queues can be tricky to wrap
+your head around, but once you understand them you'll realize how powerful they
+can be.
+
+Let's pause a second to look at how MQ actually stores its patches.
+
+When you create a new patch with `hg qnew interface-changes` Mercurial will
+create a `patches` folder inside the `.hg` folder of your project.  Your new
+patch is stored in a file inside that folder (along with some other metadata
+files):
+
+    :::text
+    yourproject/
+    |
+    +-- .hg/
+    |   |
+    |   +-- patches/
+    |   |   |
+    |   |   +-- api-changes
+    |   |   +-- interface-changes
+    |   |   `-- ... other MQ-related files ...
+    |   |
+    |   `-- ... other Mercurial-related files ...
+    |
+    `-- ... your project's files ...
+
+When you create a new patch queue with `hg qqueue -c some-feature` Mercurial
+creates a completely separate `patches-some-feature` folder in `.hg`:
+
+    :::text
+    yourproject/
+    |
+    +-- .hg/
+    |   |
+    |   +-- patches/
+    |   |   |
+    |   |   +-- api-changes
+    |   |   +-- interface-changes
+    |   |   `-- ... other MQ-related files ...
+    |   |
+    |   +-- patches-some-feature/
+    |   |   |
+    |   |   +-- api-changes
+    |   |   +-- interface-changes
+    |   |   `-- ... other MQ-related files ...
+    |   |
+    |   `-- ... other mercurial-related files ...
+    |
+    `-- ... your project's files ...
+
+These folders are normal filesystem folders. The patches inside them are
+plain-text files.
+
+This gives them a very important property:
+
+**They can be turned into Mercurial repositories to track changes.**
+
+Once you understand what this means, you should have several "oh my god"
+moments where you realize several very interesting things:
+
+* Not only can you have multiple sets of "intermediate" areas to work with, you
+  can *version* them to keep track of the changes!
+* You can share queues with other people with Mercurial's vanilla push/pull
+  commands.
+* You can collaborate with other people and merge your changes to these
+  "intermediate" areas with Mercurial's vanilla push/pull/merge commands.
+* You can `hg serve` these patch repositories so other people can see what your
+  patches look like before they've been permanently committed to your project's
+  repository.
+
+Versioning patch queues means you can end up with a (hard to read) diagram like
+this:
+
+![Versioned Queues](/media/images{{ parent_url }}/mq-versioned.png "Versioned Queues")
+
+To facilitate working with versioned patch queues all Mercurial commands come
+with a `--mq` option to apply the command to the queue repository instead of
+the current one (so you don't need to `cd` to the queue repository all the
+time).
+
+Versioning patch queues is an *incredibly* powerful concept, and most of the
+time you won't need it, but it's nice to have it when you do.
+
+It's also nice to know that [BitBucket][] has [special support][] for version
+patch queues.
+
+[BitBucket]: http://bitbucket.org/
+[special support]: http://ches.nausicaamedia.com/articles/technogeekery/using-mercurial-queues-and-bitbucket-org
+
+Problems with MQ
+----------------
+
+Despite how powerful MQ is (or perhaps *because* of it) it has some problems.
+Most could be fixed if someone had a week or two to spend on it, but so far no
+one has stepped up.
+
+I'd do it if I could afford to take a week away from full-time/freelance work,
+but I can't right now.  If you want to be the hero of at least one MQ user (me)
+here's what sucks about MQ:
+
+* There's no easy way to pull changes *out* of an MQ patch.
+* There's no easy way to split an MQ patch into two patches (the current
+  horrible "workaround" is to empty the current patch, `hg qrecord` part one,
+  and `hg qnew` to make a new patch with part two).
+* You can't pop a patch once you've made changes in your working directory. You
+  need to [shelve][] the changes, pop the patch, and then unshelve the changes.
+
+[shelve]: http://mercurial.selenic.com/wiki/ShelveExtension
+
+In addition there's another MQ-related change that would be very, very nice:
+
+* Refactor the record extension and put it into core Mercurial, so that
+  `hg qrecord` could be used without an extra extension (and we could have `hg
+  commit --interactive`).
+
+If someone takes the time to fix these problems I'll love them forever.  Until
+then we're stuck with the powerful-but-sometimes-clumsy MQ interface.
+
+Hopefully this post has given git users (and Mercurial users) an idea of how
+powerful MQ can be.  If you have any questions please leave a comment and let
+me know!
+
+{% endblock %}
