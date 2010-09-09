@@ -1,0 +1,230 @@
+{% extends "_post.html" %}
+
+{% hyde
+    title: "Making My Site Sing"
+    snip: "Designing with music."
+    created: 2010-09-08 20:10:00
+    flattr: true
+%}
+
+{% block article %}
+
+Every year or so I get the urge to redesign my site. It's only been seven
+months since the last time, so I guess working with [Nick Sergeant][] and
+[Ali Ali][] at [Dumbwaiter Design][] has made me less satisfied than usual
+with my previous design.
+
+I didn't switch frameworks this time -- I'm still [using Hyde][] to generate
+a set of flat HTML files.  I only changed the structure and layout of the
+rendered site.
+
+I'm a programmer, not a designer, but I think it looks fairly good.  I wanted
+to write about how I went about designing the site because it might help other
+programmers.
+
+[Nick Sergeant]: http://nick.sg/
+[Ali Ali]: http://alialithinks.com/
+[Dumbwaiter Design]: http://dwaiter.com/
+[using Hyde]: /blog/2010/01/moving-from-django-to-hyde/
+
+[TOC]
+
+Finding a Starting Point
+------------------------
+
+The first thing I had to do was come up with a basic idea for the style and
+typography of the site.
+
+I decided to go with my usual style: dark text on a light background, very few
+images, and an overall feeling of "minimal."  If I had the graphic design
+skills to make something impressive to look at I'd use them, but I don't, so
+I wanted to stick with what I'm good at.
+
+I read a lot of programmers' blogs and one thing that annoys me is that I often
+end up using [Safari Reader][] to make their sites pleasant to read.  I want my
+site to be pleasant to read *without* extra tools like Reader, so I took the easy
+route and based the site's typography on Reader itself.
+
+Reader uses 18px [Palatino][] body text with a 25px line height, so that's what
+I went with.  I considered using [Georgia][] instead of Palatino, but
+unfortunately Georgia has an absolutely terrible bold weight. I also kept the
+width of the site small to mimic Reader.
+
+[Safari Reader]: http://www.apple.com/safari/whats-new.html#reader
+[Palatino]: http://en.wikipedia.org/wiki/Palatino
+[Georgia]: http://en.wikipedia.org/wiki/Georgia_(typeface)
+
+Creating a Vertical Rhythm
+--------------------------
+
+Once I had a line height in place I could start working on a [vertical rhythm][].
+I used [Aardvark Legs][] as a base stylesheet and edited it to fit the new font
+size and line height.
+
+Unfortunately the original post by Aardvark Legs' author seems to have
+disappeared.  In a nutshell: it's a CSS file that helps you set up a consistent
+vertical rhythm.
+
+I tried to keep myself honest by including a tiny bit of Javascript in the
+footer of the site that displays the vertical rhythm. If you click on it you
+should see that everything lines up properly (except the footer itself, which
+falls on a halfway point).
+
+For some entries the rhythm might not be perfect in non-Webkit browsers because
+I had to use some [Webkit-specific styling][scrollbars] to fix the height of
+scrollbars of wide `<pre>` blocks.
+
+[vertical rhythm]: http://www.alistapart.com/articles/settingtypeontheweb/
+[aardvark legs]: http://aardvark.fecklessmind.com/
+[scrollbars]: http://webkit.org/blog/363/styling-scrollbars/
+
+Designing to a Dominant Seventh
+-------------------------------
+
+In my spare time I play upright bass and teach blues dancing. I listen to a lot
+of jazz and blues music while doing both and one of the more common chords in
+those genres is a [dominant seventh][].
+
+What does this have to do with my site's design? Although I had a font size of
+18px for the body text I still needed to decide on sizes for headers and other
+site elements. Dominant seventh chords sound beautiful, so I used the notes in
+the chord to come up with these sizes.
+
+Here are the sizes I came up with (after rounding off to the nearest pixel):
+
+* Root: 18 pixels
+* Major third: 23 pixels
+* Perfect fifth: 27 pixels
+* Minor seventh: 32 pixels
+* Octave: 36 pixels
+* Major tenth: 45 pixels
+
+This gave me a variety of sizes to work with.  Here are a few places where
+I used them:
+
+* Base font size: root
+* `h1` elements: major tenth
+* `h2` elements: minor seventh
+* `h3` elements: major third
+* `h4` elements: root
+* "Logo" in the header: major third
+* Navigation links: root
+* Footer text: perfect fifth (an octave down)
+
+You might notice that I don't use a straight perfect fifth anywhere in the
+design.  There are two reasons for this.
+
+First: the perfect fifth and the line height I got from Reader are only two
+pixels apart, which would feel dissonant.
+
+Second: the perfect fifth is the most "generic" note in the chord, so
+eliminating it doesn't really change the feeling of the dominant seventh at
+all.
+
+Once I had my line height and header sizes I had plenty to work on.  I made
+images, blockquotes, code blocks, and everything else fit the rhythm. After
+that I decided to start playing with some other things.
+
+[dominant seventh]: http://en.wikipedia.org/wiki/Dominant_seventh_chord
+
+Removing Comments
+-----------------
+
+The first thing I did after I got the rhythm of the site down was to remove the
+[Disqus][] comments.
+
+I did this for two reasons.  The first and most "practical" reason was that
+they simply looked out of place.  It's hard to style content from a third-party
+site to look great with the rhythm of the site so I got rid of it altogether.
+
+The second reason is something I've learned from music and dancing: the most
+important notes are the ones you *don't* play.
+
+I'm usually pretty busy with full-time and freelance work and don't have enough
+time to properly respond to comments on the site.  Having comments here,
+then, is like having calls without responses -- it doesn't work very well.
+
+If someone wants to tell me something they can easily find me on
+[Twitter][twsl] and talk to me or discuss a post on [Hacker News][].
+
+[Disqus]: http://disqus.com/
+[twsl]: {{links.twsl}}
+[Hacker News]: http://news.ycombinator.com/
+
+Adding Applause with Flattr
+---------------------------
+
+I've started using [Flattr][] to help show my appreciation to people that make
+good things on the internet.  Since I was redesigning the site I figured I'd
+include Flattr buttons on my blog posts.
+
+One reason was simple: it lets people give me money for the things I write.
+Another reason is a bit more altruistic: if more people see Flattr buttons
+around the web more people will sign up and help out creators.
+
+I like to think of Flattr as applause at a jazz show or a dance.  It doesn't
+really contribute anything to the conversation but it *does* let you easily
+show your appreciaton.
+
+The worst part of this was going through all my old blog posts and submitting
+them to Flattr.
+
+[Flattr]: http://flattr.com/
+
+Printing Nicely with Print Links
+--------------------------------
+
+This is something that my old site also had but I never really talked about
+(except on [Forrst][]).
+
+If you print one of my site's pages you'll notice that any links inside
+a paragraph of content will show up in a list after the paragraph.  I think
+this makes it easier to refer to a printed copy because you can type in the
+URLs without having to visit my site again.
+
+To do this I use [a little bit of Javascript][printjs].  I *could* put the URLs
+directly after the links using just CSS, but I think that breaks up the content
+and makes it harder to read.
+
+[Forrst]: http://forrst.com/
+[printjs]: http://bitbucket.org/sjl/stevelosh/src/tip/media/js/print.js
+
+Showing Context with Scrolly Headers
+------------------------------------
+
+The last trick I pulled out of my sleeve was the "scrolly headers" to the left
+of the content, which you've probably already noticed.
+
+I tend to write fairly long blog posts and I think about their structure quite
+a bit.  Now that I'm using a much larger font I feel that it's too easy to get
+lost while reading them. If you switch away from the page for a bit and come
+back you might not remember where you were.
+
+To help fix this I wrote a bit of Javascript to display the top-level headers
+of post content to the left of the content.  I think this might help people
+keep their place more easily.
+
+Influences and Goals
+--------------------
+
+While redesigning I had two main influences in mind:
+[Eivind Uggedal's site][uggedal] and [Simon Hørup Eskildsen's site][sirupsen].
+I hope they don't mind that I took a lot of elements from their designs to make
+my own.
+
+As I was making the new site I had a very simple goal: "make sure no one ever
+wants to use Safari Reader on my site."
+
+The design isn't particularly memorable (hell, it pretty much looks like you
+just used Safari Reader), but I don't think that's a problem.  I'm not
+a designer so I don't want my site to be remembered for its design. I want it
+to be remembered for the content, so I aimed for a design that highlights that
+content and gets out of the way.
+
+If you have comments, questions, or suggestions feel free to find me on
+[Twitter][twsl].
+
+[uggedal]: http://uggedal.com/
+[sirupsen]: http://sirupsen.com/
+
+{% endblock %}

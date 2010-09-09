@@ -1,27 +1,8 @@
 {% extends "skeleton/_base.html"%}
 
-{% block extra_header %}{% if page.node.categories %} / {% endif %}{% endblock %}
-
-{% block after_header %}
-    {% if page.node.categories %}
-        <div id="section-tags">
-            <div class="section-tags-col">
-            {% for category in page.node.categories.keys %}
-                <p><a href="{{ page.url }}{{ category }}">{{ category }}</a></p>
-                {% if forloop.counter|divisibleby:2 %}
-                    {% if not forloop.last %}
-                        </div><div class="section-tags-col">
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
-            </div>
-        </div>
-    {% endif %}
-{% endblock %}
-
 {% block content %}
-    <div id="section-listing">
-        <ol>
+    <div class="section-listing">
+        <ol class="group">
             {% for node in page.node.walk reversed %}
                 {% include "skeleton/_innerlisting.html" %}
             {% endfor %}

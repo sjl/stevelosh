@@ -7,3 +7,4 @@ deploy/
 deploy_tmp/
 backups/
 *.swp
+*.un~

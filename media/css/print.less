@@ -1,34 +1,18 @@
 body {
-    font: normal 10pt/1.25 HelveticaNeue, "Helvetica Neue", Arial, Helvetica, sans-serif;
+    font: normal 10pt/1.25 Palatino, "Palatino Linotype";
     text-rendering: optimizeLegibility;
 }
 
-#nav, #leaf-title, #comment-header, #disqus_thread, .dsq-brlink, .toc {
+nav, header, .toc {
     display: none;
 }
-#header {
-   font-size: 0.85em;
-   text-transform: capitalize;
-
-    a, a:active, a:visited {
+#leaf-title {
+    a {
         text-decoration: none;
         color: black;
     }
 }
-#leaf-title {
-    display: none;
-}
-#leaf-stats {
-    a {
-        text-decoration: underline;
-        color: #c06;
-    }
-}
 #leaf-content {
-    a {
-        text-decoration: underline;
-        color: #c06;
-    }
     ul.print-links {
         display: block;
         font-size: 1em;
@@ -74,4 +58,14 @@ div#leaf-content.with-diagrams img {
 span.amp {
     font-family: "Palatino", "Constantia", "Palatino Linotype", serif;
     font-style: italic;
+}
+.flattr {
+    display: none;
+}
+a {
+    text-decoration: underline;
+    color: #c06;
+}
+footer {
+    display: none;
 }

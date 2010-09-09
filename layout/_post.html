@@ -10,21 +10,24 @@
     <div id="leaf-title">
         <h1><a href="{{ page.url }}">{{ page.title|safe|typogrify }}</a></h1>
     </div>
-    
-    <div id="leaf-stats">
+
+
+    <div id="leaf-stats" class="group">
+        {% if page.flattr %}
+            <div class="flattr">
+                <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;"
+                   href="http://stevelosh.com{{ page.url }}"></a>
+           </div>
+        {% endif %}
         <p>
             Posted
             <span class="timeago"
                   title="{{ page.created|date:"Y-m-d" }}T{{ page.created|date:"H:i:s" }}">
             </span>
-            on {{ page.created|date:"F j, Y" }}
-            {% if page.categories %}
-                and tagged as
-{% for category in page.categories %}{% if not forloop.first %}{% if forloop.last %} and {% else %}, {% endif %}{% endif %}<a href="{{ page.node.ancestors.1.url }}/{{ category }}/">{{ category }}</a>{% endfor %}.
-            {% endif %}
+            on {{ page.created|date:"F j, Y" }}.
         </p>
     </div>
-    
+
     <div id="leaf-content" class="{% block article_class %}{% endblock %}">
         {% filter typogrify %}
             {% article %}
@@ -36,16 +39,4 @@
             {% endarticle %}
         {% endfilter %}
     </div>
-    
-    <h1 id="comment-header">Comments</h1>
-    
-    <div id="disqus_thread"></div>
-    <script type="text/javascript" src="http://disqus.com/forums/stevelosh/embed.js"></script>
-    <noscript>
-        <p><a href="http://disqus.com/forums/stevelosh/?url=ref">View the discussion thread.</a></p>
-    </noscript>
-    <a href="http://disqus.com" class="dsq-brlink">
-        comments powered by
-        <span class="logo-disqus">Disqus</span>
-    </a>
 {% endblock %}

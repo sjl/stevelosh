@@ -1,13 +1,7 @@
-/* @override http://localhost:8080/media/css/aal.css */
 /* 
-  aardvark.legs by Anatoli Papirovski - http://fecklessmind.com/
+  aardvark.legs originally by Anatoli Papirovski - http://fecklessmind.com/
   Licensed under the MIT license. http://www.opensource.org/licenses/mit-license.php
 */
-
-/*
-  edited for stevelosh.com by Steve Losh
-  changes:
-    base font-size was changed to 14px
 
 /* 
   Reset first. Modified version of Eric Meyer and Paul Chaplin reset 
@@ -25,54 +19,61 @@ table, caption, tbody, tfoot, thead, tr, th, td,
 header, nav, section, article, aside, footer
 {border: 0; margin: 0; outline: 0; padding: 0; background: transparent; vertical-align: baseline;}
 
+article,aside,details,figcaption,figure,footer,header,hgroup,menu,nav,section { 
+    display:block;
+}
+
 blockquote, q {quotes: none;}
 blockquote:before,blockquote:after,q:before,q:after {content: ''; content: none;}
 
 header, nav, section, article, aside, footer {display: block;}
 
 /* Basic styles */
-body {background: #fff; color: #000; font: 0.875em/1.5em Helvetica, Arial, "Liberation Sans", "Bitstream Vera Sans", sans-serif;}
-html>body {font-size: 14px;}
+html {overflow-y: scroll;}
+body {background: #fdfdfd; color: #353535; font: normal 18px/25px Palatino, "Palatino Linotype", serif; text-rendering: optimizeLegibility;}
+html>body {font-size: 18px; line-height: 25px;}
 
 img {display: inline-block; vertical-align: bottom;}
 
 h1,h2,h3,h4,h5,h6,strong,b,dt,th {font-weight: 700;}
 address,cite,em,i,caption,dfn,var {font-style: italic;}
 
-h1 {margin: 0 0 0.75em; font-size: 2em;}
-h2 {margin: 0 0 1em; font-size: 1.5em;}
-h3 {margin: 0 0 1.286em; font-size: 1.167em;}
-h4 {margin: 0 0 1.5em; font-size: 1em;}
-h5 {margin: 0 0 1.8em; font-size: .834em;}
-h6 {margin: 0 0 2em; font-size: .75em;}
+h1 { font-size: 45px; line-height: 50px; margin: 25px 0; }
+h2 { font-size: 32px; line-height: 50px; margin: 25px 0; }
+h3 { font-size: 23px; line-height: 25px; margin: 25px 0; }
+h4 {margin: 0 0 22px; font-size: 16px; line-height: 22px;}
+h5 {margin: 0 0 22px; font-size: 14px; line-height: 22px;}
+h6 {margin: 0 0 22px; font-size: 12px; line-height: 22px;}
 
-p,ul,ol,dl,blockquote,pre {margin: 0 0 1.5em;}
+p,ul,ol,dl,blockquote,pre {margin: 0 0 25px;}
 
 li ul,li ol {margin: 0;}
 ul {list-style: outside disc;}
 ol {list-style: outside decimal;}
-li {margin: 0 0 0 3em;}
-dd {padding-left: 1.5em;}
-blockquote {padding: 0 1.5em;}
+li {margin: 0 0 0 44px;}
+dd {padding-left: 25px;}
+blockquote {padding: 0 25px;}
 
 a {text-decoration: underline;}
 a:hover {text-decoration: none;}
 abbr,acronym {border-bottom: 1px dotted; cursor: help;}
 del {text-decoration: line-through;}
 ins {text-decoration: overline;}
-sub {font-size: .834em; line-height: 1em; vertical-align: sub;}
-sup {font-size: .834em; line-height: 1em; vertical-align: super;}
+sub {font-size: 14px; line-height: 25px; vertical-align: sub;}
+sup {font-size: 14px; line-height: 25px; vertical-align: super;}
 
-tt,code,kbd,samp,pre {font-size: 1em; font-family: "Courier New", Courier, monospace;}
+tt,code,kbd,samp,pre {font-size: 14px; line-height: 25px; font-family: Menlo, Monaco, Consolas, "Courier New", monospace;}
 
 /* Table styles */
+/* TODO */
 table {border-collapse: collapse; border-spacing: 0; margin: 0 0 1.5em;}
 caption {text-align: left;}
 th, td {padding: .25em .5em;}
-tbody td, tbody th {border: 1px solid #000;}
+tbody td, tbody th {border: 1px solid #222;}
 tfoot {font-style: italic;}
 
 /* Form styles */
+/* TODO */
 fieldset {clear: both;}
 legend {padding: 0 0 1.286em; font-size: 1.167em; font-weight: 700;}
 fieldset fieldset legend {padding: 0 0 1.5em; font-size: 1em;}
@@ -101,5 +102,14 @@ form.horizontal .field {padding-left: 150px;}
 form.horizontal .field label {display: inline; float: left; width: 140px; margin-left: -150px;}
 
 /* Useful classes */
+/* TODO */
 img.left {display: inline; float: left; margin: 0 1.5em .75em 0;}
 img.right {display: inline; float: right; margin: 0 0 .75em .75em;}
+.group:after {
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+

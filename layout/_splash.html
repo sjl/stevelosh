@@ -1,15 +1,19 @@
 {% extends "skeleton/_base.html" %}
 
 {% block content %}
-    {% filter typogrify %}
-        <div id="splash-info">
-            <ul>
-                <li>I like writing. &raquo;</li>
-                <li>What makes me tick. &raquo;</li>
-                <li>Some things I’ve made. &raquo;</li>
-                <li>More about me. &raquo;</li>
-                <li>Tasty feeds. &raquo;</li>
-            </ul>
-        </div>
-    {% endfilter %}
+    <div class="splash">
+        {% filter typogrify %}
+            <p>Hello, I'm Steve.</p>
+
+            <p>
+                I'm a programmer, photographer, dancer <span class="amp">&amp;</span>
+                bassist from Rochester,&nbsp;New&nbsp;York.
+            </p>
+
+            <p>
+                If you want to get in touch with me,
+                <a href="mailto:steve@stevelosh.com">email</a> is best.
+            </p>
+        {% endfilter %}
+    </div>
 {% endblock %}

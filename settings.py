@@ -27,11 +27,11 @@ APPEND_SLASH = True
 
 # {folder : extension : (processors)}
 # The processors are run in the given order and are chained.
-# Only a lone * is supported as an indicator for folders. Path 
+# Only a lone * is supported as an indicator for folders. Path
 # should be specified. No wildcard card support yet.
- 
-# Starting under the media folder. For example, if you have media/css under 
-# your site root,you should specify just css. If you have media/css/ie you 
+
+# Starting under the media folder. For example, if you have media/css under
+# your site root,you should specify just css. If you have media/css/ie you
 # should specify css/ie for the folder name. css/* is not supported (yet).
 
 # Extensions do not support wildcards.
@@ -51,12 +51,6 @@ MEDIA_PROCESSORS = {
 CONTENT_PROCESSORS = {}
 
 SITE_PRE_PROCESSORS = {
-    'blog': {
-        'hydeengine.site_pre_processors.CategoriesManager': {},
-    },
-    'projects': {
-        'hydeengine.site_pre_processors.CategoriesManager': {},
-    },
     '/': {
         'hydeengine.site_pre_processors.NodeInjector' : {
             'variable': 'blog_node',
@@ -92,22 +86,23 @@ CONTEXT = {
         'lesscss': 'http://lesscss.org/',
         'bitbucket': 'http://bitbucket.org/',
         'github': 'http://github.com/',
+        'twsl': 'http://twitter.com/stevelosh/',
     },
 }
 
-FILTER = { 
+FILTER = {
     'include': (".htaccess",),
     'exclude': (".*","*~")
-}        
+}
 
 
 # Processor Configuration
 
 YUI_COMPRESSOR = os.path.join(HYDE_FOLDER, 'lib', 'yuicompressor-2.4.1.jar')
 HSS_PATH = None # if you don't want to use HSS
-LESS_CSS_PATH = '/Users/sjl/.gem/ruby/1.8/bin/lessc'
-THUMBNAIL_MAX_WIDTH = 140
-THUMBNAIL_MAX_HEIGHT = 300
+LESS_CSS_PATH = '/usr/local/bin/lessc'
+THUMBNAIL_MAX_WIDTH = 1400000000
+THUMBNAIL_MAX_HEIGHT = 100
 THUMBNAIL_FILENAME_POSTFIX = '-thumb'
 
 # Django settings

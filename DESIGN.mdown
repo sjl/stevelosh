@@ -3,7 +3,8 @@ Some notes on the design, mostly for myself.
 Images
 ======
 
-Full images for posts should be 600 pixels wide (or less).
+Full images for posts should be 580 pixels wide (or less) and a multiple of 25
+pixels tall.
 
 Headers
 =======

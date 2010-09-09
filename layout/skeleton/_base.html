@@ -1,28 +1,30 @@
 {% extends "skeleton/_root.html" %}
 
-{% block all %}<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+{% block all %}
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<html>
     <head>
+        <link href='http://fonts.googleapis.com/css?family=OFL+Sorts+Mill+Goudy+TT:regular,italic' rel='stylesheet' type='text/css'>
+        
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        
+
         <title>{% block title %}{% block extra_title %}{% endblock %}{{ page.title|safe }} / {{ site.name }}{% endblock %}</title>
-        
+
         {% block feeds %}
             <link href="http://feeds2.feedburner.com/stevelosh"
                   rel="alternate" title="{{ site.name }}"
                   type="application/atom+xml" />
         {% endblock %}
-        
+
         {% block css %}
-            <link rel="stylesheet" href="{{ site.url }}/media/css/aal.css" type="text/css" media="screen" charset="utf-8" />
-            <link rel="stylesheet" href="{{ site.url }}/media/css/base.css" type="text/css" media="screen" charset="utf-8" />
-            <link rel="stylesheet" href="{{ site.url }}/media/css/colorbox.css" type="text/css" media="screen" charset="utf-8" />
-            <link rel="stylesheet" href="{{ site.url }}/media/css/print.css" type="text/css" media="print" charset="utf-8" />
+            <link rel="stylesheet" href="/media/css/aal.css"      type="text/css" media="screen" charset="utf-8" />
+            <link rel="stylesheet" href="/media/css/sjl.css"      type="text/css" media="screen" charset="utf-8" />
+            <link rel="stylesheet" href="/media/css/colorbox.css" type="text/css" media="screen" charset="utf-8" />
+            <link rel="stylesheet" href="/media/css/print.css"    type="text/css" media="print" charset="utf-8" />
             {% block extra_css %}{% endblock %}
         {% endblock %}
-        
+
         {% block js %}
             <script src="/media/js/jquery.js" type="text/javascript"></script>
             <script src="/media/js/jquery.timeago.js" type="text/javascript"></script>
@@ -30,40 +32,78 @@
             <script src="/media/js/sjl.js" type="text/javascript"></script>
             <script src="/media/js/print.js" type="text/javascript"></script>
             <script src="http://mint.stevelosh.com/?js" type="text/javascript"></script>
-            
+
+            <script type="text/javascript">
+                $(function() {
+                    $("a.rhythm").toggle(function() {
+                        $("body").addClass("rhythm");
+                    }, function() {
+                        $("body").removeClass("rhythm");
+                    });
+                });
+            </script>
+
+            <script type="text/javascript">
+            /* <![CDATA[ */
+                (function() {
+                    var s = document.createElement('script'), t = document.getElementsByTagName('script')[0];
+                    
+                    s.type = 'text/javascript';
+                    s.async = true;
+                    s.src = 'http://api.flattr.com/js/0.5.0/load.js?mode=auto';
+                    
+                    t.parentNode.insertBefore(s, t);
+                })();
+            /* ]]> */
+            </script>
+
             {% block extra_js %}{% endblock %}
-            {% endblock %}
+        {% endblock %}
 
         <link rel="openid.server" href="http://www.myopenid.com/server" />
         <link rel="openid.delegate" href="http://stevelosh.myopenid.com/" />
     </head>
-    
+
     <body>
-        <div id="main-wrap">
-            <div id="header">
-                <h1>
-                    <a href="/">steve losh</a> <span class="page-title">/ {{ page.title|safe|typogrify }}{% block extra_header %}{% endblock %}</span>
-                </h1>
-                {% block after_header %}{% endblock %}
+        <div class="wrap">
+            <div class="top group">
+                <header>
+                    <a href="/">steve losh</a>
+                </header>
+
+                <nav>
+                    <a href="/blog/">Blog</a>
+                    <span class="sep">-</span>
+                    <a href="/projects">Projects</a>
+                    <span class="sep">-</span>
+                    <a href="/about/">About</a>
+                    <span class="sep">-</span>
+                    <a href="http://feeds2.feedburner.com/stevelosh">Feed</a>
+                </nav>
             </div>
-            
-            <div id="nav">
-                <ul>
-                    <li><a href="/blog/">Blog</a></li>
-                    <li><a href="http://bitbucket.org/sjl/">Code</a></li>
-                    <li><a href="/projects">Projects</a></li>
-                    <li><a href="/about/">About</a></li>
-                    <li><a href="http://feeds2.feedburner.com/stevelosh">Feed</a></li>
-                </ul>
-            </div>
-            
-            <div id="content">
+
+            <div class="hr">&nbsp;</div>
+
+            <div class="content">
                 {% with page.node.ancestors|last as parent_node %}
                     {% with parent_node.url as parent_url %}
-                        {% block content %}{% endblock %}   
+                        {% block content %}{% endblock %}
                     {% endwith %}
                 {% endwith %}
             </div>
+
+            <div class="hrb">&nbsp;</div>
+
+            <footer>
+                I'm also on
+                <a href="http://bitbucket.org/sjl/">BitBucket</a>,
+                <a href="http://github.com/sjl/">GitHub</a>,
+                <a href="http://twitter.com/stevelosh/">Twitter</a>,
+                <a href="http://forrst.com/people/stevelosh/">Forrst</a>
+                and
+                <a href="http://flickr.com/photos/sjl7678/">Flickr</a>.
+                I've got <a href="#" class="rhythm">rhythm</a>.
+            </footer>
         </div>
     </body>
 </html>
