@@ -368,7 +368,7 @@ The next thing I do is tame searching/moving:
     set incsearch
     set showmatch
     set hlsearch
-    nnoremap <leader><space> :let @/=''<cr>
+    nnoremap <leader><space> :noh<cr>
     nnoremap <tab> %
     vnoremap <tab> %
 
@@ -396,10 +396,6 @@ line as well.
 The `<leader><space>` mapping makes it easy to clear out a search by typing
 `,<space>`. This gets rid of the distracting highlighting once I've found what
 I'm looking for.
-
-Some people use a mapping that turns search highlighting off and on, but
-I don't like that solution.  It means I have to remember to turn it back on
-later once I've probably already forgotten about the original search.
 
 The last two lines make the tab key match bracket pairs. I use this to move
 around all the time and `<tab>` is a hell of a lot easier to type than `%`.
@@ -519,7 +515,7 @@ I also work with Nick Sergeant and he likes his CSS properties sorted, so
 here's a `,S` mapping that sorts them for me:
 
     :::vim
-    nnoremap <leader>S ?{<CR>jV/^\s*\}?$<CR>k:sort<CR>:let @/=''<CR>
+    nnoremap <leader>S ?{<CR>jV/^\s*\}?$<CR>k:sort<CR>:noh<CR>
 
 This next mapping imitates TextMates `Ctrl+Q` function to re-hardwrap
 paragraphs of text:
@@ -822,7 +818,7 @@ and off by default.  When I'm dealing with a particularly hairy piece of code
 that has lots of nesting I simply hit `<leader>R` and get some color that helps
 me keep my place.
 
-[Rainbow Parentheses]: http://www.vim.org/scripts/script.php?script_id=1230
+[Rainbow Parentheses]: http://www.vim.org/scripts/script.php?script_id=1561
 [myRainbow]: http://bitbucket.org/sjl/dotfiles/src/tip/vim/bundle/rainbow/
 
 Things I Want
