@@ -24,16 +24,17 @@ is an interruption that I want to minimize so I can keep my train of thought.
 
 I recently started using [Vim][] as my primary editor. As I'm adjusting I'm
 finding a lot of [the][arrows] [blog][nutheads] [posts][mind] [people][katz]
-[have][nvie] [written][grok] about Vim very helpful, so I'm hoping this post
-will help people too.
+[have][nvie] [written][grok] [about][home] Vim very helpful, so I'm hoping this
+post will help people too.
 
-[Vim]: http://vim.org/
+[Vim]: http://www.vim.org/
 [arrows]: http://jeetworks.org/node/89
 [nutheads]: http://www.viemu.com/a-why-vi-vim.html
 [mind]: http://blog.wekeroad.com/thoughts/vim-is-your-daddy
 [katz]: http://yehudakatz.com/2010/07/29/everyone-who-tried-to-convince-me-to-use-vim-was-wrong/
 [nvie]: http://nvie.com/posts/how-i-boosted-my-vim/
 [grok]: http://stackoverflow.com/questions/1218390/what-is-your-most-productive-shortcut-with-vim/1220118#1220118
+[home]: http://weblog.jamisbuck.org/2008/10/10/coming-home-to-vim
 
 [TOC]
 
@@ -371,7 +372,7 @@ The next thing I do is tame searching/moving:
     set incsearch
     set showmatch
     set hlsearch
-    nnoremap <leader><space> :let @/=''<cr>
+    nnoremap <leader><space> :noh<cr>
     nnoremap <tab> %
     vnoremap <tab> %
 
@@ -399,10 +400,6 @@ line as well.
 The `<leader><space>` mapping makes it easy to clear out a search by typing
 `,<space>`. This gets rid of the distracting highlighting once I've found what
 I'm looking for.
-
-Some people use a mapping that turns search highlighting off and on, but
-I don't like that solution.  It means I have to remember to turn it back on
-later once I've probably already forgotten about the original search.
 
 The last two lines make the tab key match bracket pairs. I use this to move
 around all the time and `<tab>` is a hell of a lot easier to type than `%`.
@@ -522,7 +519,7 @@ I also work with Nick Sergeant and he likes his CSS properties sorted, so
 here's a `,S` mapping that sorts them for me:
 
     :::vim
-    nnoremap <leader>S ?{<CR>jV/^\s*\}?$<CR>k:sort<CR>:let @/=''<CR>
+    nnoremap <leader>S ?{<CR>jV/^\s*\}?$<CR>k:sort<CR>:noh<CR>
 
 This next mapping imitates TextMates `Ctrl+Q` function to re-hardwrap
 paragraphs of text:
@@ -659,8 +656,12 @@ PeepOpen has some nifty little features, like showing Git metadata in the file
 list. I've [offered a patch][] to add the same functionality for Mercurial but
 haven't heard back from the developers.
 
+If you don't use OS X (or want a free alternative to PeepOpen) I hear the
+[Command-T][] plugin is quite nice.
+
 [PeepOpen]: http://peepcode.com/products/peepopen
 [offered a patch]: http://github.com/topfunky/PeepOpen-Issues/issues#issue/91
+[Command-T]: https://wincent.com/products/command-t
 
 ### NERDTree
 
@@ -825,7 +826,7 @@ and off by default.  When I'm dealing with a particularly hairy piece of code
 that has lots of nesting I simply hit `<leader>R` and get some color that helps
 me keep my place.
 
-[Rainbow Parentheses]: http://www.vim.org/scripts/script.php?script_id=1230
+[Rainbow Parentheses]: http://www.vim.org/scripts/script.php?script_id=1561
 [myRainbow]: http://bitbucket.org/sjl/dotfiles/src/tip/vim/bundle/rainbow/
 
 Things I Want
