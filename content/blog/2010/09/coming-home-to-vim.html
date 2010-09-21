@@ -278,15 +278,18 @@ First, a few lines that you absolutely must have:
 
     :::vim
     filetype off
+    call pathogen#runtime_append_all_bundles()
     filetype plugin indent on
 
     set nocompatible
 
     set modelines=0
 
-I'm not entirely sure what the `filetype` lines do. I've read that they're
-necessary and so far I haven't had problems.  There's only so much time that
-I want to spend on digging into Vim's internals.
+The `filetype` and `call` lines are for loading Pathogen, which is described in
+the bundles section. See [Pathogen's docs][pathogendocs] to learn about why the
+first `filetype` line is there.
+
+[pathogendocs]: http://www.vim.org/scripts/script.php?script_id=2332
 
 `set nocompatible` gets rid of all the crap that Vim does to be vi compatible.
 It's 2010 -- we don't need to be compatible with vi at the expense of
