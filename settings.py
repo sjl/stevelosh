@@ -98,7 +98,7 @@ FILTER = {
 
 # Processor Configuration
 
-YUI_COMPRESSOR = os.path.join(HYDE_FOLDER, 'lib', 'yuicompressor-2.4.1.jar')
+YUI_COMPRESSOR = os.path.join(ROOT_PATH, 'yuicompressor-2.4.2.jar')
 HSS_PATH = None # if you don't want to use HSS
 LESS_CSS_PATH = '/usr/local/bin/lessc'
 THUMBNAIL_MAX_WIDTH = 1400000000
