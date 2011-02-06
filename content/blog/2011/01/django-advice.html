@@ -1,0 +1,569 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "Django Advice"
+        snip: "Some useful things I've learned."
+        created: 2011-01-07 08:30:00
+        flattr: true
+    %}
+
+    {% block article %}
+
+For the past year or so I've been working full-time at [Dumbwaiter Design][]
+doing [Django][] development. I've picked up a bunch of useful tricks along the
+way that help me work, and I figured I'd share them.
+
+I'm sure there are better ways to do some of the things that I mention.  If you
+know of any feel free to hit me up on [Twitter][] and let me know.
+
+[Dumbwaiter Design]: http://dwaiter.com/
+[Django]: {{links.django}}
+[Twitter]: http://twitter.com/stevelosh
+
+[TOC]
+
+Sandboxing with Virtualenv
+--------------------------
+
+First of all: if you're working with Django (or even Python) at all, you need
+to be using [virtualenv][] and [virtualenvwrapper][].  They will make your life
+much more [pleasant][whyvenv]. Here are a few tricks I use to make them even
+better.
+
+[virtualenv]: http://virtualenv.openplans.org/
+[virtualenvwrapper]: http://www.doughellmann.com/docs/virtualenvwrapper/
+[whyvenv]:
+
+### The .venv File
+
+In every Python project (and therefore Django project) I work with I create
+a `.venv` file at the project root.  This file contains a single line with the
+name of the virtualenv for that project.
+
+This lets me create a `wo` shell alias to easily switch to the virtualenv for
+that project once I'm in its directory:
+
+    :::bash
+    function wo() {
+        [ -z "$1" ] && workon "$1" || workon `cat ./.venv`
+    }
+
+This little function lets you run `wo somevenv` to switch to that environment,
+but the real trick is that running `wo` by itself will read the `.venv` file in
+the current directory and switch to the environment with that name.
+
+### Making Pip Safer
+
+Once you start using virtualenv you'll inevitably forget to switch to an
+environment at some point before running `pip install whatever`.  You'll swear
+as you realize you just installed some package system-wide.
+
+To prevent this I use a pair of shell aliases:
+
+    :::bash
+    PIP_BIN="`which pip`"
+    alias pip-sys="$PIP_BIN"
+
+    pip() {
+        if [ -n "$VIRTUAL_ENV" ]
+        then $PIP_BIN -E "$VIRTUAL_ENV" "$@"
+        else echo "Not currently in a venv -- use pip-sys to work system-wide."
+        fi
+    }
+
+This makes `pip` work normally when you're in a virtualenv, but bails if you're
+not.  If you really do want to install something system-wide you can use
+`pip-sys` instead.
+
+### Making Pip Faster
+
+A little-known feature of pip is that it can cache downloaded packages so you
+don't need to re-download them every time you start a new project.
+
+You'll want to set the [PIP\_DOWNLOAD\_CACHE][pipcache] environment variable to enable
+this.
+
+[pipcache]: http://tartley.com/?p=1133
+
+### Handling App Media Directories
+
+Some Django applications have media files of their own. I like to create
+a `symlink-media.sh` script at the root of my Django projects so I can easily
+symlink those media directories into my media folder when I start working on
+a new machine:
+
+    :::bash
+    #!/bin/bash
+
+    ln -s "$VIRTUAL_ENV/src/django-grappelli/grappelli/media" "media/admin"
+    ln -s "$VIRTUAL_ENV/src/django-filebrowser/filebrowser/media/filebrowser" "media/filebrowser"
+    ln -s "$VIRTUAL_ENV/src/django-page-cms/pages/media/pages" "media/pages"
+
+Wrangling Databases with South
+------------------------------
+
+If you're not using [South][], you need to start.  Now.
+
+No, really, I'll wait.  Take 30 minutes, try the [tutorial][Southtut], wrap
+your head around it and come back.  It's far more important than this blog
+post.
+
+[South]: http://south.aeracode.org/
+[Southtut]: http://south.aeracode.org/docs/tutorial/index.html
+
+### Useful Shell Aliases
+
+South is awesome, but its commands are very long-winded.  Here's the set of
+shell aliases I use to save quite a bit of typing:
+
+    :::bash
+    alias pmdm='python manage.py datamigration'
+    alias pmsm='python manage.py schemamigration --auto'
+    alias pmsi='python manage.py schemamigration --initial'
+    alias pmm='python manage.py migrate'
+    alias pmml='python manage.py migrate --list'
+    alias pmmf='python manage.py migrate --fake'
+    alias pmcats='python manage.py convert_to_south'
+
+Remember that running a migration without specifying an app will migrate
+everything, so a simple `pmm` will do the trick.
+
+Running Locally
+---------------
+
+When I'm working on a Django site I run a server on my local machine for quick
+development. I want this server to be as close to production as possible, and
+I use [Gunicorn][] for deployment, so I like running it on my local
+machine for testing as well.
+
+### Running Gunicorn Locally
+
+First, a caveat: I use OS X. These tips will work on Linux too, but if you're
+on Windows you're out of luck, sorry.
+
+Gunicorn is a pip-installable Python package, so you can install it in your
+virtualenv by just adding a line to your `requirements.txt` file.
+
+Here's the Gunicorn config I use when running locally:
+
+    :::python
+    bind = "unix:/tmp/gunicorn.myproj.sock"
+    daemon = True                    # Whether work in the background
+    debug = True                     # Some extra logging
+    logfile = ".gunicorn.log"        # Name of the log file
+    loglevel = "info"                # The level at which to log
+    pidfile = ".gunicorn.pid"        # Path to a PID file
+    workers = 1                      # Number of workers to initialize
+    umask = 0                        # Umask to set when daemonizing
+    user = None                      # Change process owner to user
+    group = None                     # Change process group to group
+    proc_name = "gunicorn-myproj"    # Change the process name
+    tmp_upload_dir = None            # Set path used to store temporary uploads
+
+I also create two simple files at the root of my project.  The first is `gs`,
+a script to start the Gunicorn server for this project:
+
+    :::bash
+    #!/usr/bin/env bash
+
+    gunicorn -c gunicorn.conf.py debug_wsgi:application
+
+It's pretty basic.  Don't worry about the `debug_wsgi` bit, we'll get to that
+shortly.
+
+The other file is `gk`, a script to *kill* that server:
+
+    :::bash
+    #!/usr/bin/env bash
+
+    kill `cat .gunicorn.pid`
+
+You may prefer making these aliases instead of scripts.  That's probably a good
+idea.  I don't because I have some older projects that need to be launched in
+a different way and I don't want to have to remember separate commands for
+each.
+
+### Watching for Changes
+
+When developing locally you'll want to make a change to your code and have the
+server reload that code automatically.  The Django development server does
+this, and we can hack it into our Gunicorn setup too.
+
+First, add a `monitor.py` file at the root of your project (I believe I found
+this code [here][monitor], but I may be wrong):
+
+    :::python
+    import os
+    import sys
+    import time
+    import signal
+    import threading
+    import atexit
+    import Queue
+
+    _interval = 1.0
+    _times = {}
+    _files = []
+
+    _running = False
+    _queue = Queue.Queue()
+    _lock = threading.Lock()
+
+    def _restart(path):
+        _queue.put(True)
+        prefix = 'monitor (pid=%d):' % os.getpid()
+        print >> sys.stderr, '%s Change detected to \'%s\'.' % (prefix, path)
+        print >> sys.stderr, '%s Triggering process restart.' % prefix
+        os.kill(os.getpid(), signal.SIGINT)
+
+    def _modified(path):
+        try:
+            # If path doesn't denote a file and were previously
+            # tracking it, then it has been removed or the file type
+            # has changed so force a restart. If not previously
+            # tracking the file then we can ignore it as probably
+            # pseudo reference such as when file extracted from a
+            # collection of modules contained in a zip file.
+
+            if not os.path.isfile(path):
+                return path in _times
+
+            # Check for when file last modified.
+
+            mtime = os.stat(path).st_mtime
+            if path not in _times:
+                _times[path] = mtime
+
+            # Force restart when modification time has changed, even
+            # if time now older, as that could indicate older file
+            # has been restored.
+
+            if mtime != _times[path]:
+                return True
+        except:
+            # If any exception occured, likely that file has been
+            # been removed just before stat(), so force a restart.
+
+            return True
+
+        return False
+
+    def _monitor():
+        while 1:
+            # Check modification times on all files in sys.modules.
+
+            for module in sys.modules.values():
+                if not hasattr(module, '__file__'):
+                    continue
+                path = getattr(module, '__file__')
+                if not path:
+                    continue
+                if os.path.splitext(path)[1] in ['.pyc', '.pyo', '.pyd']:
+                    path = path[:-1]
+                if _modified(path):
+                    return _restart(path)
+
+            # Check modification times on files which have
+            # specifically been registered for monitoring.
+
+            for path in _files:
+                if _modified(path):
+                    return _restart(path)
+
+            # Go to sleep for specified interval.
+
+            try:
+                return _queue.get(timeout=_interval)
+            except:
+                pass
+
+    _thread = threading.Thread(target=_monitor)
+    _thread.setDaemon(True)
+
+    def _exiting():
+        try:
+            _queue.put(True)
+        except:
+            pass
+        _thread.join()
+
+    atexit.register(_exiting)
+
+    def track(path):
+        if not path in _files:
+            _files.append(path)
+
+    def start(interval=1.0):
+        global _interval
+        if interval < _interval:
+            _interval = interval
+
+        global _running
+        _lock.acquire()
+        if not _running:
+            prefix = 'monitor (pid=%d):' % os.getpid()
+            print >> sys.stderr, '%s Starting change monitor.' % prefix
+            _running = True
+            _thread.start()
+        _lock.release()
+
+Next add a `post_fork` hook to your Gunicorn config file that uses the monitor
+to watch for changes:
+
+    :::python
+    def post_fork(server, worker):
+        import monitor
+        if debug:
+            server.log.info("Starting change monitor.")
+            monitor.start(interval=1.0)
+
+Now the Gunicorn server will automatically restart whenever code is changed.
+
+It will *not* restart when you add new code (e.g. when you install a new app),
+so you'll need to handle that manually with `./gk ; ./gs`, but that's not too
+bad!
+
+[monitor]: http://code.google.com/p/modwsgi/wiki/ReloadingSourceCode
+
+### Using the Werkzeug Debugger with Gunicorn
+
+The final piece of the puzzle is being able to use the fantastic
+[Werkzeug Debugger][debug] while running locally with Gunicorn.
+
+To do this, create a `debug_wsgi.py` file at the root of your project.  This is
+what the `gs` script tells Gunicorn to serve, and it will enable the debugger:
+
+    :::python
+    import os
+    import sys
+    import site
+
+    parent = os.path.dirname
+    site_dir = parent(os.path.abspath(__file__))
+    project_dir = parent(parent(os.path.abspath(__file__)))
+
+    sys.path.insert(0, project_dir)
+    sys.path.insert(0, site_dir)
+
+    site.addsitedir('VIRTUALENV_SITE_PACKAGES')
+
+    from django.core.management import setup_environ
+    import settings
+    setup_environ(settings)
+
+    import django.core.handlers.wsgi
+    application = django.core.handlers.wsgi.WSGIHandler()
+
+    from werkzeug.debug import DebuggedApplication
+    application = DebuggedApplication(application, evalex=True)
+
+    def null_technical_500_response(request, exc_type, exc_value, tb):
+        raise exc_type, exc_value, tb
+    from django.views import debug
+    debug.technical_500_response = null_technical_500_response
+
+Make sure to replace `'VIRTUALENV_SITE_PACKAGES'` with the _full_ path to your
+virtualenv's `site_packages` directory.  You might want to make this a setting
+in a machine-specific settings file, which I'll talk about later.
+
+[debug]: http://werkzeug.pocoo.org/docs/debug/
+
+Automating Tasks with Fabric
+----------------------------
+
+[Fabric][] is an awesome little Python utility for scripting tasks (like
+deployments).  We use it constantly at Dumbwaiter.
+
+[Fabric]: http://fabfile.org/
+
+### Pulling Uploads
+
+Once you give a client access to a site they'll probably be uploading images
+(through Django's built-in file uploading features or with django-filebrowser).
+
+When you're making changes locally it's often useful to have these uploaded
+files on your local machine, otherwise you end up with a bunch of broken
+images.
+
+Here's a simple Fabric task that will pull down all the uploads from the
+server:
+
+    :::python
+    def pull_uploads():
+        '''Copy the uploads from the site to your local machine.'''
+        require('uploads_path')
+
+        sudo('chmod -R a+r "%s"' % env.uploads_path)
+
+        rsync_command = r"""rsync -av -e 'ssh -p %s' %s@%s:%s %s""" % (
+            env.port,
+            env.user, env.host,
+            env.uploads_path.rstrip('/') + '/',
+            'media/uploads'
+        )
+        print local(rsync_command, capture=False)
+
+In your host task you'll need to set the `uploads_path` variable to something
+like this:
+
+    :::python
+    import os
+    env.site_path = os.path.join('var', 'www', 'myproject')
+    env.uploads_path = os.path.join(env.site_path, 'media', 'uploads')
+
+Now you can run `fab production pull_uploads` to pull down all the files people
+have uploaded to the production server.
+
+### Sanity Checking
+
+As part of a deployment I like to do a very basic sanity check to make sure the
+home page of the site loads properly.  If it doesn't then I've broken something
+and need to fix it *immediately*.
+
+Here's a simple Fabric task to make sure you haven't completely borked the
+site:
+
+    :::python
+    def check():
+        '''Check that the home page of the site returns an HTTP 200.
+
+        If it does not, a warning is issued.
+        '''
+        require('site_url')
+
+        if not '200 OK' in run('curl --silent -I "%s"' % env.site_url):
+            warn("Something is wrong (we didn't get a 200 response)!")
+            return False
+        else:
+            return True
+
+Your host task will need to set the `site_url` variable to the full URL of the
+home page.
+
+You can run this task on its own with `fab production check`, and you can also
+run it at the end of your deployment task.
+
+### Preventing Accidents
+
+Deploying to test and staging servers should be quick and easy. Deploying to
+production servers should be harder to prevent people from accidentally doing
+it.
+
+I've created a little function that I call before deploying to production
+servers.  It forces me to type in random words from the system word list before
+proceeding to make sure I *really* know what I'm doing:
+
+    import os, random
+
+    from fabric.api import *
+    from fabric.operations import prompt
+    from fabric.utils import abort
+
+    WORDLIST_PATHS = [os.path.join('/', 'usr', 'share', 'dict', 'words')]
+    DEFAULT_MESSAGE = "Are you sure you want to do this?"
+    WORD_PROMPT = '  [%d/%d] Type "%s" to continue (^C quits): '
+
+    def prevent_horrible_accidents(msg=DEFAULT_MESSAGE, horror_rating=1):
+        """Prompt the user to enter random words to prevent doing something stupid."""
+
+        valid_wordlist_paths = [wp for wp in WORDLIST_PATHS if os.path.exists(wp)]
+
+        if not valid_wordlist_paths:
+            abort('No wordlists found!')
+
+        with open(valid_wordlist_paths[0]) as wordlist_file:
+            words = wordlist_file.readlines()
+
+        print msg
+
+        for i in range(int(horror_rating)):
+            word = words[random.randint(0, len(words))].strip()
+            p_msg = WORD_PROMPT % (i+1, horror_rating, word)
+            answer = prompt(p_msg, validate=r'^%s$' % word)
+
+You may need to adjust `WORDLIST_PATHS` if you're not on OS X.
+
+Working with Third-Party Apps
+-----------------------------
+
+One of the best parts about working with Django is that many problems have
+already been solved and the solutions released as open-source applications.
+
+We use quite a few open-source apps, and there are a couple of tricks I've
+learned to make working with them easier.
+
+### Installing Apps from Repositories
+
+If I'm going to use an open-source Django app in a project I'll almost always
+install it as an editable reopsitory with pip.
+
+Others may disagree with me on this, but I think it's the best way to work.
+
+Often I'll find a bug that I think may be in one of the third-party apps I'm using. Installing the apps as repositories makes it easy to read their source and adding
+
+### Useful Shell Aliases
+
+Improving the Admin Interface
+-----------------------------
+
+### Installing Grappelli (and Everything Else)
+
+### Customizing the Dashboard
+
+### Making Pretty Fields
+
+### An Ugly Hack to Show Usable Foreign Key Fields
+
+Managing Machine-Specific Settings
+----------------------------------
+
+### Using local\_settings Files
+
+Using Django-Annoying
+---------------------
+
+### The render\_to Decorator
+
+### The ajax\_request Decorator
+
+User Profiles that Don't Suck
+-----------------------------
+
+### Profile Basics
+
+### Hacking Django's User Admin
+
+Templating Tricks
+-----------------
+
+### Null Checks and Fallbacks
+
+### Manipulating Query Strings
+
+### Satisfying Your Designer with Typogrify
+
+The Flat Page Trainwreck
+------------------------
+
+### Installing Page-CMS
+
+### (Almost) Solving the Trailing Slash Problem
+
+Editing with Vim
+----------------
+
+### Vim Plugins for Django
+
+### Filetype Mappings
+
+### HTML Template Symlinks
+
+### Javascript Syntax Checking
+
+### Django Autocommands
+
+### Sanity Checking with Pyflakes
+
+### Editing Third-Party Apps
+
+{% endblock %}
