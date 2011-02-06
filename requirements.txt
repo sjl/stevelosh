@@ -4,7 +4,7 @@
 -e svn+http://svn.cherrypy.org/tags/cherrypy-3.2.0rc1#egg=cherrypy
 -e git://gitorious.org/python-markdown/mainline.git#egg=markdown
 
-pyYAML
+PyYAML
 smartypants
 Pygments
 PIL
