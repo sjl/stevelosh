@@ -136,6 +136,8 @@ development. I want this server to be as close to production as possible, and
 I use [Gunicorn][] for deployment, so I like running it on my local
 machine for testing as well.
 
+[Gunicorn]: http://gunicorn.org/
+
 ### Running Gunicorn Locally
 
 First, a caveat: I use OS X. These tips will work on Linux too, but if you're
@@ -453,6 +455,7 @@ I've created a little function that I call before deploying to production
 servers.  It forces me to type in random words from the system word list before
 proceeding to make sure I *really* know what I'm doing:
 
+    :::python
     import os, random
 
     from fabric.api import *
@@ -495,13 +498,36 @@ learned to make working with them easier.
 ### Installing Apps from Repositories
 
 If I'm going to use an open-source Django app in a project I'll almost always
-install it as an editable reopsitory with pip.
+install it as an editable repository with pip.
 
 Others may disagree with me on this, but I think it's the best way to work.
 
-Often I'll find a bug that I think may be in one of the third-party apps I'm using. Installing the apps as repositories makes it easy to read their source and adding
+Often I'll find a bug that I think may be in one of the third-party apps I'm
+using. Installing the apps as repositories makes it easy to read their source
+and figure out if the bug is really in the app.
+
+If it is, having the app installed as a repository makes it simple to fix the
+bug, fork the project on BitBucket or GitHub, send a pull request, and get back
+to work.
 
 ### Useful Shell Aliases
+
+I can't remember where I found this little gem, but I use a `cdp` shell
+function that makes it simple to get to the directory where the app is
+installed in the current virtualenv:
+
+    :::bash
+    function cdp () {
+        cd "$(python -c "import os.path as _, ${1}; \
+            print _.dirname(_.realpath(${1}.__file__[:-1]))"
+        )"
+    }
+
+With this function you can simply type `cdp somepythonmodule` to `cd` into the
+directory where that module is being loaded from.
+
+If anyone knows who originally wrote this, please let me know and I'll add
+a link.
 
 Improving the Admin Interface
 -----------------------------
@@ -522,7 +548,38 @@ Managing Machine-Specific Settings
 Using Django-Annoying
 ---------------------
 
+If you haven't heard of [django-annoying][] you should definitely check it out.
+It's got a bunch of miscellaneous functions that fix some common, annoying
+parts of Django.
+
+My two personal favorites from the package are a pair of decorators that help
+make your views much, much cleaner.
+
+[django-annoying]: https://bitbucket.org/offline/django-annoying/wiki/Home
+
 ### The render\_to Decorator
+
+The decorator is called `render_to` and it eliminates the ugly
+`render_to_response` calls that Django normally forces you to use in every
+single view.
+
+Normally you'd use something like this:
+
+    :::python
+    def videos(request):
+        videos = Video.objects.all()
+        return render_to_response('video_list.html', { 'videos': videos },
+                                  context_instance=RequestContext(request))
+
+With `render_to` your view gets much cleaner:
+
+    :::python
+    @render_to('video_list.html')
+    def videos(request):
+        videos = Video.objects.all()
+        return { 'videos': videos }
+
+Less typing `context_instance=...` over and over, and less syntax to remember.
 
 ### The ajax\_request Decorator
 
@@ -552,18 +609,54 @@ The Flat Page Trainwreck
 Editing with Vim
 ----------------
 
+I [use Vim][vimpost] to edit everything.  Naturally I've found a bunch of
+plugins, mappings and other tricks that make it even better when working on
+Django projects.
+
+[vimpost]: /blog/2010/09/coming-home-to-vim/
+
 ### Vim Plugins for Django
 
 ### Filetype Mappings
 
+Most files in a Django project have one of two extensions: `.py` and `.html`.
+Unfortunately these extensions aren't unique to Django, so Vim doesn't
+automatically set the correct `filetype` when you open one.
+
+I've added a few mappings to my `.vimrc` to make it quick and easy to set the
+correct `filetype`:
+
+    :::text
+    nnoremap _dt :set ft=htmldjango<CR>
+    nnoremap _pd :set ft=python.django<CR>
+
 ### HTML Template Symlinks
 
-### Javascript Syntax Checking
+### Python Sanity Checking
+
+### Javascript Sanity Checking
 
 ### Django Autocommands
 
-### Sanity Checking with Pyflakes
+I rarely work with raw HTML files any more.  Whenever I open a file ending in
+`.html` it's almost always a Django template (or a [Jinja][] template, which
+has a very similar syntax).  I've added an autocommand to automatically set the
+correct filetyle whenever I open a `.html` file:
 
-### Editing Third-Party Apps
+[Jinja]: http://jinja.pocoo.org/
+
+    :::text
+    au BufNewFile,BufRead *.html setlocal filetype=htmldjango
+
+I also have some autocommands that tweak how a few specific files are handled:
+
+    :::text
+    au BufNewFile,BufRead urls.py      setlocal nowrap
+    au BufNewFile,BufRead settings.py  normal! zR
+    au BufNewFile,BufRead dashboard.py normal! zR
+
+This automatically unfolds `urls.py`, `dashboard.py` and `settings.py` (I
+prefer seeing those unfolded) and unsets line wrapping for `urls.py` (lines in
+a `urls.py` file can get long and are hard to read when wrapped).
 
 {% endblock %}
