@@ -165,6 +165,14 @@ body {
     .fn {
         color: @color;
         text-decoration: none;
+
+        &:hover {
+            color: @c-link;
+            text-decoration: none;
+        }
+        .last-name {
+            display: none;
+        }
     }
 }
 .section-listing {
@@ -316,6 +324,3 @@ div#cboxCurrent {
     padding-top: 1px;
 }
 
-.fn span {
-    display: none;
-}
