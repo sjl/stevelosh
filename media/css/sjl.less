@@ -103,7 +103,7 @@ body {
                 text-transform: lowercase;
                 padding-left: 2px;
                 width: 612px - 2px - 400px;
-                
+
                 .amp {
                     font-style: italic;
                 }
@@ -149,7 +149,8 @@ body {
     }
 }
 .splash {
-    color: #454545;
+    @color: #454545;
+    color: @color;
     text-align: center;
     font: normal 27px/32px @font-fancy;
     margin-bottom: -1px;
@@ -160,6 +161,10 @@ body {
     }
     .amp {
         font-style: italic;
+    }
+    .fn {
+        color: @color;
+        text-decoration: none;
     }
 }
 .section-listing {
@@ -309,4 +314,8 @@ div#cboxCurrent {
 .flattr {
     float: right;
     padding-top: 1px;
+}
+
+.fn span {
+    display: none;
 }

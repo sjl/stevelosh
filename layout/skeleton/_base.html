@@ -1,12 +1,10 @@
 {% extends "skeleton/_root.html" %}
-
 {% block all %}
 <!DOCTYPE html>
-
 <html>
     <head>
-        <link href='http://fonts.googleapis.com/css?family=OFL+Sorts+Mill+Goudy+TT:regular,italic' rel='stylesheet' type='text/css'>
-
+        <link href='http://fonts.googleapis.com/css?family=OFL+Sorts+Mill+Goudy+TT:regular,italic' rel='stylesheet' type='text/css' />
+        <link rel="profile" href="http://microformats.org/profile/hcard" />
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 
         <title>{% block title %}{% block extra_title %}{% endblock %}{{ page.title|safe }} / {{ site.name }}{% endblock %}</title>
