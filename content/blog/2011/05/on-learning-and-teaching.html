@@ -1,0 +1,257 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "On Learning and Teaching"
+        snip: "Learning one thing isn't enough."
+        created: 2011-05-22 17:00:00
+        flattr: true
+    %}
+
+    {% block article %}
+
+I recently read a blog entry by [Zack Kurmas][] called "[The deep end of the
+pool][]".  In it he talks about why he thinks some students succeed in introductory
+Computer Science classes while others fail.  If you're a programmer and haven't read
+it, stop right now and read it.
+
+In a nutshell: I think he's pretty much correct.  I wanted to write this post because
+I think I have a solution to the problem that might work, at least for some people.
+
+[Zack Kurmas]: http://www.cis.gvsu.edu/~kurmasz/
+[The deep end of the pool]: http://spin.atomicobject.com/2011/05/17/the-deep-end-of-the-pool/
+
+Background
+----------
+
+I'm a computer programmer by trade.  I went to [RIT][] for five years to  get my
+degree in Computer Science and before that I was working with toy programs during
+high school.
+
+While I was at RIT I started going to [Swing Dance Club][].  I learned to swing dance
+there about eight years ago.  A few years later I started I began teaching Swing
+Dance Club with some of my friends, and about a year ago I started teaching Blues
+Dancing with [Lady Luck Blues][].
+
+I have a couple of other semi-serious hobbies that I've taken classes in as well:
+photography and bass playing.
+
+To summarize: I've had experience in a bunch of different areas, and I've been
+teaching one of them for a while.
+
+**Disclaimer:** one thing I've never studied is teaching itself, so feel free to take
+everything I say about it with a large grain of salt.  I haven't done any hard
+research and I could be completely wrong.
+
+[RIT]: http://rit.edu/
+[Swing Dance Club]: http://www.rit.edu/sg/swing/
+[Lady Luck Blues]: http://ladyluckblues.com/
+
+Similarities in Dancing and Programming
+---------------
+
+In his article, Zack talks about programming syntax being a stumbling block for
+beginners.  I think he's very right and I think there's a similar concept in dancing.
+
+### Programming Syntax
+
+If you're a programmer you can skip this section.
+
+For the non-programmers: "syntax" is the combination of letters, numbers and symbols
+that you write to create computer programs. For example, look at the following two
+bits of text:
+
+    if x == 2:
+        print "Hello"
+    x = 10
+
+    if x == 2:
+        print 'Hello"
+    x = 10
+
+Notice the difference?  The first snippet says `"Hello"` while the second says
+`'Hello"`.  Notice how the first uses two double quotes (`"`) while the second uses
+one double and one single quote (`'`).
+
+The first bit of code will work, but the second one won't.  Little differences like
+these might not seem like a big deal, but to a computer they're as different as
+`abcdefg` and `o34%^8@@.com`.
+
+### Dancing Footwork
+
+If you're a dancer you can skip this section.
+
+For the non-dancers: "footwork" is the pattern of steps you make when you dance.  For
+example, in Lindy Hop (a style of swing dancing) the basic footwork looks like this:
+
+    Beats: 1    2    3    4    5    6    7    8
+    Steps: x    x    x  xx   x   x   x  xx
+
+For East Coast Swing, the basic footwork looks like this:
+
+    Beats: 1   2   3   4   5   6
+    Steps: x   x   x  xx  x xx
+
+Notice the differences?  Lindy Hop footwork is based on an six beat pattern, while
+East Coast footwork is based on six beats.  The patterns also have the "extra steps"
+in different places.
+
+When you're dancing with a partner you both need to be doing the same footwork,
+otherwise you can't really dance together.
+
+### Footwork is Syntax and Syntax is Footwork
+
+When you're learning both programming and dancing there are lots of deep, high-level
+concepts you can tackle.  For programming you have things like object orientation,
+recursion, and API design.  In dancing you have things like musicality, listening to
+your follower, and negative space.
+
+However: in my experience teaching dancing you need to learn and understand the
+footwork before you can learn the higher concepts.  If you're still thinking about
+where to put your feet when you're dancing you won't have the spare brainpower to
+think about those other concepts.
+
+In Zack's post he says the same thing about programming.  If you're still struggling
+with understanding the syntax of programs you can't simultaneously pay attention to
+the higher concepts that are being taught. I've never taught programming but my
+personal observations of programmers make me think he's right.
+
+To be clear: there aren't just two levels (low and high).  There are many
+levels/layers, each of which builds on the last.  Also: the layers are not linear --
+learning concept A might allow you to learn either B or C.
+
+However: the same idea applies most of the time.  You need to learn and internalize
+lower levels before moving on to the higher ones.
+
+Plateaus in Learning
+------------------
+
+One thing I've noticed while learning dancing, programming, photography, and other
+skills is that my learning seems to progress quickly at times and slowly at others.
+
+When I'm learning quickly everything is great.  I feel good about myself and my
+abilities and I throw myself into learning as much as I can.
+
+On the other hand when I'm learning slowly (hitting a "plateau") I often get
+frustrated or discouraged.  Nothing I try seems to speed up my ascent out of these
+plateaus.  It seems like the only thing that works is time and practice of what
+I already know.
+
+I think the reason for this is that once I learn a bunch of new concepts my brain
+needs some time to process them.  I can learn the concepts and use them if
+I concentrate, but it's not effortless.  I think the reason I finally start learning
+quickly again after some time is that I've internalized the previous concepts and now
+I can move on to more difficult ones which build on the previous ones.
+
+The first plateau of programming is the syntax and the first plateau of dancing is
+footwork.  The bad part about this is that dancing when you only know footwork or
+programming when you only know syntax isn't much fun.  You can't do all of the most
+interesting things that make these skills so rewarding.
+
+Getting Through Plateaus
+------------------------
+
+In my own experience the hardest part about teaching is getting students through the
+plateaus.  Because it just takes time and practice to process what they've already
+learned there's not much I can do to help them.  Students take more advanced classes
+but don't really grab them until they're fluent in the things they've previously
+learned.
+
+As a teacher, this is incredibly frustrating.  I want to teach my students what
+I know, but I know they won't absorb it until they've absorbed the previous lessons.
+
+### The Lie and the Solution
+
+Here's the kicker, and what I think might provide the solution to this problem: **I
+lied when I said that the only things that help me through plateaus are time and
+practice.**
+
+There's one more thing that helps me get through plateaus: **connecting the concepts
+I'm trying to internalize with concepts from other skills that I already know.**
+
+An example of this that I've written about before is [negative space][].  When I was
+learning blues dancing I realized that "stopping your movement" was simply
+a different expression of the concept of "negative space" in photography.
+
+I had already struggled through internalizing the concept of negative space in
+photography, so when I connected this with dancing it helped make things "click"
+together and made the plateau shorter.
+
+[negative space]: http://stevelosh.com/blog/2008/08/negative-space-dancing/
+
+### The Problem with the Solution
+
+In my own life this solution is great.
+
+I have a bunch of hobbies and all of them mesh together in different ways.  Sometimes
+I can connect what I know in one to what I know in another and get through these
+plateaus more quickly.  When I can't do that I can focus on one of my other hobbies
+while practicing another, which reduces the frustration of not progressing faster.
+
+When teaching students, however, this isn't a trick I can use effectively.
+
+I can't really tell a student: "you need to find something else to focus on for
+a while while you internalize what I've taught you."  If they want to learn dancing,
+they'll feel like taking more dance classes is the way to go.  They're paying me to
+teach them so I obviously have to try to teach them.
+
+I sometimes try to teach the "analogies" between skills that have helped me.
+Sometimes this works well -- the "Negative Space in Dancing" class that my partner
+and I have taught seems to go over well with most of the students.
+
+The problem is that everyone has different skills.  Trying to connect a concept in
+programming to a concept in photography is futile if the student doesn't understand
+the photographic concept.
+
+### The Solution to the Problem with the Solution
+
+Disclaimer: once again, I've never studied teaching itself, so this might not be
+a new idea and/or I could be completely wrong about this.
+
+I've thought a long time about a way to fix this.  For students that are simply
+taking a class here and there with me, I haven't found a good solution.
+
+However, for students enrolled in a longer series of classes, like college students
+studying a major, I think there might be a way to use this idea (linking concepts
+from disparate skills) to help them learn.
+
+When I went to RIT I didn't just take Computer Science classes.  I had to take a few
+science classes, a few math classes, a few history classes, and so on.  I believe
+other colleges work on the same system: you take many classes in your major and one
+or two classes in everything else.  The idea is that you become a "well-rounded"
+person.
+
+The bad part about this process is that one or two classes is not enough to get to
+one of these "plateaus", struggle through it, and continue on.  Therefore you don't
+have time to internalize the skills you learn, which means that you can't connect
+them to concepts in your major.
+
+I'm also not sure how effective these random classes are at making students
+"well-rounded".  If you don't get far enough to internalize the skills you learn in
+a class are they really useful to you once you're done with those classes?
+
+I think the way around this is to ditch the "one major and a tiny bit of everything
+else" process and move to a "one major and two or three minors" process.
+
+This will help students past the plateaus that discourage them, because they'll have
+learned enough in their "minors" to be able to connect concepts to those in their
+major.  Teachers might not be able to teach specific analogies because the students
+will all have different minors, but each student will be able to connect the concepts
+in their majors on their own to whatever they happen to know from their minors.
+
+This process also has another benefit: students will leave college retaining more
+skills that they would have otherwise.  A programming student could leave college
+with a real, effective amount of knowledge in music; a writing major could leave with
+a real, effective amount of knowledge in biology, and so on.
+
+Conclusion
+----------
+
+I'm not naive enough to think that any college is going to change their entire
+curriculum based on some random guy's blog post.
+
+My intended audience for this post is not colleges, but people that want to learn
+skills faster and more effectively.  I know that there are a lot of people out there
+hungry for knowledge and I hope that some of them can benefit from the ideas I've
+given, learn faster, and make the world a better place.
+
+    {% endblock %}
