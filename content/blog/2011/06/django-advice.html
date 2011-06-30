@@ -990,8 +990,12 @@ When someone asks me "how do you run your site" I do **not** answer: "click the 
 triangle in Eclipse".
 
 However, I am human.  I do stupid things like forgetting a colon or forgetting an
-import.  To help me with those problems I've turned to Kevin Watters' [Pyflakes
-plugin][] for Vim.
+import.  To help me with those problems I've turned to [Syntastic][] and Kevin
+Watters' [Pyflakes fork][] for Vim.
+
+Syntastic is a Vim plugin that adds on-the-fly syntax-checking for many different
+file formats.  If you have Pyflakes installed it will automatically show you errors
+in your code.
 
 Pyflakes doesn't have IDE-level integration with your code.  It doesn't check that
 whatever libraries you `import` actually exist.  It simply checks that your files are
@@ -1001,14 +1005,14 @@ This is enough for me.  It catches the stupid mistakes I make.  The less-stupid,
 more-subtle mistakes slip by it, but to be fair many of them would have slipped by an
 "IDE" as well.
 
-[Pyflakes plugin]: http://www.vim.org/scripts/script.php?script_id=2441
+[Pyflakes fork]: https://github.com/kevinw/pyflakes
+[Syntastic]: http://www.vim.org/scripts/script.php?script_id=2736
 
 ### Javascript Sanity Checking and Folding
 
-If you haven't used [Syntastic][], you definitely need to check it out.  It's a Vim
-plugin that adds on-the-fly syntax-checking for many different file formats: one of
-which is JavaScript.  It's not perfect but it *will* catch things like using trailing
-commas in object literals.
+Syntastic also supports Javascript if you have Javascript Lint installed (`brew
+install jsl` on OS X).  It's not perfect but it *will* catch things like using
+trailing commas in object literals.
 
 Some people like using CTags to get an overview of their code.  I take a more
 low-tech approach and am in love with code folding.  When I fold my code
@@ -1020,8 +1024,6 @@ serviceable folding with these two lines in your .vimrc:
     :::text
     au FileType javascript setlocal foldmethod=marker
     au FileType javascript setlocal foldmarker={,}
-
-[Syntastic]: http://www.vim.org/scripts/script.php?script_id=2736
 
 
 ### Django Autocommands
