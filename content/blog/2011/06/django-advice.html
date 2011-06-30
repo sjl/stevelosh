@@ -834,6 +834,9 @@ With `render_to` your view gets much cleaner:
 
 Less typing `context_instance=...` over and over, and less syntax to remember.
 
+Yes, I know about Django 1.3's `render` shortcut.  You have to type `request` every
+single time with `render`, so the `render_to` decorator still wins.
+
 ### The ajax\_request Decorator
 
 The `ajax_request` decorator is like `render_to` for AJAX requests.  You simply
