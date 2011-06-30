@@ -780,7 +780,7 @@ without too much fuss:
         list_display = ('title', 'author_name')
 
         def author_name(self, obj):
-            return o.name
+            return obj.name
 
 That will display the name just fine.  However, it won't be a fully-fledged column in
 the Django admin because you can't sort on it.
@@ -794,7 +794,7 @@ fix the problem:
         list_display = ('title', 'author_name')
 
         def author_name(self, obj):
-            return o.name
+            return obj.name
         author_name.admin_order_field = 'author__name'
 
 Now the author name has all the functionality of a real `list_display` entry.
