@@ -72,6 +72,10 @@ Aside from that, there's another benefit to using Vagrant: it strongly encourage
 to learn and use an automated provisioning system.  Support for Puppet and Chef is
 built in.  I chose Puppet, but if you prefer Chef that's cool too.
 
+You can also use other tools like Fabric or some simple scripts, but I'd strongly
+recommend giving Puppet or Chef a fair shot.  It's a lot to learn, but they're both
+widely tested and very powerful.
+
 Because you're developing against a VM and deploying to a VM, you can reuse 90% of
 the provisioning code across the two.
 
@@ -722,7 +726,8 @@ those files!
 
 Luckily [BCVI][] exists.  It's a utility that opens a "back channel" to your local
 machine when you SSH and lets you run `vi FILE` to open that file in
-Vim/MacVim/GVim/etc on your *local* machine.
+Vim/MacVim/GVim/etc on your *local* machine.  When you save the file it uploads it
+back to the server automatically for you.
 
 It can be a bit tricky to set up, but it's worth it.  Trust me.
 
