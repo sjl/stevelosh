@@ -1,0 +1,1055 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "Django Advice"
+        snip: "Some useful things I've learned."
+        created: 2011-06-30 08:30:00
+        flattr: true
+    %}
+
+    {% block article %}
+
+For the past year and a half or so I've been working full-time at [Dumbwaiter
+Design][] doing [Django][] development. I've picked up a bunch of useful tricks along
+the way that help me work, and I figured I'd share them.
+
+I'm sure there are better ways to do some of the things that I mention.  If you know
+of any feel free to hit me up on [Twitter][] and let me know.
+
+Also: this entry was written over several months, so if there are inconsistencies let
+me know and I'll try to fix them.
+
+[Dumbwaiter Design]: http://dwaiter.com/
+[Django]: {{links.django}}
+[Twitter]: http://twitter.com/stevelosh
+
+[TOC]
+
+Vagrant
+-------
+
+I used to develop Django sites by running them on my OS X laptop locally and
+deploying to a Linode VPS.  I had a whole section of this post written up about
+tricks and tips for working with that setup.
+
+Then I found [Vagrant][].
+
+I just deleted the entire section of this post I wrote.
+
+Vagrant gives you a better way of working.  You need to use it.
+
+[Vagrant]: http://vagrantup.com/
+
+### Why Vagrant?
+
+If you haven't used it before, Vagrant is basically a tool for managing
+[VirtualBox][] VMs.  It makes it easy to start, pause, and resume VMs.  Instead of
+installing Django in a virtualenv and developing against that, you run a VM which
+runs your site and develop against that.
+
+This may not sound like much, but it's kind of a big deal.  The critical difference
+is that you can now develop against the same setup that you'll be using in
+production.
+
+This cuts out a huge amount of pain that stems from OS differences.  Here are a few
+examples off the top of my head:
+
+* URLField and MacPorts Python 2.5 on OS X.  There's a [bug][] where using
+  verify\_exists will crash your site every time you save a model, unless you set
+  a particular environment variable with no debug information.  Yeah, I spent
+  a couple of hours tracking that one down at work.  Awesome.
+* Installing PIL on OS X is no picnic.  [homebrew][] makes things better, if you use it,
+  so this one isn't a huge deal.
+* Every time you update Python in-place on your local machines, ALL of your
+  virtualenvs break because the Python binaries inside are linked against global
+  Python library files.  Have fun recreating them.  I hope you froze your
+  `requirements.txt` files before you updated.
+
+Using Vagrant and VMs means you can just worry about ONE operating system and its
+quirks.  It saves you a ton of time.
+
+Aside from that, there's another benefit to using Vagrant: it strongly encourages you
+to learn and use an automated provisioning system.  Support for Puppet and Chef is
+built in.  I chose Puppet, but if you prefer Chef that's cool too.
+
+Because you're developing against a VM and deploying to a VM, you can reuse 90% of
+the provisioning code across the two.
+
+When I make a new site, I do the following to initialize a new Vagrant VM:
+
+1. `vagrant up` (which runs Puppet to initialize the VM)
+2. `fab dev bootstrap`
+
+When I'm ready to go live, I do the following:
+
+1. Buy a Linode VPS.
+2. Run Puppet to initialize the VPS.
+3. Enter the Linode info in my fabfile.
+4. `fab prod bootstrap`
+
+No more screwing around with different paths, different versions of Nginx, different
+versions of Python.  When I'm developing something I can be pretty confident it will
+"just work" in production without any major surprises.
+
+[VirtualBox]: http://www.virtualbox.org/
+[bug]: https://trac.macports.org/ticket/24421
+[homebrew]: http://mxcl.github.com/homebrew/
+
+### Using Fabric to Stay Fast and Automate Everything
+
+One of the problems with this setup is that I can't just run `python manage.py
+whatever` any more because I need it to run on the VM.
+
+To get around this I've created many simple [Fabric][] tasks to automate the common
+things I need to do.  Fabric is an awesome little Python utility for scripting tasks
+(like deployments).  We use it constantly at Dumbwaiter.  Here are a few examples
+from our fabfiles.
+
+[Fabric]: http://fabfile.org/
+
+This first set is for running abitrary commands easily.
+
+`cmd` and `vcmd` will `cd` into the site directory on the VM and run a command of my
+choosing.  `vcmd` will prefix the command with the path to the virtualenv's `bin`
+directory, so I can do something like `fab dev vcmd`, `pip install markdown`.
+
+The `sdo` commands do the same thing, but `sudo`'ed.
+
+    :::python
+    def cmd(cmd=""):
+        '''Run a command in the site directory.  Usable from other commands or the CLI.'''
+        require('site_path')
+
+
+        if not cmd:
+            sys.stdout.write(_cyan("Command to run: "))
+            cmd = raw_input().strip()
+
+        if cmd:
+            with cd(env.site_path):
+                run(cmd)
+
+    def sdo(cmd=""):
+        '''Sudo a command in the site directory.  Usable from other commands or the CLI.'''
+        require('site_path')
+
+        if not cmd:
+            sys.stdout.write(_cyan("Command to run: sudo "))
+            cmd = raw_input().strip()
+
+        if cmd:
+            with cd(env.site_path):
+                sudo(cmd)
+
+    def vcmd(cmd=""):
+        '''Run a virtualenv-based command in the site directory.  Usable from other commands or the CLI.'''
+        require('site_path')
+        require('venv_path')
+
+        if not cmd:
+            sys.stdout.write(_cyan("Command to run: %s/bin/" % env.venv_path.rstrip('/')))
+            cmd = raw_input().strip()
+
+        if cmd:
+            with cd(env.site_path):
+                run(env.venv_path.rstrip('/') + '/bin/' + cmd)
+
+    def vsdo(cmd=""):
+        '''Sudo a virtualenv-based command in the site directory.  Usable from other commands or the CLI.'''
+        require('site_path')
+        require('venv_path')
+
+        if not cmd:
+            sys.stdout.write(_cyan("Command to run: sudo %s/bin/" % env.venv_path.rstrip('/')))
+            cmd = raw_input().strip()
+
+        if cmd:
+            with cd(env.site_path):
+                sudo(env.venv_path.rstrip('/') + '/bin/' + cmd)
+
+This next set is just some common commands that I need to run often.
+
+    :::python
+    def syncdb():
+        '''Run syncdb.'''
+        require('site_path')
+        require('venv_path')
+
+        with cd(env.site_path):
+            run(_python('manage.py syncdb --noinput'))
+
+    def collectstatic():
+        '''Collect static media.'''
+        require('site_path')
+        require('venv_path')
+
+        with cd(env.site_path):
+            sudo(_python('manage.py collectstatic --noinput'))
+
+    def rebuild_index():
+        '''Rebuild the search index.'''
+        require('site_path')
+        require('venv_path')
+        require('process_owner')
+
+        with cd(env.site_path):
+            sudo(_python('manage.py rebuild_index'))
+            sudo('chown -R %s .xapian' % env.process_owner)
+
+    def update_index():
+        '''Update the search index.'''
+        require('site_path')
+        require('venv_path')
+        require('process_owner')
+
+        with cd(env.site_path):
+            sudo(_python('manage.py update_index'))
+            sudo('chown -R %s .xapian' % env.process_owner)
+
+We also use Fabric to automate some of the more complex things we need to do.
+
+This task `curl`'s the site's home page to make sure we haven't completely borked
+things.  We use it in lots of other tasks as a sanity check.
+
+    :::python
+    def check():
+        '''Check that the home page of the site returns an HTTP 200.'''
+        require('site_url')
+
+        print('Checking site status...')
+
+        if not '200 OK' in local('curl --silent -I "%s"' % env.site_url, capture=True):
+            _sad()
+        else:
+            _happy()
+
+The `_happy` and `_sad` functions just print out some simple messages to get our
+attention:
+
+    :::python
+    from fabric.colors import red, green
+
+    def _happy():
+        print(green('\nLooks good from here!\n'))
+
+    def _sad():
+        print(red(r'''
+              ___           ___
+             /  /\         /__/\
+            /  /::\        \  \:\
+           /  /:/\:\        \__\:\
+          /  /:/  \:\   ___ /  /::\
+         /__/:/ \__\:\ /__/\  /:/\:\
+         \  \:\ /  /:/ \  \:\/:/__\/
+          \  \:\  /:/   \  \::/
+           \  \:\/:/     \  \:\
+            \  \::/       \  \:\
+             \__\/         \__\/
+              ___           ___           ___           ___
+             /__/\         /  /\         /  /\         /  /\     ___
+             \  \:\       /  /::\       /  /:/_       /  /:/_   /__/\
+              \  \:\     /  /:/\:\     /  /:/ /\     /  /:/ /\  \  \:\
+          _____\__\:\   /  /:/  \:\   /  /:/ /:/_   /  /:/ /::\  \  \:\
+         /__/::::::::\ /__/:/ \__\:\ /__/:/ /:/ /\ /__/:/ /:/\:\  \  \:\
+         \  \:\~~\~~\/ \  \:\ /  /:/ \  \:\/:/ /:/ \  \:\/:/~/:/   \  \:\
+          \  \:\  ~~~   \  \:\  /:/   \  \::/ /:/   \  \::/ /:/     \__\/
+           \  \:\        \  \:\/:/     \  \:\/:/     \__\/ /:/          __
+            \  \:\        \  \::/       \  \::/        /__/:/          /__/\
+             \__\/         \__\/         \__\/         \__\/           \__\/
+
+
+             Something seems to have gone wrong!
+             You should probably take a look at that.
+        '''))
+
+This one is for when `python manage.py reset APP` is broken because you've changed
+some `db_column` names and Django chokes because of some constraits and you just want
+to **reset the fucking app**.
+
+It's the "NUKE IT FROM ORBIT!!" option.
+
+    :::python
+    def KILL_IT_WITH_FIRE(app):
+        require('site_path')
+        require('venv_path')
+
+        with cd(env.site_path):
+            # Generate and download the reset SQL.
+            sudo(_python('manage.py sqlreset %s > reset.orig.sql' % app))
+            get('reset.orig.sql')
+
+            with open('reset.sql', 'w') as f:
+                with open('reset.orig.sql') as orig:
+                    # Step through the first chunk of the file (the "drop" part).
+                    line = orig.readline()
+                    while not line.startswith('CREATE'):
+                        if 'CONSTRAINT' in line:
+                            # Don't write out CONSTRAINT lines.
+                            # They're a problem when you change db_colum names.
+                            pass
+                        elif 'DROP TABLE' in line:
+                            # Cascade drops.
+                            # Hence with "with fire" part of this task's name.
+                            line = line[:-2] + ' CASCADE;\n'
+                            f.write(line)
+                        else:
+                            # Write other lines through untoched.
+                            f.write(line)
+                        line = orig.readline()
+
+                    # Write out the rest of the file untouched.
+                    f.write(line)
+                    f.write(orig.read())
+
+        # Upload the processed SQL file.
+        put('reset.sql', os.path.join(env.site_path, 'reset.ready.sql'), use_sudo=True)
+
+        with cd(env.site_path):
+            # Use the SQL to reset the app, and fake a migration.
+            run(_python('manage.py dbshell < reset.ready.sql'))
+            sudo(_python('manage.py migrate --fake --delete-ghost-migrations ' + app))
+
+This task uses Mercurial's local tags to add a `production` or `staging` tag in your local
+repository, so you can easy see where the production/staging servers are at
+compared to your local repo.
+
+    :::python
+    def retag():
+        '''Check which revision the site is at and update the local tag.
+
+        Useful if someone else has deployed (which makes your production/staging local
+        tag incorrect.
+        '''
+        require('site_path', provided_by=['prod', 'stag'])
+        require('env_name', provided_by=['prod', 'stag'])
+
+        with cd(env.site_path):
+            current = run('hg id --rev . --quiet').strip(' \n+')
+
+        local('hg tag --local --force %s --rev %s' % (env.env_name, current))
+
+This task tails the Gunicorn logs on the server so you can quickly find out what's
+happening when things blow up.
+
+    :::python
+    def tailgun(follow=''):
+        """Tail the Gunicorn log file."""
+        require('site_path')
+
+        with cd(env.site_path):
+            if follow:
+                run('tail -f .gunicorn.log')
+            else:
+                run('tail .gunicorn.log')
+
+We've got a lot of other tasks but they're pretty specific to our setup.
+
+Wrangling Databases with South
+------------------------------
+
+If you're not using [South][], you need to start.  Now.
+
+No, really, I'll wait.  Take 30 minutes, try the [tutorial][Southtut], wrap your head
+around it and come back.  It's far more important than this blog post.
+
+[South]: http://south.aeracode.org/
+[Southtut]: http://south.aeracode.org/docs/tutorial/index.html
+
+### Useful Fabric Tasks
+
+South is awesome but its commands are very long-winded.  Here's the set of fabric
+tasks I use to save quite a bit of typing:
+
+    :::python
+    def migrate(args=''):
+        '''Run any needed migrations.'''
+        require('site_path')
+        require('venv_path')
+
+        with cd(env.site_path):
+            sudo(_python('manage.py migrate ' + args))
+
+    def migrate_fake(args=''):
+        '''Run any needed migrations with --fake.'''
+        require('site_path')
+        require('venv_path')
+
+        with cd(env.site_path):
+            sudo(_python('manage.py migrate --fake ' + args))
+
+    def migrate_reset(args=''):
+        '''Run any needed migrations with --fake.  No, seriously.'''
+        require('site_path')
+        require('venv_path')
+
+        with cd(env.site_path):
+            sudo(_python('manage.py migrate --fake --delete-ghost-migrations ' + args))
+
+Remember that running a migration without specifying an app will migrate everything,
+so a simple `fab dev migrate` will do the trick.
+
+Watching for Changes
+---------------------
+
+When developing locally you'll want to make a change to your code and have the server
+reload that code automatically.  The Django development server does this, and we can
+hack it into our Vagrant/Gunicorn setup too.
+
+First, add a `monitor.py` file at the root of your project (I believe I found this
+code [here][monitor], but I may be wrong):
+
+    :::python
+    import os
+    import sys
+    import time
+    import signal
+    import threading
+    import atexit
+    import Queue
+
+    _interval = 1.0
+    _times = {}
+    _files = []
+
+    _running = False
+    _queue = Queue.Queue()
+    _lock = threading.Lock()
+
+    def _restart(path):
+        _queue.put(True)
+        prefix = 'monitor (pid=%d):' % os.getpid()
+        print >> sys.stderr, '%s Change detected to \'%s\'.' % (prefix, path)
+        print >> sys.stderr, '%s Triggering process restart.' % prefix
+        os.kill(os.getpid(), signal.SIGINT)
+
+    def _modified(path):
+        try:
+            # If path doesn't denote a file and were previously
+            # tracking it, then it has been removed or the file type
+            # has changed so force a restart. If not previously
+            # tracking the file then we can ignore it as probably
+            # pseudo reference such as when file extracted from a
+            # collection of modules contained in a zip file.
+
+            if not os.path.isfile(path):
+                return path in _times
+
+            # Check for when file last modified.
+
+            mtime = os.stat(path).st_mtime
+            if path not in _times:
+                _times[path] = mtime
+
+            # Force restart when modification time has changed, even
+            # if time now older, as that could indicate older file
+            # has been restored.
+
+            if mtime != _times[path]:
+                return True
+        except:
+            # If any exception occured, likely that file has been
+            # been removed just before stat(), so force a restart.
+
+            return True
+
+        return False
+
+    def _monitor():
+        while 1:
+            # Check modification times on all files in sys.modules.
+
+            for module in sys.modules.values():
+                if not hasattr(module, '__file__'):
+                    continue
+                path = getattr(module, '__file__')
+                if not path:
+                    continue
+                if os.path.splitext(path)[1] in ['.pyc', '.pyo', '.pyd']:
+                    path = path[:-1]
+                if _modified(path):
+                    return _restart(path)
+
+            # Check modification times on files which have
+            # specifically been registered for monitoring.
+
+            for path in _files:
+                if _modified(path):
+                    return _restart(path)
+
+            # Go to sleep for specified interval.
+
+            try:
+                return _queue.get(timeout=_interval)
+            except:
+                pass
+
+    _thread = threading.Thread(target=_monitor)
+    _thread.setDaemon(True)
+
+    def _exiting():
+        try:
+            _queue.put(True)
+        except:
+            pass
+        _thread.join()
+
+    atexit.register(_exiting)
+
+    def track(path):
+        if not path in _files:
+            _files.append(path)
+
+    def start(interval=1.0):
+        global _interval
+        if interval < _interval:
+            _interval = interval
+
+        global _running
+        _lock.acquire()
+        if not _running:
+            prefix = 'monitor (pid=%d):' % os.getpid()
+            print >> sys.stderr, '%s Starting change monitor.' % prefix
+            _running = True
+            _thread.start()
+        _lock.release()
+
+Next add a `post_fork` hook to your Gunicorn config file that uses the monitor to
+watch for changes:
+
+    :::python
+    def post_fork(server, worker):
+        import monitor
+        import local_settings
+        if local_settings.DEBUG:
+            server.log.info("Starting change monitor.")
+            monitor.start(interval=1.0)
+
+Now the Gunicorn server will automatically restart whenever code is changed.  Use
+whatever method for determining debug status that you like.  We use
+`local_settings.py` files which all have `DEBUG` variables, so that works for us.
+
+It will *not* restart when you add new code (e.g. when you install a new app), so
+you'll need to handle that manually with `fab dev restart`, but that's not too bad!
+
+[monitor]: http://code.google.com/p/modwsgi/wiki/ReloadingSourceCode
+
+### Using the Werkzeug Debugger with Gunicorn
+
+The final piece of the puzzle is being able to use the fantastic [Werkzeug
+Debugger][debug] while running on the development VM with Gunicorn.
+
+To do this, create a `debug_wsgi.py` file at the root of your project:
+
+    :::python
+    import os
+    import sys
+    import site
+
+    parent = os.path.dirname
+    site_dir = parent(os.path.abspath(__file__))
+    project_dir = parent(parent(os.path.abspath(__file__)))
+
+    sys.path.insert(0, project_dir)
+    sys.path.insert(0, site_dir)
+
+    site.addsitedir('VIRTUALENV_SITE_PACKAGES')
+
+    from django.core.management import setup_environ
+    import settings
+    setup_environ(settings)
+
+    import django.core.handlers.wsgi
+    application = django.core.handlers.wsgi.WSGIHandler()
+
+    from werkzeug.debug import DebuggedApplication
+    application = DebuggedApplication(application, evalex=True)
+
+    def null_technical_500_response(request, exc_type, exc_value, tb):
+        raise exc_type, exc_value, tb
+    from django.views import debug
+    debug.technical_500_response = null_technical_500_response
+
+Have Gunicorn use this file to run your development server with `gunicorn
+debug_wsgi:application`.
+
+Make sure to replace `'VIRTUALENV_SITE_PACKAGES'` with the _full_ path to your
+virtualenv's `site_packages` directory.  You might want to make this a setting in
+a machine-specific settings file.
+
+[debug]: http://werkzeug.pocoo.org/docs/debug/
+
+### Pulling Uploads
+
+Once you give a client access to a site they'll probably be uploading images (through
+Django's built-in file uploading features or with [django-filebrowser][]).
+
+When you're making changes locally it's often useful to have these uploaded files on
+your local VM, otherwise you end up with a bunch of broken images.
+
+Here's a simple Fabric task that will pull down all the uploads from the server:
+
+    :::python
+    def pull_uploads():
+        '''Copy the uploads from the site to your local machine.'''
+        require('uploads_path')
+
+        sudo('chmod -R a+r "%s"' % env.uploads_path)
+
+        rsync_command = r"""rsync -av -e 'ssh -p %s' %s@%s:%s %s""" % (
+            env.port,
+            env.user, env.host,
+            env.uploads_path.rstrip('/') + '/',
+            'media/uploads'
+        )
+        print local(rsync_command, capture=False)
+
+You might be wondering about the line that strips `/` characters and then adds them
+back in.  `rsync` does different things depending on whether you end a path with
+a `/`, so this is actually pretty important.
+
+In your host task you'll need to set the `uploads_path` variable to something like
+this:
+
+    :::python
+    import os
+    env.site_path = os.path.join('var', 'www', 'myproject')
+    env.uploads_path = os.path.join(env.site_path, 'media', 'uploads')
+
+Now you can run `fab production pull_uploads` to pull down all the files people have
+uploaded to the production server.
+
+[django-filebrowser]: http://code.google.com/p/django-filebrowser/
+
+### Preventing Accidents
+
+Deploying to test and staging servers should be quick and easy. Deploying to
+production servers should be harder to prevent people from accidentally doing it.
+
+I've created a little function that I call before deploying to production servers.
+It forces me to type in random words from the system word list before proceeding to
+make sure I *really* know what I'm doing:
+
+    :::python
+    import os, random
+
+    from fabric.api import *
+    from fabric.operations import prompt
+    from fabric.utils import abort
+
+    WORDLIST_PATHS = [os.path.join('/', 'usr', 'share', 'dict', 'words')]
+    DEFAULT_MESSAGE = "Are you sure you want to do this?"
+    WORD_PROMPT = '  [%d/%d] Type "%s" to continue (^C quits): '
+
+    def prevent_horrible_accidents(msg=DEFAULT_MESSAGE, horror_rating=1):
+        """Prompt the user to enter random words to prevent doing something stupid."""
+
+        valid_wordlist_paths = [wp for wp in WORDLIST_PATHS if os.path.exists(wp)]
+
+        if not valid_wordlist_paths:
+            abort('No wordlists found!')
+
+        with open(valid_wordlist_paths[0]) as wordlist_file:
+            words = wordlist_file.readlines()
+
+        print msg
+
+        for i in range(int(horror_rating)):
+            word = words[random.randint(0, len(words))].strip()
+            p_msg = WORD_PROMPT % (i+1, horror_rating, word)
+            answer = prompt(p_msg, validate=r'^%s$' % word)
+
+You may need to adjust `WORDLIST_PATHS` if you're not on OS X.
+
+Working with Third-Party Apps
+-----------------------------
+
+One of the best parts about working with Django is that many problems have already
+been solved and the solutions have been released as open-source applications.
+
+We use quite a few open-source apps, and there are a couple of tricks I've learned to
+make working with them easier.
+
+### Installing Apps from Repositories
+
+If I'm going to use an open-source Django app in a project I'll almost always install
+it as an editable repository on the VM with `pip install -e`.
+
+Others may disagree with me on this, but I think it's the best way to work.
+
+Often I'll find a bug that I think may be in one of the third-party apps I'm using.
+Installing the apps as repositories makes it easy to read their source and figure out
+if the bug is really in the app.
+
+If the bug *is* in the third-party app having the app installed as a repository makes
+it simple to fix the bug, fork the project on BitBucket or GitHub, send a pull
+request, and get back to work.
+
+### Mirroring Repositories
+
+One problem we've run into at Dumbwaiter is that the repos for third-party apps we
+use are scattered across GitHub, BitBucket, Google Code, and other servers.  If any
+one of these services goes down we're stuck waiting for it to come back up.
+
+A while ago I took half a day and consolidated all of these repos onto one of the
+servers that we control.  The basic process went like this:
+
+* Use [hg-git][] and [hgsubversion][] to convert the git and SVN repos to Mercurial
+  repos.
+* Set up a master `mirror` Mercurial repo with all the app repos as subrepos.
+* Push the master repo and all the subrepos up to one of our Linodes.
+
+Now we can use `-e ssh://hg@OUR_LINODE/mirror/APP@REV_THAT_WORKS#egg=APP` in our
+`requirements.txt` files to install apps from our mirror.  When we want to update our
+dependencies we can simply pull from the upstream repos and commit in the mirror
+repo.
+
+If our mirror goes down it's not a big deal, because we have far bigger problems to
+worry about than new projects.
+
+I wrote a few scripts to automate updating apps and such, but they're extremely hacky
+so I don't want ot post them here.  Take half a day and write your own set -- it's
+definitely worth it to have your own mirror of your specific dependencies.
+
+[hg-git]: http://hg-git.github.com/
+[hgsubversion]: https://bitbucket.org/durin42/hgsubversion/wiki/Home
+
+### Using BCVI to Edit Files
+
+I said that when I find a bug that I think is in a third-party app I'll poke around
+with the app and try to figure it out.  But since all the apps are installed in
+a virtualenv on the Vagrant VM it might seem like it's a pain in the ass to edit
+those files!
+
+Luckily [BCVI][] exists.  It's a utility that opens a "back channel" to your local
+machine when you SSH and lets you run `vi FILE` to open that file in
+Vim/MacVim/GVim/etc on your *local* machine.
+
+It can be a bit tricky to set up, but it's worth it.  Trust me.
+
+[BCVI]: http://sshmenu.sourceforge.net/articles/bcvi/
+
+Improving the Admin Interface
+-----------------------------
+
+I'm going to be honest: Django's admin interface is the main reason I'm still using
+it.  Other frameworks like [Flask][] are great, but Django's admin saves me
+*ridiculous* amounts of time when I'm making simple CRUD sites for clients.
+
+That said, the Django admin isn't the prettiest thing around, but we can give it
+a facelift.
+
+[Flask]: http://flask.pocoo.org/
+
+### Enter Grappelli
+
+[Grappelli][] is a Django app that reskins the admin interface beautifully.  It also
+adds some functionality like drag-and-drop reordering of inlines, and allows you to
+customize the dashboard to your liking.  *Every* Django site I work on uses Grappelli
+-- it's just that good.
+
+The downside of Grappelli is that it changes quite a lot and breaks backwards
+compatibility at the drop of a hat.
+
+If you're going to use Grappelli you *must* freeze your requirements.txt files and
+work with a single version at a time.  Trying to always work from the trunk will make
+you drink.
+
+[Grappelli]: http://django-grappelli.readthedocs.org/
+
+### An Ugly Hack to Show Usable Foreign Key Fields
+
+A limitation of both Grappelli and the stock Django admin is that it seems like you
+can't easily show fields from related models in the admin list view.
+
+For example, if you're new to Django you might expect this to work:
+
+    :::python
+    class BlogEntryAdmin(admin.ModelAdmin):
+        list_display = ('title', 'author__name')
+
+Unfortunately Django chokes on the `author__name` lookup.  You can *display* the name
+without too much fuss:
+
+    :::python
+    class BlogEntryAdmin(admin.ModelAdmin):
+        list_display = ('title', 'author_name')
+
+        def author_name(self, obj):
+            return o.name
+
+That will display the name just fine.  However, it won't be a fully-fledged column in
+the Django admin because you can't sort on it.
+
+It may seem like this is the end -- if it could be a fully-functional field, why
+wouldn't Django just let you use `author__name`?  Luckily we can add one more line to
+fix the problem:
+
+    :::python
+    class BlogEntryAdmin(admin.ModelAdmin):
+        list_display = ('title', 'author_name')
+
+        def author_name(self, obj):
+            return o.name
+        author_name.admin_order_field = 'author__name'
+
+Now the author name has all the functionality of a real `list_display` entry.
+
+Using Django-Annoying
+---------------------
+
+If you haven't heard of [django-annoying][] you should definitely check it out.  It's
+got a bunch of miscellaneous functions that fix some common, annoying parts of
+Django.
+
+My two personal favorites from the package are a pair of decorators that help make
+your views much, much cleaner.
+
+[django-annoying]: https://bitbucket.org/offline/django-annoying/wiki/Home
+
+### The render\_to Decorator
+
+The decorator is called `render_to` and it eliminates the ugly `render_to_response`
+calls that Django normally forces you to use in every single view.
+
+Normally you'd use something like this:
+
+    :::python
+    def videos(request):
+        videos = Video.objects.all()
+        return render_to_response('video_list.html', { 'videos': videos },
+                                  context_instance=RequestContext(request))
+
+With `render_to` your view gets much cleaner:
+
+    :::python
+    @render_to('video_list.html')
+    def videos(request):
+        videos = Video.objects.all()
+        return { 'videos': videos }
+
+Less typing `context_instance=...` over and over, and less syntax to remember.
+
+### The ajax\_request Decorator
+
+The `ajax_request` decorator is like `render_to` for AJAX requests.  You simply
+return a Python dictionary from your view and the decorator handles the JSON encoding
+and such:
+
+    :::python
+    @ajax_request
+    def ajax_get_entries(request):
+        blog_entries = BlogEntry.objects.all()
+        return { 'entries': [(entry.title, entry.get_absolute_url())
+                             for entry in entries]}
+
+Templating Tricks
+-----------------
+
+I'm not a frontend developer, but I've done my share of HTML hacking at Dumbwaiter.
+Here are a few of the tricks I've learned.
+
+### Null Checks and Fallbacks
+
+A common pattern I see in Django templates looks like this:
+
+    :::text
+    {% templatetag openblock %} if business.title {% templatetag closeblock %}
+        {% templatetag openvariable %} business.title {% templatetag closevariable %}
+    {% templatetag openblock %} else {% templatetag closeblock %}
+        {% templatetag openvariable %} business.short_title {% templatetag closevariable %}
+    {% templatetag openblock %} endif {% templatetag closeblock %}
+
+Here's a simpler way to do that:
+
+    :::text
+    {% templatetag openblock %} firstof business.title business.short_title {% templatetag closeblock %}
+
+`firstof` will return the first non-Falsy item in its arguments.
+
+### Manipulating Query Strings
+
+Query strings are normally not a big deal, but every once in a while you'll have
+a model listing page where you need to filter by category, and number of spaces, and
+tags, etc all at once.
+
+If you're trying to manage GET queries manually it can get pretty hairy very fast.
+
+[This Django snippet][qstring] makes working with query strings in templates
+a breeze.
+
+[qstring]: http://djangosnippets.org/snippets/2237/
+
+### Satisfying Your Designer with Typogrify
+
+If you haven't heard of [Typogrify][] you should take a look at it.  It makes it easy
+to add all the typographic goodness your designers are looking for.
+
+[Typogrify]: http://code.google.com/p/typogrify/
+
+The Flat Page Trainwreck
+------------------------
+
+Creating a site for a client is very different than creating a site for yourself.
+For pretty much every client we've dealt with we've heard: "can't we just create
+a new page at /drink-special/ for this special deal we're running?"
+
+Having clients go through you to make new pages is simply too much overhead.  We
+needed a way to let clients create new pages (like `/drink-special/`) on the fly,
+without our intervention.
+
+Django has a "flatpages" app that solves this problem.  Kind of.
+
+When using flat pages clients need to do two things that are often too much for
+non-technical people:
+
+* Manage URLs manually.
+* Write all content as raw HTML in a single text field.
+
+We've tried a lot of Django CMS apps at Dumbwaiter, and none of them made us happy.
+They all seemed to have some or all of the following problems:
+
+* They take over your site and make you write a "Django-WhateverCMS site" instead of
+  a "Django site".
+* They're extremely feature-rich and complicated with features like
+  internationalization, redirects, versions, and many others.  This is great if you
+  need the flexibility, but bad if your clients just need to create a couple of
+  pages.
+* They break `APPEND_TRAILING_SLASH` and make you clutter your `urls.py` files with
+  a bunch of extra code ot handle this.
+
+I finally got fed up and wrote my own Django CMS app: [Stoat][].  Stoat is designed
+to be sleek, with only the features that our clients need.
+
+It's not officially version 1.0 yet, but we're using it for a few clients and it's
+working well.  Check it out if you're looking for a more lightweight CMS app.
+
+[Stoat]: http://stoat.rtfd.org/
+
+Editing with Vim
+----------------
+
+I [use Vim][vimpost] to edit everything.  Naturally I've found a bunch of plugins,
+mappings and other tricks that make it even better when working on Django projects.
+
+[vimpost]: /blog/2010/09/coming-home-to-vim/
+
+### Vim for Django
+
+There are a lot of ways to make Vim work with Django.  I won't go into all of them in
+this post, but a good place to start is [this Django wiki page][vimdjango].
+
+[vimdjango]: https://code.djangoproject.com/wiki/UsingVimWithDjango
+
+### Filetype Mappings
+
+Most files in a Django project have one of two extensions: `.py` and `.html`.
+Unfortunately these extensions aren't unique to Django, so Vim doesn't automatically
+set the correct `filetype` when you open one.
+
+I've added a few mappings to my `.vimrc` to make it quick and easy to set the correct
+`filetype`:
+
+    :::text
+    nnoremap _dt :set ft=htmldjango<CR>
+    nnoremap _pd :set ft=python.django<CR>
+
+I also have a few autocommands that set the filetype for me when I'm editing a file
+whose name "sounds like" a Django file:
+
+    :::text
+    au BufNewFile,BufRead admin.py     setlocal filetype=python.django
+    au BufNewFile,BufRead urls.py      setlocal filetype=python.django
+    au BufNewFile,BufRead models.py    setlocal filetype=python.django
+    au BufNewFile,BufRead views.py     setlocal filetype=python.django
+    au BufNewFile,BufRead settings.py  setlocal filetype=python.django
+    au BufNewFile,BufRead forms.py     setlocal filetype=python.django
+
+### Python Sanity Checking
+
+Lets be honest here: it takes a lot of work to turn Vim into an "IDE", and even then
+it doesn't reach the level of something like Eclipse for Java.  Anyone who claims it
+has the same levels of integration and functionality is simply lying.
+
+With that said I'll make an opinionated statement that is going to piss some of you
+off.
+
+**I am a programmer, not an IDE operator.**
+
+I know Python.
+
+I know Django.
+
+I don't need to hit Cmd+Space twice for every line of code I write.
+
+When someone asks me "how do you run your site" I do **not** answer: "click the green
+triangle in Eclipse".
+
+However, I am human.  I do stupid things like forgetting a colon or forgetting an
+import.  To help me with those problems I've turned to Kevin Watters' [Pyflakes
+plugin][] for Vim.
+
+Pyflakes doesn't have IDE-level integration with your code.  It doesn't check that
+whatever libraries you `import` actually exist.  It simply checks that your files are
+probably-valid Python, and tells you when they're not.
+
+This is enough for me.  It catches the stupid mistakes I make.  The less-stupid,
+more-subtle mistakes slip by it, but to be fair many of them would have slipped by an
+"IDE" as well.
+
+[Pyflakes plugin]: http://www.vim.org/scripts/script.php?script_id=2441
+
+### Javascript Sanity Checking and Folding
+
+If you haven't used [Syntastic][], you definitely need to check it out.  It's a Vim
+plugin that adds on-the-fly syntax-checking for many different file formats: one of
+which is JavaScript.  It's not perfect but it *will* catch things like using trailing
+commas in object literals.
+
+Some people like using CTags to get an overview of their code.  I take a more
+low-tech approach and am in love with code folding.  When I fold my code
+I automatically get an overview of everything in each file.
+
+By default Vim doesn't fold Javascript files, but you can add some basic, perfectly
+serviceable folding with these two lines in your .vimrc:
+
+    :::text
+    au FileType javascript setlocal foldmethod=marker
+    au FileType javascript setlocal foldmarker={,}
+
+[Syntastic]: http://www.vim.org/scripts/script.php?script_id=2736
+
+
+### Django Autocommands
+
+I *rarely* work with raw HTML files any more.  Whenever I open a file ending in
+`.html` it's almost always a Django template (or a [Jinja][] template, which has
+a very similar syntax).  I've added an autocommand to automatically set the correct
+filetyle whenever I open a `.html` file:
+
+[Jinja]: http://jinja.pocoo.org/
+
+    :::text
+    au BufNewFile,BufRead *.html setlocal filetype=htmldjango
+
+I also have some autocommands that tweak how a few specific files are handled:
+
+    :::text
+    au BufNewFile,BufRead urls.py      setlocal nowrap
+    au BufNewFile,BufRead settings.py  normal! zR
+    au BufNewFile,BufRead dashboard.py normal! zR
+
+This automatically unfolds `urls.py`, `dashboard.py` and `settings.py` (I prefer
+seeing those unfolded) and unsets line wrapping for `urls.py` (lines in a `urls.py`
+file can get long and are hard to read when wrapped).
+
+Conclusion
+----------
+
+I hope that this longer-than-expected blog entry has given you at least one or two
+things to think about.
+
+I've learned a lot while working with Django for Dumbwaiter every day, but I'm sure
+there's still a lot I've missed.  If you see something I could be doing better please
+let me know!
+
+{% endblock %}
