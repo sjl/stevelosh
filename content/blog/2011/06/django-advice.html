@@ -860,7 +860,7 @@ Here are a few of the tricks I've learned.
 
 A common pattern I see in Django templates looks like this:
 
-    :::text
+    :::django
     {% templatetag openblock %} if business.title {% templatetag closeblock %}
         {% templatetag openvariable %} business.title {% templatetag closevariable %}
     {% templatetag openblock %} else {% templatetag closeblock %}
@@ -869,7 +869,7 @@ A common pattern I see in Django templates looks like this:
 
 Here's a simpler way to do that:
 
-    :::text
+    :::django
     {% templatetag openblock %} firstof business.title business.short_title {% templatetag closeblock %}
 
 `firstof` will return the first non-Falsy item in its arguments.
@@ -957,14 +957,14 @@ set the correct `filetype` when you open one.
 I've added a few mappings to my `.vimrc` to make it quick and easy to set the correct
 `filetype`:
 
-    :::text
+    :::vim
     nnoremap _dt :set ft=htmldjango<CR>
     nnoremap _pd :set ft=python.django<CR>
 
 I also have a few autocommands that set the filetype for me when I'm editing a file
 whose name "sounds like" a Django file:
 
-    :::text
+    :::vim
     au BufNewFile,BufRead admin.py     setlocal filetype=python.django
     au BufNewFile,BufRead urls.py      setlocal filetype=python.django
     au BufNewFile,BufRead models.py    setlocal filetype=python.django
@@ -1024,7 +1024,7 @@ I automatically get an overview of everything in each file.
 By default Vim doesn't fold Javascript files, but you can add some basic, perfectly
 serviceable folding with these two lines in your .vimrc:
 
-    :::text
+    :::vim
     au FileType javascript setlocal foldmethod=marker
     au FileType javascript setlocal foldmarker={,}
 
@@ -1038,12 +1038,12 @@ filetype whenever I open a `.html` file:
 
 [Jinja]: http://jinja.pocoo.org/
 
-    :::text
+    :::vim
     au BufNewFile,BufRead *.html setlocal filetype=htmldjango
 
 I also have some autocommands that tweak how a few specific files are handled:
 
-    :::text
+    :::vim
     au BufNewFile,BufRead urls.py      setlocal nowrap
     au BufNewFile,BufRead settings.py  normal! zR
     au BufNewFile,BufRead dashboard.py normal! zR
