@@ -1,0 +1,79 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "Writing Vim Plugins"
+        snip: "It's pretty much black magic."
+        created: 2011-07-13 08:30:00
+        flattr: true
+    %}
+
+    {% block article %}
+
+
+A while ago I wrote a [post][vimpost] about switching back to [Vim][].  Since then
+I've written two plugins for Vim, one of which has been officially "released".
+
+A couple of people have asked me if I'd write a guide to creating Vim plugins.
+I don't feel confident enough to do that yet, but I do have some advice for Vim
+plugin authors that might be useful.
+
+[vimpost]: http://stevelosh.com/blog/2010/09/coming-home-to-vim/
+[Vim]: http://www.vim.org/
+
+[TOC]
+
+Other People Who Know More Than I Do
+------------------------------------
+
+### Tim Pope
+
+### Scrooloose
+
+Please, For the Love of God, Use noremap
+----------------------------------------
+
+### Oh, and normal! is Important Too
+
+Be Pathogen-Compatible
+----------------------
+
+Use LocalLeader When Appropriate
+--------------------------------
+
+Backwards Compatibility is a Big Deal
+-------------------------------------
+
+### What Matters for Backards Compatibility?
+
+### Use Semantic Versioning So I Can Stay Sane
+
+Autoload is Your Friend
+-----------------------
+
+Document Everything
+-------------------
+
+### Pick Some Requirements and Stick to Them
+
+### Write a Vim Help Document
+
+### Write a README
+
+### Create a Simple Website
+
+### Keep a Changelog
+
+Making VimScript Palatable
+--------------------------
+
+### Wrap. Everything.
+
+### Scripting Vim with Python
+
+Unit Testing (Will Make You Drink)
+----------------------------------
+
+TL;DR
+-----
+
+    {% endblock article %}
