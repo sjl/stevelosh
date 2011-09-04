@@ -3,7 +3,7 @@
     {% hyde
         title: "Writing Vim Plugins"
         snip: "It's pretty much black magic."
-        created: 2011-07-13 08:30:00
+        created: 2011-09-06 08:30:00
         flattr: true
     %}
 
@@ -14,8 +14,8 @@ A while ago I wrote a [post][vimpost] about switching back to [Vim][].  Since th
 I've written two plugins for Vim, one of which has been officially "released".
 
 A couple of people have asked me if I'd write a guide to creating Vim plugins.
-I don't feel confident enough to do that yet, but I do have some advice for Vim
-plugin authors that might be useful.
+I don't feel confident enough to write an official "guide", but I do have some advice
+for Vim plugin authors that might be useful.
 
 [vimpost]: http://stevelosh.com/blog/2010/09/coming-home-to-vim/
 [Vim]: http://www.vim.org/
@@ -25,55 +25,569 @@ plugin authors that might be useful.
 Other People Who Know More Than I Do
 ------------------------------------
 
+Writing two decently-sized Vim plugins has given me some experience, but there are
+a lot of people that know far more than I do.  There are two in particular that come
+to mind.  I'd love for them to write some guides (or even books) about modern-day Vim
+scripting.
+
 ### Tim Pope
+
+The first is [Tim Pope][].  He's written a ton of Vim plugins like [Pathogen][],
+[Surround][], [Repeat][], [Speeddating][] and [Fugitive][].  Each of those is clear,
+focused and polished.
+
+It would be awesome to read a guide on the ins and outs of Vim scripting by him.
+
+[Tim Pope]: http://tpo.pe/
+[Pathogen]: https://github.com/tpope/vim-pathogen
+[Surround]: https://github.com/tpope/vim-surround
+[Repeat]: https://github.com/tpope/vim-repeat
+[Speeddating]: https://github.com/tpope/vim-speeddating
+[Fugitive]: https://github.com/tpope/vim-fugitive
 
 ### Scrooloose
 
-Please, For the Love of God, Use noremap
-----------------------------------------
+The other person that comes to mind is [Scrooloose][], author of [NERDTree][],
+[NERDCommenter][] and [Syntastic][].
 
-### Oh, and normal! is Important Too
+His plugins are large and full-featured but work incredibly well, considering how
+tricky and painful Vimscript is to work with.  I'd love to read a guide on writing
+large-scale Vim plugins by him.
+
+[Scrooloose]: http://got-ravings.blogspot.com/
+[NERDTree]: https://github.com/scrooloose/nerdtree
+[NERDCommenter]: https://github.com/scrooloose/nerdcommenter
+[Syntastic]: https://github.com/scrooloose/syntastic
 
 Be Pathogen-Compatible
 ----------------------
 
-Use LocalLeader When Appropriate
---------------------------------
+It's 2011.  When writing your plugin, *please* make its source compatible with
+[Pathogen][].  It's very easy to do this -- just set up your project's files like
+this:
 
-Backwards Compatibility is a Big Deal
--------------------------------------
+    :::text
+    yourplugin/
+        doc/
+            yourplugin.txt
+        plugin/
+            yourplugin.vim
+        ...
+        README
+        LICENSE
 
-### What Matters for Backards Compatibility?
+This will let users use Pathogen (or [Vundle][]) to install and use your plugin.
 
-### Use Semantic Versioning So I Can Stay Sane
+The days of "unzip and drag the files into the right directories" and the horror of
+Vimballs are over.  Pathogen and Vundle are the right way to manage plugins, so let
+your users use them.
+
+[Vundle]: https://github.com/gmarik/vundle
+
+Please, For the Love of God, Use normal!
+----------------------------------------
+
+My first piece of actual scripting advice is something simple but important.  If
+you're writing a Vim plugin and need to perform some actions, you might be tempted to
+use `normal`.  Don't.  Instead, you need to use `normal!`.
+
+`normal!` is like `normal`, but ignores mappings the user has set up.  If you use
+plain old `normal dd` and I've remapped `dd` to do something else, the call will use
+my mapping and probably not do what your plugin expects.  Using `normal!` ensures
+that the call will do what you expect no matter what the user has mapped.
+
+This is a single instance of a more general theme. Vim is very customizable and users
+will do lots of crazy things in their `.vimrc` files.  If a key can be mapped or
+a setting changed, you *have* to assume that some user of your plugin will have
+mapped or changed it.
+
+Mapping Keys the Right Way
+--------------------------
+
+Most plugins add key mappings to make them easier to use.  Unfortunately this can be
+tricky to get right.  You can never tell what keys your users have already mapped
+themselves, and shadowing someone's favorite key mapping will break their muscle
+memory and annoy them to no end.
+
+### When to Map Keys
+
+The first question to ask is whether your plugin needs to map keys itself at all.
+
+My [Gundo][] plugin has only one feature that needs to be mapped to a key in order to
+make it useful: the "toggle Gundo" action.
+
+Gundo doesn't map this key itself, because no matter what "default" mapping I pick
+someone will have already mapped it.  Instead I added a section right in the README
+file that shows how a user can map the key themselves:
+
+    :::vim
+    nnoremap <F5> :GundoToggle<CR>
+
+By making users add this line to their `.vimrc` themselves it shows them which key is
+used to toggle Gundo (which they would have to know anyway) and also makes it obvious
+how to change it to suit their taste.
+
+[Gundo]: http://sjl.bitbucket.org/gundo.vim/
+
+### imap and nmap are Pure Evil
+
+Sometimes forcing the user to map their own keys won't work.  Perhaps your plugin has
+many mappings that would be tedious for a user to set up manually (like my
+[Threesome][] plugin), or its mappings are mnemonic and wouldn't really make sense if
+mapped to other keys.
+
+I'll talk more about how to deal with this in a moment, but the most important thing
+to remember when mapping your own keys is that you must always, *always*,
+***always*** use the `noremap` forms of the various `map` commands.
+
+If you map a key with `nmap` and the user has remapped a key that your mapping uses,
+your mapped key will almost certainly not do what you want.  Using `nnoremap` will
+ignore user mappings and do what you expect.
+
+This is the same principle as `normal` and `normal!`: *never* trust your users'
+configurations.
+
+[Threesome]: http://sjl.bitbucket.org/threesome.vim
+
+### Let Me Configure Mappings
+
+If you feel that your plugin must map some keys, please make those mappings
+configurable in some way.
+
+There are a number of ways to do this.  The easiest way is to provide a configuration
+option that disables all mappings.  The user can them remap the keys as they see fit.
+For example:
+
+    :::vim
+    if !exists('g:yourplugin_map_keys')
+        let g:yourplugin_map_keys = 1
+    endif
+
+    if g:yourplugin_map_keys
+        nnoremap <leader>d :call <sid>YourPluginDelete()<CR>
+    endif
+
+Normal users will get the mappings automatically set up for them, and power users can
+remap the keys to whatever they wish to avoid shadowing their own mappings.
+
+If your plugin's mappings all start with a common prefix (like `<leader>` or
+`<localleader>`) you have another option: allow users to configure this prefix.  This
+is the approach I've used in [Threesome][].  It works like this:
+
+    :::vim
+    if !exists('g:yourplugin_map_prefix')
+        let g:yourplugin_map_prefix = '<leader>'
+    endif
+
+    execute "nnoremap"  g:yourplugin_map_prefix."d"  ":call <sid>YourPluginDelete()<CR>"
+
+The `execute` command lets you build the mapping string dynamically so your users can
+change the mapping prefix.
+
+There is a third option for solving this problem: the `hasmapto()` Vim function.
+Some plugins will use this to map a command to a key *unless* the user has already
+mapped that command to something else.  I don't personally like this option because
+it feels less clear to me, but I know other people feel differently so I wanted to
+mention it.
+
+Localize Mappings and Settings
+------------------------------
+
+The next step in being a good Vim plugin author is to try to minimize the effects of
+your key mappings and setting changes.  Some plugins will need to have global
+effects but others will not.
+
+For example: if you're writing a plugin for working with Python files it should only
+take effect for Python buffers, not all buffers.
+
+### Localizing Mappings
+
+Key binding are easy to localize to single buffers.  All of the `noremap` commands
+can take an extra `<buffer>` argument that will localize the mapping to the current
+buffer.
+
+    :::vim
+    " Remaps <leader>z globally
+    nnoremap <leader>z :YourPluginFoo<cr>
+
+    " Remaps <leader>z only in the current buffer
+    nnoremap <buffer> <leader>z :YourPluginFoo<cr>
+
+However, the problem is that you need to run this command in every buffer you want
+the mapping active.  To do this your plugin can use an `autocommand`.  Here's a full
+example, using this concept plus the previously mentioned configuration options:
+
+    if !exists('g:yourplugin_map_keys')
+        let g:yourplugin_map_keys = 1
+    endif
+
+    if !exists('g:yourplugin_map_prefix')
+        let g:yourplugin_map_prefix = '<leader>'
+    endif
+
+    if g:yourplugin_map_keys
+        execute "autocommand FileType python" "nnoremap <buffer>" g:yourplugin_map_prefix."d"  ":call <sid>YourPluginDelete()<CR>"
+    endif
+
+Now your plugin will define a key mapping only for Python buffers, and your users can
+disable or customize this mapping as they see fit.
+
+This mapping command is quite ugly.  Unfortunately that's the price of using
+Vimscript and trying to make a plugin that will work for many users.  Later I'll talk
+about one possible solution to this ugliness.
+
+### Localizing Settings
+
+Just as you should make mappings local to buffers when appropriate, you should do the
+same with settings like `foldmethod`, `foldmarker` and `shiftwidth`.  Not all
+settings can be set locally in a buffer.  You can read `:help <settingname>` to see
+if it's possible.
+
+You can use `setlocal` instead of `set` to localize settings to individual buffers.
+Like with mappings you'll need to use an autocommand to run the `setlocal` command
+every time the users opens a new buffer.
 
 Autoload is Your Friend
 -----------------------
 
+If your plugin is something that users will be using all the time you can skip this
+section.
+
+If you're writing something that will only be used in specific cases, you can help
+your users by using Vim's `autoload` functionality to delay loading its code until
+the user actually tries to use it.
+
+The way `autoload` works is fairly simple.  Normally you would bind a key to call one of your
+plugin's functions with something like this:
+
+    :::vim
+    nnoremap <leader>z :call YourPluginFunction()<CR>
+
+You can use autoloading by prepending `yourplugin#` to the name of the function:
+
+    :::vim
+    nnoremap <leader>z :call yourplugin#YourPluginFunction()<CR>
+
+When this mapping is run, Vim will do the following:
+
+1. Check to see if `YourPluginFunction` is already defined.  If so, call it.
+2. Otherwise, look in `~/.vim/autoload/` for a file named `yourplugin.vim`.
+3. If it exists, parse and load the file (which presumably defines
+  `YourPluginFunction` somewhere inside of it).
+4. Call the function.
+
+This means that instead of putting all of your plugin's code in
+`plugin/yourplugin.vim` you can put just the key mapping code there and pull the rest
+out into `autoload/yourplugin.vim`.
+
+If your plugin has a decent amount of code this can reduce the startup time of Vim by
+a significant amount.
+
+Check out the full documentation of `autoload` by running `:help autoload` to learn
+much more.
+
+Backwards Compatibility is a Big Deal
+-------------------------------------
+
+Once you've written your Vim plugin and released it into the wild, you have to
+maintain it.  Users will find bugs and ask for new features.
+
+Part of being a responsible developer of any kind, including a Vim plugin author, is
+maintaining backwards compatibility, *especially* for tools that users will use every
+day and burn into their muscle memory.  Users rely on tools to work, and tools that
+break backwards compatibility will quickly lose users' trust.
+
+Maintaining backwards comaptibility will cause your plugin's code to get crufty in
+spots, but it's the price of maintaining your users' happiness.
+
+### What Matters for Backards Compatibility?
+
+For a Vim plugin the most important part of staying backwards compatible is ensuring
+that key mappings, customized or not, continue to do what users expect.
+
+If your plugin maps key `X` to do `Y`, then pressing `X` should *always* do `Y`, even
+if you change how `Y` is called by renaming `Y` to `Z`.  This may mean changing `Y`
+into a wrapper function which simply calls `Z`.
+
+There are many other aspects of backwards compatibility that you will have to
+consider, depending on the purpose of your plugin.  The rule of thumb you should
+follow is: if a user uses this plugin on a daily basis and has its usage burned into
+their muscle memory, updating the plugin should not make them relearn anything.
+
+### Use Semantic Versioning So I Can Stay Sane
+
+A fast, simple, easy way to document your plugin's state is to use [semantic
+versioning][].
+
+Semantic versioning is simply the idea that instead of picking arbitrary version
+numbers for releases of your project, you use version numbers that describe the
+backwards-compatible state in a meaningful way.
+
+In a nutshell, these rules describe how you should select version numbers for new
+releases:
+
+* Version numbers have three components: `major.minor.bugfix`.  For example: `1.2.4`
+  or `2.13.0`.
+* Versions with a major version of 0 (e.g. `0.2.3`) make no guarantees about
+  backwards compatibility.  You are free to break anything you want.  It's only after
+  you release `1.0.0` that you begin making promises.
+* If a release introduces backwards-incompatible changes, increment the major version
+  number.
+* If a release is backwards-compatible, but adds *new* features, increment the minor
+  version number.
+* If a release simply fixes bugs, refactors code, or improves performance, increment
+  the bugfix version number.
+
+This simple scheme makes it easy for users to tell (in a broad sense) what has
+changed when they update your project.
+
+If only the bugfix number has changed they can update without fear and continue on
+without worrying about changes unless they're curious.
+
+If the minor version number has changed they might want to look at the changelog to
+see what new features they may want to take advantage of, but if they're busy they
+can simply update and move on.
+
+If the major version number has changed it's a major red flag, and they'll want to
+read the changelog carefully to see what is different.
+
+Some people don't like semantic versioning for the following reason:
+
+> If I have to increment the major version number every time I make
+> backwards-incompatible changes, I'll quickly be at ugly versions like 24.1.2!
+
+To this I say: "Yes, but if that happens you're doing things wrong in the first
+place."
+
+Keep your project in "beta" (i.e. version `0.*.*`) for as long as you need to
+experiment freely.  *Take your time* and make sure you've gotten things (mostly)
+right.  Once you release `1.0.0` it's time to start being responsible and caring
+about backwards compatibility.
+
+Breaking functionality all the time harms your users by reducing their productivity
+and frustrating them.  Yes, it means adding some cruft to your code over time, but
+it's the price of not being evil.
+
+[semantic versioning]: http://semver.org/
+
 Document Everything
 -------------------
 
+A critical part of releasing a Vim plugin to the world is writing documentation for
+it.  Vim has fantastic documentation itself, so your plugins should follow in its
+footsteps and provide thorough docs.
+
 ### Pick Some Requirements and Stick to Them
 
-### Write a Vim Help Document
+The most important part of your documentation is telling users what they need to have
+in order to use your plugin.  Vim runs on nearly every system imaginable and can be
+compiled in many different ways, so being specific about your plugin's requirements
+will save users a lot of trial and error.
+
+* Does your plugin only work with Vim version X.Y or later?
+* Does it require Python/Ruby/etc support compiled in?  Which version?
+* Does it not work on Windows?
+* Does it rely on an external tool?
+
+If the answer to any of those questions is "yes", you *must* mention it in the
+documentation.
 
 ### Write a README
 
+The first step to documenting your plugin is to write a README file for the
+repository.  You can also use the text of this file as the description if you upload
+your plugin to the [vim website][], or the content of your plugin's website if you
+create one for it.
+
+Some examples of things to include in your README are:
+
+* An overview of what the plugin does.
+* Screenshots, if possible.
+* Requirements.
+* Installation instructions.
+* Common configuration options that many users will want to know.
+* Links to:
+    * A canonical web address to find the plugin.
+    * The bug tracker for the plugin.
+    * The source code or repository of the plugin.
+
+[vim website]: http://www.vim.org/
+
 ### Create a Simple Website
+
+This isn't strictly necessary, but having a simple website for your plugin is an
+extra touch that makes it seem more polished.
+
+It also gives you a canonical URL that people can visit to get the latest information
+about your plugin.
+
+I've made simple sites for both of my plugins: [Gundo][] and [Threesome][].  Feel
+free to use them as an example or even take their code and use it for your own plugin
+sites if you like.
+
+### Write a Vim Help Document
+
+The bulk of your plugin's documentation should be in the form of a Vim help document.
+Users are used to using Vim's `:help` and they'll expect to be able to use it to
+learn about your plugin.
+
+Creating a help document is as easy as creating a `doc/yourplugin.txt` file in your
+project.  It will be indexed automatically by `pathogen#helptags()` so your users
+will have the docs at their fingertips.
+
+Two easy ways to learn the syntax of help files are by reading `:help help-writing`
+and using an existing plugin's help file as an example.
+
+Take your time and craft a beautiful help file you can be proud of.  Don't be afraid
+to add a bit of personality to your docs to break the dryness.  The [syntastic help
+file][syntastic help] is a great example (especially the `About` section).
+
+Things to include in your documentation:
+
+* A brief overview of the plugin.
+* A more in-depth description of how the plugin is used.
+* Every single key mapping the plugin creates.
+* Ways to extend the plugin, if applicable.
+* All configuration variables (including their default values!).
+* The plugin's changelog.
+* The plugin's license.
+* Links to the plugin's repository and bug tracker.
+
+In a nutshell: your help file should contain *anything* a user would ever need to know
+about your plugin.
+
+[syntastic help]: https://github.com/scrooloose/syntastic/blob/master/doc/syntastic.txt
 
 ### Keep a Changelog
 
-Making VimScript Palatable
+The last part of documenting your project is keeping a changelog.  You can skip this
+while your project is still in "beta" (i.e. less than version `1.0.0`) but once you
+officially release a real version you need to keep your users informed about what has
+changed between releases.
+
+I like to include this log in the README, the plugin's website, and the
+documentation to make it as easy as possible for users to see what's changed.
+
+Try to keep the language of the changelog at a high enough level for your users to
+understand without knowing anything about the implementation of your plugin.  Things
+like "added feature X" and "fixed bug Y" are great, while things like "refactored the
+inner workings of utility function Z" are best left in commit messages.
+
+Making Vimscript Palatable
 --------------------------
+
+The worst part about writing Vim plugins is, without a doubt, dealing with Vimscript.
+It's an esoteric language that's grown organically over the years seemingly without
+any strong design direction.
+
+Features are added to Vim, then Vimscript features are added to control those
+features, then hacky workarounds are added for flexibility.
+
+The syntax is terse, ugly and inconsistent.  Is `" foo` a comment?  Sometimes.
+
+Much of the time you'll spend writing your first plugin will be learning how to do
+things in Vimscript.  The help documentation on all of its features is thorough, but
+it can be hard to find what you're looking for if you don't know the exact name.
+Looking through other plugins is often very helpful in pointing you toward what you
+need.
+
+There are a couple of ways to ease the pain of Vimscript, and I'll briefly talk about
+two of them here.
 
 ### Wrap. Everything.
 
-### Scripting Vim with Python
+The first piece of advice I have is this: if you want to make your plugins readable
+and maintainable then you need to wrap up functionality even more than you would in
+other languages.
 
-Unit Testing (Will Make You Drink)
-----------------------------------
+For example, my [Gundo][] plugin has a few utility functions that look like this:
+
+    :::vim
+    function! s:GundoGoToWindowForBufferName(name)"{{{
+        if bufwinnr(bufnr(a:name)) != -1
+            exe bufwinnr(bufnr(a:name)) . "wincmd w"
+            return 1
+        else
+            return 0
+        endif
+    endfunction"}}}
+
+This function will go to the window for the given buffer name and gracefully handle
+the case where the buffer/window does not exist.  It's verbose but much more readable
+than the alternative of using that `if` statement in every place I need to switch
+windows.
+
+As you write your plugin you'll "grow" a number of these utility functions.  Any time
+you duplicate code you should think about creating one, but you should also do so any
+time you write a particularly hairy line of Vimscript.  Pulling complex lines out
+into named functions will save you a lot of reviewing and rethinking down the line.
+
+### Scripting Vim with Other Languages
+
+Another option for making Vimscript less painful is to simply not use it much at all.
+Vim includes support for creating plugins in a number of other languages like Python
+and Ruby.  Many plugin authors choose to move nearly all of their code into another
+language, using a small Vimscript "wrapper" to expose it to the user.
+
+I decided to try this approach with [Threesome][] after seeing it used in the
+[vim-orgmode][] plugin to great effect.  Overall I consider it to be a good idea,
+with a few caveats.
+
+First, using another language will requires your plugin's users to use a version of
+Vim compiled with support for that version.  In this day and age it's usually not
+a problem, but if you want your plugin to run everywhere then it's not an option.
+
+Using another language adds overhead.  You need to not only learn Vimscript but also
+the interface between Vim and the language.  For small plugins this can add more
+complexity to the project than it saves, but for larger plugins it can pay for
+itself.  It's up to you to decide whether it's worth it.
+
+Finally, using another language does not entirely insulate you from the
+eccentricities of Vimscript.  You still need to learn how to do most things in
+Vimscript -- using another language simply lets you wrap most of this up more neatly
+than you otherwise could.
+
+[vim-orgmode]: https://github.com/jceb/vim-orgmode
+
+### Unit Testing Will Make You Drink
+
+Unit testing (and other types of testing) is becoming more and more popular today.
+In particular the Python and Ruby communities seem to be getting more and more
+excited about it as time goes on.
+
+Unfortunately, unit testing Vim plugins lies somewhere between "painful" and
+"[garden-weasel][]ing your face" on the difficulty scale.
+
+I tried adding some unit tests to [Gundo][], but even after looking at a number of
+frameworks I was spending hours simply trying to get my tests to function.
+
+I didn't even bother trying to add tests to [Threesome][] because for every hour
+I would have spent fighting Vim to create tests I could have cleaned up the code and
+fixed bugs instead.
+
+I'll gladly change my opinion on the subject if someone writes a unit testing
+framework for Vim that's as easy to use as [Cram][].  In fact, I'll even buy the
+author a $100 bottle of scotch (or whatever they prefer).
+
+Until that happens I personally don't think it's worth your time to unit test Vim
+plugins.  Spend your extra hours reading documentation, testing things manually with
+a variety of settings, and thinking hard about your code instead.
+
+[garden-weasel]: http://www.amazon.com/Garden-Weasel-90206/dp/B002ECYRH4 
+[Cram]: https://bitheap.org/cram/
 
 TL;DR
 -----
+
+Writing Vim plugins is tricky.  Vimscript is a rabbit hole of sadness and despair,
+and trying to please all your users while maintaining backwards compatibility is
+a monumental task.
+
+With that said, creating something that people use every day to help them make
+beautiful software projects is extremely rewarding.  Even if your plugin doesn't get
+many users, being able to use a tool *you wrote* is very satisfying.
+
+So if you've got an idea for a plugin that would make Vim better just sit down, learn
+about Vimscript, create it, and release it so we can all benefit.
 
     {% endblock article %}
