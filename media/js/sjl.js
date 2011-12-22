@@ -42,10 +42,6 @@ function place_scrolly_header () {
 $(function() {
     jQuery('span.timeago').timeago();
 
-    if ($('.gallery a').length) {
-        $('.gallery a').colorbox();
-    }
-
     if ($('#leaf-stats').length) {
         $('body').append('<div id="scrolling-header"></div>');
         h2s = $('#leaf-content h2');
