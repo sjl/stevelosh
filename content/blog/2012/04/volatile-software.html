@@ -1,0 +1,324 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "Volatile Software"
+        snip: "Our culture is one of pain and suffering."
+        created: 2012-04-23 14:00:00
+        flattr: true
+    %}
+
+{% block article %}
+
+The following is the text of an email I sent to [The Listserve][], which was
+sent to that list on April 22, 2012.
+
+[The Listserve]: http://thelistserve.com/
+
+<hr/>
+
+I want to use my fifteen minutes of fame on The Listserve to rant about
+something that's close to my heart: the stability of the software I use.
+
+NOTE: This is written for people who create software.  If you don't do that you
+probably won't find this very interesting.  Sorry!  Maybe you could read Text
+from Dog if you haven't seen it already?  Either way, have a nice
+morning/afternoon/evening!
+
+The Situation
+-------------
+
+Every time I get a new computer, I go through the same song and dance:
+
+1. Look at what programs and packages I have installed on the old computer.
+2. Install these programs on the new computer.
+3. Copy over my configuration files from the old computer to the new one.
+4. Spend the rest of my day fixing all the things that broke because I'm using
+   a newer version of program X.
+
+Step 4 is always the most painful part of getting a new machine.  Always.
+
+Without fail I spend several hours tweaking configuration files, adjusting my
+workflow, and so on because I've upgraded to a new version of foo which doesn't
+support option X any more or requires library Y version N+1 now.
+
+Getting a new computer should be a *pleasant* experience!  The unboxing from the
+sleek packaging, that "new laptop" smell, the nostalgia of the default desktop
+image.  Why does this horrible step 4 have to exist and how can we get rid of
+it?
+
+The Divide
+----------
+
+I've noticed something interesting lately: I can categorize almost *all* of the
+software I use into two distinct groups:
+
+* Software that breaks pretty much *every* time I update it (e.g. weechat,
+  offlineimap, Clojure, many Python packages, Skype).
+* Software that almost *never* breaks when I update it (e.g. Mercurial, git,
+  tmux, Python, ack, zsh, Vim, Dropbox).
+
+Software that falls in between these two extremes is surprisingly rare.  There
+seems to be a pretty clean divide between the two groups.
+
+This makes me think that there's some special attribute or quality of the
+second group (or its authors) which the first one lacks.
+
+Brokenness
+----------
+
+I think it's important that I nail down what I mean by "breaks" or "is broken".
+I don't necessarily just mean the introduction of "new bugs".
+
+When I say that a program "breaks", I mean:
+
+* When I update from version X to version Y of a program, library, or language...
+* Without changing my configuration files, source code, etc...
+* The resulting combination doesn't work properly
+
+In effect, I'm saying that "breaking backwards compatibility" means "the program
+is broken"!
+
+This may be a strong statement, but I stand by it in most cases.
+
+Backwards compatibility matters!  Every time someone makes a backwards
+incompatible change in a program or library, they cost the world the following
+amount of time:
+
+    Number of people         Time it takes each person
+    using that part of   X   to figure out what changed
+    the program              and how to fix it
+
+Often this can be a significant amount of time!
+
+The Process of Updating
+-----------------------
+
+When pointing out a backwards incompatible change to someone, you'll often get
+a response similar to this:
+
+> "Well, I mentioned that backwards incompatibility in the changelog, so what
+> the hell, man!"
+
+This is not a satisfactory answer.
+
+When I'm updating a piece of software there's a good chance it's not because I'm
+specifically updating *that program*.  I might be:
+
+* Moving to a new computer.
+* Running a "$PACKAGE\_MANAGER update" command.
+* Moving a website to a bigger VPS and reinstalling all the libraries.
+
+In those cases (and many others) I'm not reading the release notes for
+a specific program or library.  I'm not going to find out about the brokenness
+until I try to use the program the next time.
+
+If I'm lucky the program will have a "this feature is now deprecated, read the
+docs" error message.  That's still a pain, but at least it's less confusing than
+just getting a traceback, or worst of all: silently changing the behavior of
+a feature.
+
+Progress
+--------
+
+I completely understand that when moving *backwards* to an older version
+I should expect problems.  The older version hasn't had the benefit of the extra
+work done on the new version, so of course it should be less stable.
+
+But when I'm *updating* to a higher version number the software should be
+*better* and *more stable*!  It has had more work done on it, and I assume no
+one is actively trying to make software worse, so why does something that
+previously worked no longer work?
+
+We're supposed to be making *progress* as we move forward.  The software has had
+*more* work done on it, why does it not function correctly *now* when it
+functioned correctly *before*?
+
+Yes, this means developers will need to add extra code to handle old
+input/configuration.  Yes, this is a pain in the ass, but *the entire point of
+most software is to save people time by automating things*.  Again, every
+backwards-incompatible change costs the world an amount of time:
+
+    Number of people         Time it takes each person
+    using that part of   X   to figure out what changed
+    the program              and how to fix it
+
+If our goal is to *save time* then we should not make changes that *cost time*.
+Or at least we should not make such changes lightly.
+
+A Culture of Sadness
+--------------------
+
+Proof that this is a real issue can be found in the tools we use every day.  As
+programmers we've invented elaborate dependency systems to deal with it.
+
+We say `pip install django==1.3` or put `[clojure "1.2"]` in our Leiningen
+project.clj files to avoid using the newest versions because they'll break.
+
+Step back and look at this for a second.
+
+What the hell?
+
+What the *hell*?
+
+We have invented software with features designed to help us use *old* versions
+of other software!
+
+We have *written code* to *avoid* using the "latest and greatest" software!
+
+Obviously this is not entirely bad, but the fact that manually specifying
+version numbers to avoid running *newer* code is commonplace, expected, and
+a "best practice" horrifies me.
+
+I would *love* to be able to say something like this in my requirements.txt and
+project.clj files:
+
+> Of *course* I want the latest version of library X!  I want *all* the newest
+> bug fixes and improvements!
+
+Unfortunately I can't do that right now because so many projects make backwards
+incompatible changes all the time.
+
+The moment I try to build the project at some point in the future I'll be sent
+on a wild goose chase to figure out what function moved into what other
+namespace and what other function was split into its own library and dammit the
+documentation on the project's website is autogenerated from the tip of its git
+repo and so it doesn't apply to the latest actual version and jesus christ
+I think I'll just quit programming and teach dance full time instead even though
+I'll go hungry.
+
+The Tradeoff
+------------
+
+One could argue that sometimes backwards incompatible changes cost time up front
+but save time in the long run by making the software more "elegant" and "lean".
+
+While I'm sure there are cases where this is true, I feel like it's a cop out
+most of the time.  Allow me to illustrate this with a helpful Venn diagram:
+
+    :::text
+                          -------
+                         /3333333\
+                        |333333333|
+                         \3333333/
+                          -------
+
+    11 -> People who give a shit what a program's codebase
+    11    looks like.
+
+    22 -> The authors of said program.
+    22
+
+For libraries where the author is the only user, none of this rant applies.
+You're free!  Break as much as you like!
+
+For the majority of libraries, however, there are probably vastly more "users"
+than "authors".  Saving a few hours of the authors' own time has to be weighed
+against the 10 minutes each that the hundreds of users will have to spend
+figuring out what happened and working around it.
+
+I want to be clear: being backwards compatible *doesn't* mean sacrificing new
+features!  New features can still be added!  Refactoring can still happen!
+
+In most cases keeping backwards compatibility simply means maintaining a bit of
+wrapper code to support people using the previous version.
+
+For example: in Python, if we moved the public foo() function to a new module,
+we'd put the following line in the original module:
+
+    :::python
+    from newmodule import new_foo as foo
+
+Is it pretty?  Hell no!  But this single line of code will probably save more
+people more time than most of the other lines in the project!
+
+This may just be an artifact of how my brain is wired, but I actually get
+a sense of satisfaction from writing code that bridges the gap between older
+versions and new.
+
+I can almost hear a little voice in my head saying:
+
+> "Mwahaha, I'll slip this refactoring past them and they'll never even know it
+> happened!"
+
+Maybe it's just me, but I think that "glue" code can be clever and beautiful in
+its own right.
+
+It may not bring a smile to anyone's face like a shiny new feature, but it
+prevents many frowns instead, and preventing a frown makes the world a happier
+place just as much as creating a smile!
+
+Exceptions
+----------
+
+One case where I feel the backwards incompatibility tradeoff *is* worth it is
+security.
+
+A good example of this is Django's change which made AJAX requests no longer be
+exempt from CSRF checks.  It was backwards incompatible and I'm sure it broke
+some people's projects, but I think it was the right thing to do because it
+improved security.
+
+I also think it's unreasonable to expect all software to be perfectly ready from
+its first day.
+
+Sometimes software needs to get poked and prodded in the real world before it's
+fully baked, and until then requiring strict backwards compatibility will do
+more harm than good.
+
+By all means, backwards compatibility should be thrown to the wind in the first
+stage of a project's life.  At the beginning it needs to find its legs, like
+a baby gazelle on the Serengeti.  But at some point the project needs to get its
+balance, grow up, and start concerning itself with backwards compatibility.
+
+But when should that happen?
+
+A Solution
+----------
+
+I think there's a simple, intuitive way to mark the transition of a piece of
+software from "volatile" to "stable":
+
+**Version 1.0**
+
+Before version 1, software can change and evolve rapidly with no regards for
+breaking, but once that first number becomes "greater than or equal to 1" it's
+time to be a responsible member of the software community and start thinking
+about the real humans whose time gets wasted for every breaking change.
+
+This is the approach semantic versioning takes, and I think it's the right one.
+
+I know a lot of people dislike semantic versioning.  They hate how requires
+incrementing the major version number every time a breaking change is made.
+
+I consider it to be a *good* thing.
+
+You *should* pause and carefully consider making a change that will break
+people's current code.
+
+You *should* be ashamed if your project is at version 43.0.0 because you've made
+42 breaking changes.  That's 43 times you've disregarded your users' time!
+That's a bad thing!
+
+As programmers we need to start caring about the people we write software for.
+
+Before making a change that's going to cause other people pain, we should ask
+ourselves if it's really worth the cost.  Sometimes it is, but many times it's
+not, and we can wrap the change up so it doesn't hurt anyone.
+
+So please, before you make that backwards incompatible change, think of the
+other human beings who are going to smack their monitors when your software
+breaks.
+
+Further Reading
+---------------
+
+I'm certainly not the only person to notice this problem.  Many smarter people
+than me have talked about it.  If you want to read more you might want to look
+up some or all of the following (Google is your friend):
+
+* The Semantic Versioning spec (the specific numbering details don't matter as
+  much as the philosophy).
+* Anything Matt Mackall has written on the Mercurial mailing list (especially
+  the mails where he sounds especially grouchy).
+* Anything about "software rot" or "code rot".
+{% endblock article %}
