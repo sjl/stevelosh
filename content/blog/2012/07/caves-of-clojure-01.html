@@ -1,0 +1,166 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 1"
+        snip: "Getting a Roguelike up and running."
+        created: 2012-07-07 17:00:00
+        flattr: true
+    %}
+
+{% block article %}
+
+Lately I've had an urge to start playing a few games again, namely [Nethack][]
+and [Dwarf Fortress][] (the latter being triggered by [this book][df-book]).
+Aside from being incredibly fun, they also made me want to play around with
+writing a [roguelike][] game of my own.
+
+[Nethack]: http://www.nethack.org/
+[Dwarf Fortress]: http://www.bay12games.com/dwarves/
+[df-book]: http://www.amazon.com/gp/product/1449314945/ref=as_li_ss_tl?ie=UTF8&camp=1789&creative=390957&creativeASIN=1449314945&linkCode=as2&tag=stelos-20
+[roguelike]: https://en.wikipedia.org/wiki/Roguelike
+
+I could write them in Python, but lately I've been falling out of love with the
+language.  It's a solid workhorse that's not exciting or beautiful to me at all
+any more.  My affection has shifted more toward Clojure.  Despite its Rubyesque
+culture of brokenness, rampant lack of documentation, and warty JVM interop it's
+still a wonderful language that's captured me (for now).
+
+I've had the idea of writing a few roguelike games for a while, but the other
+day I stumbled on [Trystan Spangler's blog][trystan] and his [series of
+articles][trystan-tut] that walk through writing a roguelike game in Java.
+
+[trystan]: http://trystans.blogspot.com/
+[trystan-tut]: http://trystans.blogspot.com/2011/08/roguelike-tutorial-01-java-eclipse.html
+
+I'm going to do a series of blog posts, each corresponding roughly to one of
+Trystan's posts, as I work my way through writing a roguelike in Clojure.  I may
+or may not get all of the way through his twenty-post series.  We'll see.
+
+I'll assume you know Clojure during this series and won't be explaining every
+single thing.
+
+If you want to follow along, the code for this series is [on Bitbucket][bb] and
+[on GitHub][gh].  There are tags like `entry-01` in the repo which you can
+update to and see the code as it stood at the end of that entry.
+
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+Let's jump in.  This entry corresponds to [post one in Trystan's
+tutorial][trystan-tut].
+
+[TOC]
+
+Summary
+-------
+
+The first thing to do is to bootstrap an environment for development.  I'll be
+using Clojure 1.4, Leiningen 2, and [clojure-lanterna][] 0.9.0.
+
+Trystan used Eclipse but I'll be using Vim and my fork of SLIMV.
+
+[clojure-lanterna]: http://sjl.bitbucket.org/clojure-lanterna/
+
+project.clj
+-----------
+
+I'm starting with a fairly simple `project.clj` file:
+
+    :::clojure
+    (defproject caves "0.1.0-SNAPSHOT"
+      :description "The Caves of Clojure"
+      :url "http://stevelosh.com/blog/2012/07/caves-of-clojure-01/"
+      :license {:name "MIT/X11"}
+      :dependencies [[org.clojure/clojure "1.4.0"]
+                     [clojure-lanterna "0.9.0"]]
+      :main caves.core)
+
+Nothing particularly crazy here.
+
+clojure-lanterna
+----------------
+
+Trystan used his own library called AsciiPanel to handle the drawing of
+characters to the screen.  I'm going to use my own library [clojure-lanterna][],
+which is a wrapper around the [Lanterna][] Java library.
+
+I chose Lanterna because it supports drawing to a Swing-based "terminal" and to
+the actual console.  But unlike some other libraries, it doesn't actually link
+against native code (it's pure Java) so it's more portable.
+
+Being able to output to either a console or a GUI means that I can develop
+through Swank really easily with the Swing terminal, but actuall play the
+finished product in a terminal like God intended.
+
+[Lanterna]: https://code.google.com/p/lanterna/
+
+core.clj
+--------
+
+The full `core.clj` file I came up with was this:
+
+    :::clojure
+    (ns caves.core
+      (:require [lanterna.screen :as s]))
+
+
+    (defn main [screen-type]
+      (let [screen (s/get-screen screen-type)]
+        (s/in-screen screen
+                     (s/put-string screen 0 0 "Welcome to the Caves of Clojure!")
+                     (s/put-string screen 0 1 "Press any key to exit...")
+                     (s/redraw screen)
+                     (s/get-key-blocking screen))))
+
+
+    (defn -main [& args]
+      (let [args (set args)
+            screen-type (cond
+                          (args ":swing") :swing
+                          (args ":text")  :text
+                          :else           :auto)]
+        (main screen-type)))
+
+We're very much just bootstrapping things for now.  The `-main` function parses
+the command line arguments to figure out what type of terminal we should use,
+and then passes that along to `main`.
+
+For now, `main` simply:
+
+* Gets an appropriately-typed terminal.
+* Outputs a simple message.
+* Redraws the screen (clojure-lanterna's screen layer buffers output until you
+  tell it to redraw).
+* Waits for the user to press a key.
+* Exits.
+
+I chose to split the meat of the setup into a `main` function instead of just
+putting everything in `-main` because that will make it easy for me to work
+through Swank instead of the command line as we'll see in a moment.
+
+Running
+-------
+
+There are two main ways to actually make this thing work.
+
+First, we can run it as a standalone program with `lein trampoline run` at the
+command line.  I can pass a parameter to specify what type of terminal to use,
+like `lein trampoline run :swing`.
+
+We can also run it from a REPL, or a SLIME/Swank environment by simply
+evaluating `(main :swing)` in the namespace.  This is why I split out everything
+but the command line argument parsing into a separate function.
+
+Either way, once you run it you get something like this:
+
+![Screenshot](/media/images{{ parent_url }}/caves-01-01.png)
+
+This is the Swing terminal which I happened to start from swank.  Press a key
+and it will go away.
+
+It doesn't look like much, but it's a [black triangle][].  In the next entry
+we'll start doing more interesting things.
+
+[black triangle]: http://rampantgames.com/blog/2004/10/black-triangle.html
+
+{% endblock article %}
