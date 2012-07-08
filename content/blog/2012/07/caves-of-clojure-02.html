@@ -1,0 +1,582 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 2"
+        snip: "Dealing with state."
+        created: 2012-07-08 8:00:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry corresponds to [post two in Trystan's tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-02` tag to see the code as it stands
+after this post.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/08/roguelike-tutorial-02-input-output.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+In Trystan's second post he introduces the concept of the game loop, as well as
+what he calls "screens": objects that handle drawing the interface and
+processing user input.
+
+I could try to port his design directly over to Clojure, but instead I wanted to
+step back and see if I could find a way to make things more functional.
+
+I think I've figured out a way to make it work, so I'm going to implement that.
+
+State
+-----
+
+When I first started thinking about how to model the game's state and the main
+game loop I had lots of crazy ideas bouncing around in my head.  Most of them
+involved an immutable world (immutable! good!) and agents representing Trystan's
+"screens".
+
+The more I thought about it, though, the more it looked like the agents would
+wind up being a tangled mess.  I put down the keyboard, took a shower, had
+dinner with a friend, and let the problem roll around in my head for a bit.
+
+At some point the following train of thought happened somewhere in my brain:
+
+* The immutable "state" that I keep should contain *everything* needed to render
+  the game on the user's screen.
+* I originally thought I'd need to track the "world" as the state, but the world
+  isn't enough!
+* In addition to the world, the user interface (menus, stats, etc) is also
+  rendered.
+
+So instead of keeping a "world" as my state, I'm going to keep a "game".
+
+The User Interface
+------------------
+
+If I'm going to keep track of the user interface in the "game" state, I need
+a way to represent it.
+
+There are two halves to the user interface: "input" and "output".  First let's
+consider output.
+
+Trystan's screens are objects that handle their own drawing.  At any given time
+there's one "active" screen object, which gets asked to draw itself.  If you
+peek ahead in his tutorial you'll see that he ends up introducing a "subscreen"
+concept to get screens layered on top of each other.
+
+Instead of having a single active screen with subscreens, I decided to keep
+a flat vector of screens.  The last screen in the vector is the "active" one,
+and is effectively a subscreen of the one that comes before it.
+
+At this point I'm going to switch terms.  Unfortunately Lanterna uses the word
+"screen" to mean something and I didn't want to try to keep two separate
+concepts under the same word, so in the code I called screens "UIs", and from
+now on I'll be using that word.
+
+So what *is* a UI in the code?  Well, it's basically just a map with a `:kind`
+mapping specifying what kind of UI it is!  It also might have some extra keys
+and values to represent its state too.
+
+For example, at some point I expect to have a UI stack that looks something like
+this:
+
+    :::clojure
+    [{:kind :play}
+     {:kind :throw}
+     {:kind :inventory-select}]
+
+This would be the UI stack when you were throwing something in your inventory at
+a monster and were choosing what to throw.  Once you pick an item you'd need to
+target a monster, so the stack would become:
+
+    :::clojure
+    [{:kind :play}
+     {:kind :throw :item foo}
+     {:kind :target}]
+
+Now the last (i.e.: "active") UI is the targetting UI, but also notice that the
+throwing UI has a bit of state attached to it now (the item the user picked).
+We'll talk about how that got there a bit later.
+
+As I said before, the "state" for our game is going to be a "game", which
+consists of the world and the user interface.  So our "game" object is going to
+be a map that looks something like this:
+
+    :::clojure
+    {:world {}
+     :uis [,,,]}
+
+For now the `:world` is empty.  In the future it'll contain stuff like the tiles
+of the map, the monsters, the player, and lots of other stuff.  The `:uis` is
+the UI stack.
+
+Between the two I have enough information to draw the game fully to the user's
+terminal by doing something like: `(map #(draw-ui ui game) (:uis game))`.  We'll
+see the real code shortly, but that's actually pretty close.
+
+User Input
+----------
+
+In an imperative programming style our game loop would look something like this:
+
+1. Draw the screen.
+2. Get some input from the user.
+3. Process that input, modifying the world.
+4. GOTO 1.
+
+In this functional loop, I want it to look more like this:
+
+1. Draw the screen.
+2. Get some user input.
+3. Process the input and the game to get a new game.
+4. Recur with this new game.
+
+How do I handle user input?  Well it depends on the current UI -- pressing `d`
+at the main screen will do something different than pressing it in an inventory
+selection screen, for example.
+
+So the UIs need to know how to handle input.  There are a number of different
+ways I can do that.  One option might be to have `:handle-input (fn ...)` as
+part of the UI.  I chose a different route which you'll see below, but that's
+not important for now.
+
+The important part is that one I glossed over in the last section.  How do I go
+from this:
+
+    :::clojure
+    [{:kind :play}
+     {:kind :throw}
+     {:kind :inventory-select}]
+
+to this:
+
+    :::clojure
+    [{:kind :play}
+     {:kind :throw :item foo}
+     {:kind :target}]
+
+Let's follow the proposed game loop and see what happens.
+
+1. Draw the play UI, then the throw UI, then the inventory UI.
+2. Get a keypress from the user.
+3. Give that keypress and the game itself to the UI input handling function to
+   get a new game.
+4. Recur with this new game.
+
+Step three is the tricky part.  What does the inventory handler need to do to
+give back a new game?
+
+It would need to pop itself off the UI stack (which is okay), put the selected
+item in the previous UI (a bit scary, but probably not a problem in practice),
+and create the targeting UI.
+
+This last part is a deal breaker.  The inventory selection UI shouldn't know
+anything about the targeting UI, because then I won't be able to reuse it for
+other functions (like equipping items, eating food, etc)!
+
+The throw UI is the one that should know about the inventory and targeting
+UIs.  Ideally it would set them up, get their "return values" and process those.
+How can I send back the values?
+
+There's actually a really elegant way I came up with for this.  At least
+I *think* it's elegant.  I may end up immuting myself into a corner and
+ragequitting this blog series.  We'll see.
+
+Anyway, here's the solution:
+
+* Make "input" part of the game state.
+* Update the game input when you want to return a value from a UI.
+
+And I can change the game loop to look like this:
+
+1. Draw the screen.
+2. If the game's input is empty, get some from the user to fill it.
+3. Process the game to get a new game.  The input is now part of the game and
+   gets processed along with it.
+4. Recur with this new game.
+
+From what little I've used it so far, this method seems very promising.
+
+Enough design talk.  Let's look at the code.
+
+Implementation
+--------------
+
+In Trystan's tutorial he had three "screens": start, win, and lose.  The user
+presses keys to transition between them.  Not a very fun game, but it lets you
+get the game loop up and running before diving into gameplay.
+
+I did the same thing.  Right now everything is in one file because I tend to
+code like that until I feel like something needs to be pulled out into its own
+namespace.  The file is still under a hundred lines of code, so that's not too
+bad.
+
+Let's walk through the code piece by piece.  First the namespace:
+
+    :::clojure
+    (ns caves.core
+      (:require [lanterna.screen :as s]))
+
+Next I define some basic data structures:
+
+    :::clojure
+    (defrecord UI [kind])
+    (defrecord World [])
+    (defrecord Game [world uis input])
+
+I used Clojure's records here because I feel like they add a bit of helpful
+structure to the code.  They're also a bit faster, but that probably won't be
+noticeable.  You could skip these and just use plain maps if you wanted to, it's
+really a personal preference.
+
+Next is a helper function:
+
+    :::clojure
+    (defn clear-screen [screen]
+      (let [blank (apply str (repeat 80 \space))]
+        (doseq [row (range 24)]
+          (s/put-string screen 0 row blank))))
+
+Unfortunately Lanterna doesn't provide a method for clearing the screen, so
+I wrote my own little hacky one that just overwrites everything with spaces.  It
+assumes the terminal is 80 by 24 characters for now.
+
+I'll be adding a feature request in the Lanterna issue tracker for this, so
+hopefully I'll be able to delete this function in a later post.
+
+Now to the meaty bits:
+
+    :::clojure
+    (defmulti draw-ui
+      (fn [ui game screen]
+        (:kind ui)))
+
+    (defmethod draw-ui :start [ui game screen]
+      (s/put-string screen 0 0 "Welcome to the Caves of Clojure!")
+      (s/put-string screen 0 1 "Press enter to win, anything else to lose."))
+
+    (defmethod draw-ui :win [ui game screen]
+      (s/put-string screen 0 0 "Congratulations, you win!")
+      (s/put-string screen 0 1 "Press escape to exit, anything else to restart."))
+
+    (defmethod draw-ui :lose [ui game screen]
+      (s/put-string screen 0 0 "Sorry, better luck next time.")
+      (s/put-string screen 0 1 "Press escape to exit, anything else to go."))
+
+    (defn draw-game [game screen]
+      (clear-screen screen)
+      (doseq [ui (:uis game)]
+        (draw-ui ui game screen))
+      (s/redraw screen))
+
+Here we have the drawing code.
+
+The UIs are very simple for now.  They each just output a couple of lines of
+text.  None of them actually look at the game state at all, but in the future
+some of them will need to do that (e.g.: when showing the list of items in the
+player's inventory).
+
+I made the `draw-ui` function a multimethod to make it easy to define the logic
+for each UI separately.  Each definition could even live in its own file if
+I wanted it to.  There are other ways to do this, but I like the concision and
+simplicity of this one.
+
+The `draw-game` function takes the immutable game object and draws some text to
+the user's terminal.  It's fairly simple.  The `redraw` call is needed because
+Lanterna [double buffers][] the output.  Check out the [clojure-lanterna
+documentation][clojure-lanterna] for more information if you're curious.
+
+[double buffers]: https://en.wikipedia.org/wiki/Multiple_buffering#Double_buffering_in_computer_graphics
+[clojure-lanterna]: http://sjl.bitbucket.org/clojure-lanterna/
+
+    :::clojure
+    (defmulti process-input
+      (fn [game input]
+        (:kind (last (:uis game)))))
+
+    (defmethod process-input :start [game input]
+      (if (= input :enter)
+        (assoc game :uis [(new UI :win)])
+        (assoc game :uis [(new UI :lose)])))
+
+    (defmethod process-input :win [game input]
+      (if (= input :escape)
+        (assoc game :uis [])
+        (assoc game :uis [(new UI :start)])))
+
+    (defmethod process-input :lose [game input]
+      (if (= input :escape)
+        (assoc game :uis [])
+        (assoc game :uis [(new UI :start)])))
+
+    (defn get-input [game screen]
+      (assoc game :input (s/get-key-blocking screen)))
+
+UIs need to know how to process their input.  I used a multimethod for this too.
+
+The method takes the game and the input as parameters and returns a modified
+copy of the game object that represents the new state.  Currently none of them
+use the "returning as input" trick, but we'll see that in one of the next few
+posts.
+
+Notice how the UIs all simply replace the UI stack in the game they return?
+This is fine for now, but in the future they'll be more likely to just pop off
+the last one (themselves) rather than replace the entire stack.
+
+An empty UI stack means "quit the game", as we'll see in a moment.
+
+You'll also see why the input is separate from the game soon.
+
+The `get-input` function gets a keypress from the user and sticks it into the
+game object.  Nothing crazy there.
+
+And now, the game loop:
+
+    :::clojure
+    (defn run-game [game screen]
+      (loop [{:keys [input uis] :as game} game]
+        (when-not (empty? uis)
+          (draw-game game screen)
+          (if (nil? input)
+            (recur (get-input game screen))
+            (recur (process-input (dissoc game :input) input))))))
+
+Here we go.  The `run-game` function `loop`s on a game object each time.
+
+First: if there are no UIs, we're done and can drop out.  Cool.
+
+If there are UIs, draw the game to the user's terminal.
+
+Then it checks if it needs to get a keypress from the user.  If so, do that,
+update the game object, and start again.
+
+I could make this a bit more efficient by continuing on to process the input
+without another round through the loop, but performance probably isn't a concern
+at the moment.  I'll revisit this in the future if it becomes an issue, but for
+now I like this structure.
+
+Anyway, if we *do* have input (i.e.: either we grabbed a keypress or a UI
+returned something the last time through the loop), process it.  Remember that
+the `process-input` function is a multimethod that dispatches on the `:kind` of
+the last UI in the stack.
+
+Here your can see why `process-input` takes the game and input separately.  I
+*could* just pass the game and pull out the `:input` value, but then I'd also
+need to `dissoc` the input from the modified game object in every UI that didn't
+return a value.
+
+If I didn't `dissoc` the input, the input would always be present and would
+cause an infinite loop.  You can play around with this by replacing `(dissoc
+game :input)` with `game` and watching what happens.
+
+Next is a simple helper function:
+
+    :::clojure
+    (defn new-game []
+      (new Game
+           (new World)
+           [(new UI :start)]
+           nil))
+
+Nothing fancy.  You could just inline that body into the next function if you
+wanted, but I'm thinking ahead to when I'm going to want to generate a random
+world.
+
+Finally, the bootstrapping:
+
+    :::clojure
+    (defn main
+      ([screen-type] (main screen-type false))
+      ([screen-type block?]
+       (letfn [(go []
+                 (let [screen (s/get-screen screen-type)]
+                   (s/in-screen screen
+                                (run-game (new-game) screen))))]
+         (if block?
+           (go)
+           (future (go))))))
+
+    (defn -main [& args]
+      (let [args (set args)
+            screen-type (cond
+                          (args ":swing") :swing
+                          (args ":text")  :text
+                          :else           :auto)]
+        (main screen-type true)))
+
+`-main` looks almost the same as before, but `main` has changed quite a bit.
+What happened?
+
+The short answer is that most of the change is to work around some Clojure/JVM
+silliness.  The important bit is that I now create a fresh game object and fire
+up the game loop with `(run-game (new-game) screen)`.
+
+If you're curious about the rest, read [this Clojure bug report][bug].  I wanted
+to be able to run the game from the command line as normal, but from a REPL
+without blocking the REPL itself, so I could play around with things.
+
+[bug]: http://dev.clojure.org/jira/browse/CLJ-959
+
+That's it!  It clocks in at 98 lines of code.  Here's the whole file at once:
+
+    :::clojure
+    (ns caves.core
+      (:require [lanterna.screen :as s]))
+
+
+    ; Data Structures -------------------------------------------------------------
+    (defrecord UI [kind])
+    (defrecord World [])
+    (defrecord Game [world uis input])
+
+    ; Utility Functions -----------------------------------------------------------
+    (defn clear-screen [screen]
+      (let [blank (apply str (repeat 80 \space))]
+        (doseq [row (range 24)]
+          (s/put-string screen 0 row blank))))
+
+
+    ; Drawing ---------------------------------------------------------------------
+    (defmulti draw-ui
+      (fn [ui game screen]
+        (:kind ui)))
+
+    (defmethod draw-ui :start [ui game screen]
+      (s/put-string screen 0 0 "Welcome to the Caves of Clojure!")
+      (s/put-string screen 0 1 "Press enter to win, anything else to lose."))
+
+    (defmethod draw-ui :win [ui game screen]
+      (s/put-string screen 0 0 "Congratulations, you win!")
+      (s/put-string screen 0 1 "Press escape to exit, anything else to restart."))
+
+    (defmethod draw-ui :lose [ui game screen]
+      (s/put-string screen 0 0 "Sorry, better luck next time.")
+      (s/put-string screen 0 1 "Press escape to exit, anything else to go."))
+
+    (defn draw-game [game screen]
+      (clear-screen screen)
+      (doseq [ui (:uis game)]
+        (draw-ui ui game screen))
+      (s/redraw screen))
+
+
+    ; Input -----------------------------------------------------------------------
+    (defmulti process-input
+      (fn [game input]
+        (:kind (last (:uis game)))))
+
+    (defmethod process-input :start [game input]
+      (if (= input :enter)
+        (assoc game :uis [(new UI :win)])
+        (assoc game :uis [(new UI :lose)])))
+
+    (defmethod process-input :win [game input]
+      (if (= input :escape)
+        (assoc game :uis [])
+        (assoc game :uis [(new UI :start)])))
+
+    (defmethod process-input :lose [game input]
+      (if (= input :escape)
+        (assoc game :uis [])
+        (assoc game :uis [(new UI :start)])))
+
+    (defn get-input [game screen]
+      (assoc game :input (s/get-key-blocking screen)))
+
+
+    ; Main ------------------------------------------------------------------------
+    (defn run-game [game screen]
+      (loop [{:keys [input uis] :as game} game]
+        (when-not (empty? uis)
+          (draw-game game screen)
+          (if (nil? input)
+            (recur (get-input game screen))
+            (recur (process-input (dissoc game :input) input))))))
+
+    (defn new-game []
+      (new Game
+           (new World)
+           [(new UI :start)]
+           nil))
+
+    (defn main
+      ([screen-type] (main screen-type false))
+      ([screen-type block?]
+       (letfn [(go []
+                 (let [screen (s/get-screen screen-type)]
+                   (s/in-screen screen
+                                (run-game (new-game) screen))))]
+         (if block?
+           (go)
+           (future (go))))))
+
+
+    (defn -main [& args]
+      (let [args (set args)
+            screen-type (cond
+                          (args ":swing") :swing
+                          (args ":text")  :text
+                          :else           :auto)]
+        (main screen-type true)))
+
+And here are some screenshots:
+
+![Screenshot](/media/images{{ parent_url }}/caves-02-01.png)
+
+![Screenshot](/media/images{{ parent_url }}/caves-02-02.png)
+
+![Screenshot](/media/images{{ parent_url }}/caves-02-03.png)
+
+It's not a very exciting game yet, but it all works, and I've managed to use an
+immutable data structure of basic maps and records to represent everything
+I need.
+
+The drawing functions aren't "pure" in the "no I/O" sense, but they're kind of
+pure in another way -- they take an immutable data structure and draw something
+to the screen based solely on that.  I think this is going to make things easy
+to work with down the line.
+
+Testing
+-------
+
+I'll leave you with one final tidbit to read through if you want more.
+
+Encapsulating the game state as an immutable objects means I can test actions
+and their effects on the world individually, without a game loop:
+
+    :::clojure
+    (ns caves.core-test
+      (:import [caves.core UI World Game])
+      (:use clojure.test
+            caves.core))
+
+    (defn current-ui [game]
+      (:kind (last (:uis game))))
+
+
+    (deftest test-start
+      (let [game (new Game nil [(new UI :start)] nil)]
+
+        (testing "Enter wins at the starting screen."
+          (let [result (process-input game :enter)]
+            (is (= (current-ui result) :win))))
+
+        (testing "Other keys lose at the starting screen."
+          (let [results (map (partial process-input game)
+                             [\space \a \A :escape :up :backspace])]
+            (doseq [result results]
+              (is (= (current-ui result) :lose)))))))
+
+That's pretty cool!
+
+{% endblock article %}
