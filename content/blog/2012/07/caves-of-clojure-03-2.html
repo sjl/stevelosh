@@ -1,0 +1,277 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 3.2"
+        snip: "World smoothing."
+        created: 2012-07-10 9:45:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry corresponds to [post three in Trystan's tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-03-2` tag to see the code as it stands
+after this post.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/08/roguelike-tutorial-03-scrolling-through.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+When the last post left off I had a random world generated, but it wasn't very
+pretty.  Every tile had an equal chance of being a wall or a floor, which
+results in an uninteresting "white noise" of rock.  Not a very nice setting for
+a roguelike.
+
+This post is going to show how I added Trystan's world smoothing to make
+nicer-looking caves.  Read his post and the link to learn the ideas behind it.
+
+Debugging
+---------
+
+Let's jump right in.  The world smoothing code is going to go in `world.clj`.
+
+Before I start writing the actual smoothing code, I added two helper functions
+to print worlds to the console so I could see what I was doing:
+
+    :::clojure
+    (defn print-row [row]
+      (println (apply str (map :glyph row))))
+
+    (defn print-world [world]
+      (dorun (map print-row (:tiles world))))
+
+Simple, but very helpful because `(:tiles world)` contains `Tile` records
+instead of just the raw glyphs, so printing it without these helpers makes it
+impossible to read.
+
+Smoothing
+---------
+
+Okay, on to the real code.  I'll go through it from the bottom up this time
+because I think it's easier to understand that way.
+
+First I added a `smooth-world` function that will be what I eventually need to
+call repeatedly to smooth out the terrain:
+
+    :::clojure
+    (defn smooth-world [{:keys [tiles] :as world}]
+      (assoc world :tiles (get-smoothed-tiles tiles)))
+
+It's pretty much a helper function that handles getting the tile map in and out
+of the world object.  The smoothing process only cares about the tile map, not
+anything else the world might later contain.
+
+Next up:
+
+    :::clojure
+    (defn get-smoothed-tiles [tiles]
+      (mapv (fn [y]
+              (get-smoothed-row tiles y))
+            (range (count tiles))))
+
+I use Clojure 1.4's new `mapv` function, which is basically a version of `map`
+that creates a vector as the end product instead of a lazy sequence.  Our
+`:tiles` object is a vector of vectors going in, so it should be the same coming
+out.
+
+I loop map over the row indices.  For each row number I get the result of
+`get-smoothed-row`, and the `mapv` concatenates all of those into a vector for
+me, so I end up with `[[smoothed row], [smoothed row], ...]`.
+
+You might notice that I'm using an index-based approach here.  Isn't that a bad
+idea in Clojure?  Shouldn't I be using sequenced-based things instead?
+
+I spent about twenty minutes trying to get the sequence-based approach in the
+Programming Clojure book to work and eventually gave up.  It sounds like
+a beautiful idea but I couldn't deal with it for a number of reasons:
+
+* Harder to debug, with infinite padding sequences making some intermediate
+  steps unprintable.
+* Very general, which sounds good, but makes it harder to understand because we
+  can't talk about "the row of tiles" any more but now talk about stuff like
+  "the sequence of row triples".
+* In general just very alien and hard to use for what should be a
+  straightforward, 10 minute task.
+
+Here's an example of a few of the functions from the book I would have been
+using if I had gone that route:
+
+    :::clojure
+    (defn window
+      "Returns a lazy sequence of 3-item windows centered
+      around each item of coll, padded as necessary with
+      pad or nil."
+      ([coll] (window nil coll))
+      ([pad coll]
+        (partition 3 1 (concat [pad] coll [pad]))))
+
+    (defn cell-block
+      "Creates a sequences of 3x3 windows from a triple of 3 sequences."
+      [[left mid right]]
+      (window (map vector left mid right)))
+
+I personally find it easier to read things like `(get-smoother-row tiles y)`
+than `(map vector left right mid)`.  You might feel differently, but this was
+what I ended up with because I didn't want to spend a ton of time on the
+smoothing process.
+
+Anyway, back to the code.  Now I need a way to smooth a single row:
+
+    :::clojure
+    (defn get-smoothed-row [tiles y]
+      (mapv (fn [x]
+              (get-smoothed-tile (get-block tiles x y)))
+            (range (count (first tiles)))))
+
+Once again I use `mapv` because a row needs to be a vector.  This time I'm
+mapping over the column indices, but for the most part it's very similar to the
+previous function.
+
+I need a function to smooth a tile, but first I need a way to get a "block" of
+tiles.
+
+The basic rule I'm using for the smoothing comes from the [page about cellular
+automata smoothing on RogueBasin][ca-wiki]:
+
+[ca-wiki]: http://roguebasin.roguelikedevelopment.org/index.php?title=Cellular_Automata_Method_for_Generating_Random_Cave-Like_Levels
+
+A tile will become a floor tile if and only if the 3 by 3 square of tiles
+centered on it contains 5 or more floor tiles.
+
+This means I need a way to get the 3 by 3 block of tiles centered on any given
+tile:
+
+    :::clojure
+    (defn block-coords [x y]
+      (for [dx [-1 0 1]
+            dy [-1 0 1]]
+        [(+ x dx) (+ y dy)]))
+
+    (defn get-block [tiles x y]
+      (map (fn [[x y]]
+             (get-tile tiles x y))
+           (block-coords x y)))
+
+First we have a helper function that returns the coordinates of all the tiles
+we're going to look at.  For example, if you pass it `[22 30]` it will return:
+
+    :::clojure
+    [[21 29] [22 29] [23 29]
+     [21 30] [22 30] [23 30]
+     [21 31] [22 31] [23 31]]
+
+Note that `get-block` doesn't do any bounds checking, so passing it `[0 0]` will
+happily return coordinates like `[-1 -1]`, which are off the edge of the map.
+
+This isn't a problem because our `get-tile` method will return `:bound` tiles
+for those coordinates, which are not `:floor` tiles and so are effectively walls
+for the purposes of this algorithm.
+
+`get-block` itself is just a glue function that gets coordinates from
+`block-coords` and maps `get-tile` over them.
+
+So now I have a way to get a sequence of all the tiles in a block centered
+around a target.  The last step is actually figuring out what the resulting
+block for that target should be:
+
+    :::clojure
+    (defn get-smoothed-tile [block]
+      (let [tile-counts (frequencies (map :kind block))
+            floor-threshold 5
+            floor-count (get tile-counts :floor 0)
+            result (if (>= floor-count floor-threshold)
+                     :floor
+                     :wall)]
+        (tiles result)))
+
+This looks long, but that's mostly because I like using named intermediate
+variables to make it more readable.  It should be pretty easy to understand,
+just go ahead and read through it.
+
+So now the `smooth-world` function has all the machinery it needs to smooth
+a world.  The last step is to actually *use* it.  I changed the `random-world`
+function to look like this:
+
+    :::clojure
+    (defn random-world []
+      (let [world (new World (random-tiles))
+            world (nth (iterate smooth-world world) 0)]
+        world))
+
+At the moment it takes the zeroth iteration, which actually means the unsmoothed
+world.  What gives?
+
+Interactive Development
+-----------------------
+
+I wasn't sure right away how much smoothing would look good, so I wanted to try
+out a bunch of levels and see how they behaved.  I could have done it by
+printing to the console, but it's a pain to compare the multiple hunks of text.
+
+I decided to just add it to the game itself for now to make it easy to see how
+the smoothing behaves.  Back in `core.clj` I pulled in the `smooth-world`
+function:
+
+    :::clojure
+    (ns caves.core
+      (:use [caves.world :only [random-world smooth-world]])
+      (:require [lanterna.screen :as s]))
+
+Next I added another command to the `:play` UI: pressing `s` will smooth the
+current world by one more level:
+
+
+    :::clojure
+    (defmethod process-input :play [game input]
+      (case input
+        :enter     (assoc game :uis [(new UI :win)])
+        :backspace (assoc game :uis [(new UI :lose)])
+        \s         (assoc game :world (smooth-world (:world game)))
+        game))
+
+Yes, it only took one line to add that.  I simply replace the world with the
+smooth world and return the resulting game.  I don't need to touch the UI stack
+because I want to remain at the play UI for subsequent commands.
+
+I'm really liking this immutable game structure so far!
+
+Results
+-------
+
+Once you fire up the game and press a key to begin, you're presented with the
+white-noise map from the last entry:
+
+![Screenshot](/media/images{{ parent_url }}/caves-03-2-01.png)
+
+But now you can press `s` and the caves will smooth out a bit:
+
+![Screenshot](/media/images{{ parent_url }}/caves-03-2-02.png)
+
+Another press of `s` smooths them further:
+
+![Screenshot](/media/images{{ parent_url }}/caves-03-2-03.png)
+
+You can use enter or backspace to win or lose, then any key to go back to the
+start screen and get a new world to play with.
+
+Screenshots really don't do this justice, because seeing the world change before
+your eyes is *really* cool.  I made a 30-second [screencast][] that demonstrates
+the effect if you don't want to actually run it locally.
+
+[screencast]: http://www.screenr.com/FSk8
+
+I still haven't decided exactly how smooth I want to make the caves, so I'll
+leave that `0` in the `nth` call for now and figure it out later.
+
+{% endblock article %}
