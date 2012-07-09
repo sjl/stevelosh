@@ -34,7 +34,9 @@ results in an uninteresting "white noise" of rock.  Not a very nice setting for
 a roguelike.
 
 This post is going to show how I added Trystan's world smoothing to make
-nicer-looking caves.  Read his post and the link to learn the ideas behind it.
+nicer-looking caves.  He uses a [cellular automata-based world-smoothing
+algorithm][ca-wiki] that I think is really cool, so I'm going to do pretty much
+the same thing.
 
 Debugging
 ---------
@@ -241,8 +243,8 @@ current world by one more level:
         game))
 
 Yes, it only took one line to add that.  I simply replace the world with the
-smooth world and return the resulting game.  I don't need to touch the UI stack
-because I want to remain at the play UI for subsequent commands.
+smooth(er) world and return the resulting game.  I don't need to touch the UI
+stack because I want to remain at the play UI for subsequent commands.
 
 I'm really liking this immutable game structure so far!
 

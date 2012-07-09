@@ -1,0 +1,157 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 3.3"
+        snip: "Scrolling."
+        created: 2012-07-11 9:45:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry corresponds to [post three in Trystan's tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-03-3` tag to see the code as it stands
+after this post.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/08/roguelike-tutorial-03-scrolling-through.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+When the last post left off I had a random world generated and smoothed to
+create some nice looking caves.  The world was displayed on the screen, but it
+would only display the upper left corner of the map.
+
+This post is going to be about scrolling the viewport so we can view the entire
+map.  It's the last remaining piece of Trystan's third post that I still need to
+implement.
+
+Refactoring
+-----------
+
+This is going to involve changing the worst function in the code so far
+(`draw-ui` for `:player` UIs), so before I start hacking away I want to factor
+out a bit of functionality so things are a bit cleaner.
+
+Right now that `draw-ui` function in `core.clj` looks like this:
+
+    :::clojure
+    (defmethod draw-ui :play [ui {{:keys [tiles]} :world :as game} screen]
+      (let [[cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            start-x 0
+            start-y 0
+            end-x (+ start-x vcols)
+            end-y (+ start-y vrows)]
+        (doseq [[vrow-idx mrow-idx] (map vector
+                                         (range 0 vrows)
+                                         (range start-y end-y))
+                :let [row-tiles (subvec (tiles mrow-idx) start-x end-x)]]
+          (doseq [vcol-idx (range vcols)
+                  :let [{:keys [glyph color]} (row-tiles vcol-idx)]]
+            (s/put-string screen vcol-idx vrow-idx glyph {:fg color})))))
+
+I decided to pull out the guts of that function into a helper function:
+
+    :::clojure
+    (defn draw-world [screen vrows vcols start-x start-y end-x end-y tiles]
+      (doseq [[vrow-idx mrow-idx] (map vector
+                                       (range 0 vrows)
+                                       (range start-y end-y))
+              :let [row-tiles (subvec (tiles mrow-idx) start-x end-x)]]
+        (doseq [vcol-idx (range vcols)
+                :let [{:keys [glyph color]} (row-tiles vcol-idx)]]
+          (s/put-string screen vcol-idx vrow-idx glyph {:fg color}))))
+
+    (defmethod draw-ui :play [ui {{:keys [tiles]} :world :as game} screen]
+      (let [[cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            start-x 0
+            start-y 0
+            end-x (+ start-x vcols)
+            end-y (+ start-y vrows)]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)))
+
+No functionality has changed, I just pulled the body out into its own function.
+This will make things cleaner as we add more functionality.
+
+I also don't like the distructuring in the argument list here.  Let's remove
+that:
+
+    :::clojure
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            tiles (:tiles world)
+            [cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            start-x 0
+            start-y 0
+            end-x (+ start-x vcols)
+            end-y (+ start-y vrows)]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)))
+
+It's a few more lines of code but I find it more readable.  If you prefer the
+more consice syntax feel free to use the destructuring -- it's not really that
+important either way.
+
+Crosshairs
+----------
+
+Trystan draws an `X` as a kind of crosshair to take the place of the traditional
+roguelike `@` (since there's no player yet), so let's do that.  I made
+a separate function to draw the crosshair as a red `X` in the center of the
+screen:
+
+    :::clojure
+    (defn draw-crosshairs [screen vcols vrows]
+      (let [crosshair-x (int (/ vcols 2))
+              crosshair-y (int (/ vrows 2))]
+          (s/put-string screen crosshair-x crosshair-y "X" {:fg :red})
+          (s/move-cursor screen crosshair-x crosshair-y)))
+
+And I need to call that in the `:play` UI:
+
+    :::clojure
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            tiles (:tiles world)
+            [cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            start-x 0
+            start-y 0
+            end-x (+ start-x vcols)
+            end-y (+ start-y vrows)]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        (draw-crosshairs screen vcols vrows)))
+
+The only change here is the `(draw-crosshairs screen vcols vrows)` after I draw
+the world.  This draws the crosshair `X` on top of the world, which isn't an
+issue because Lanterna's double buffering will ensure that the user never sees
+an intermediate render that's missing the `X`.
+
+Now there's a red `X` in the center of the screen.  Great, but we still need to
+add the main point of this post: scrolling.
+
+Scrolling
+---------
+
+Results
+-------
+
+![Screenshot](/media/images{{ parent_url }}/caves-03-2-01.png)
+
+{% endblock article %}
