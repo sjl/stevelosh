@@ -3,7 +3,7 @@
     {% hyde
         title: "The Caves of Clojure: Part 3.1"
         snip: "World generation."
-        created: 2012-07-09 9:45:00
+        created: 2012-07-09 9:37:00
         flattr: true
     %}
 
@@ -295,7 +295,7 @@ we'll be drawing to the user's terminal).  In this example `start-x` would
 be `2`, `start-y` would be `3`, `end-x` would be `6`, and `end-y` would be `5`.
 
 Okay, so I've calculated the part of the map that needs to be drawn.  Now
-I loop throgh the rows:
+I loop through the rows:
 
     :::clojure
     (doseq [[vrow-idx mrow-idx] (map vector

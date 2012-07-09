@@ -41,7 +41,7 @@ Refactoring
 
 This is going to involve changing the worst function in the code so far
 (`draw-ui` for `:player` UIs), so before I start hacking away I want to factor
-out a bit of functionality so things are a bit cleaner.
+out a bit of functionality to clean things up.
 
 Right now that `draw-ui` function in `core.clj` looks like this:
 
@@ -62,7 +62,7 @@ Right now that `draw-ui` function in `core.clj` looks like this:
                   :let [{:keys [glyph color]} (row-tiles vcol-idx)]]
             (s/put-string screen vcol-idx vrow-idx glyph {:fg color})))))
 
-I decided to pull out the guts of that function into a helper function:
+I pulled out the guts of that function into a helper function:
 
     :::clojure
     (defn draw-world [screen vrows vcols start-x start-y end-x end-y tiles]
@@ -87,8 +87,8 @@ I decided to pull out the guts of that function into a helper function:
 No functionality has changed, I just pulled the body out into its own function.
 This will make things cleaner as we add more functionality.
 
-I also don't like the distructuring in the argument list here.  Let's remove
-that:
+As I mentioned in the last post, I don't like the distructuring in the argument
+list here.  Let's remove that:
 
     :::clojure
     (defmethod draw-ui :play [ui game screen]
@@ -104,7 +104,7 @@ that:
         (draw-world screen vrows vcols start-x start-y end-x end-y tiles)))
 
 It's a few more lines of code but I find it more readable.  If you prefer the
-more consice syntax feel free to use the destructuring -- it's not really that
+more concise syntax feel free to use the destructuring -- it's not really that
 important either way.
 
 Crosshairs
@@ -118,11 +118,20 @@ screen:
     :::clojure
     (defn draw-crosshairs [screen vcols vrows]
       (let [crosshair-x (int (/ vcols 2))
-              crosshair-y (int (/ vrows 2))]
+            crosshair-y (int (/ vrows 2))]
           (s/put-string screen crosshair-x crosshair-y "X" {:fg :red})
           (s/move-cursor screen crosshair-x crosshair-y)))
 
-And I need to call that in the `:play` UI:
+This function seems pretty straightforward.  It finds the x and y coordinates of
+the viewport where the `X` should go and puts it there.  It also moves the
+cursor on top of it because I like how that looks.
+
+Yeah, it might not actually end up in the exact center of the screen because the
+`int` will truncate if we've got an odd number of rows or columns.  Honestly,
+I'm going to be throwing away this crosshair once we've got a player on the
+screen, so it's not worth fixing.
+
+I need to call `draw-crosshairs` that in the `:play` UI-drawing function:
 
     :::clojure
     (defmethod draw-ui :play [ui game screen]
@@ -149,9 +158,243 @@ add the main point of this post: scrolling.
 Scrolling
 ---------
 
+Right now the `start-x` and `start-y` in the `draw-ui` function are hardcoded at
+`0`.  All I need to do is change those to modify which part of the map the
+viewport draws, and I'll have scrolling!
+
+First of all, I need a way to keep track of where the viewport should be
+centered.  This will get thrown away once we have a player (the player will be
+the center of the viewport), so I'll just slap it right in the `game` object for
+now:
+
+    :::clojure
+    (defn new-game []
+      (assoc (new Game nil [(new UI :start)] nil)
+             :location [40 20]))
+
+The `new-game` function now `assoc`s a `:location` into the `game` before
+returning it.
+
+I *could* have modified the `(defrecord Game [world uis input])` to add the
+location as a proper field.  But I know I'm going to be removing this soon
+anyway, so I may as well take advantage of the fact that Clojure's record can
+have extra fields `assoc`ed onto them on the fly.
+
+`[40 20]` is an arbitrary location.  It's kind of in the middleish area of the
+map.  Good enough.
+
+Okay, now I need to actually display the correct area of the map in the
+viewport.  I'm going to need to modify `draw-ui` again, which, just as
+a reminder, looks like this:
+
+    :::clojure
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            tiles (:tiles world)
+            [cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            start-x 0
+            start-y 0
+            end-x (+ start-x vcols)
+            end-y (+ start-y vrows)]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        (draw-crosshairs screen vcols vrows)))
+
+I had a feeling this is going to get a bit gross, so I pulled out the code for
+getting the viewport coordinates into its own helper function:
+
+    :::clojure
+    (defn get-viewport-coords [game vcols vrows]
+      (let [start-x 0
+            start-y 0
+            end-x (+ start-x vcols)
+            end-y (+ start-y vrows)]]
+        [start-x start-y end-x end-y]))
+
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            tiles (:tiles world)
+            [cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            [start-x start-y end-x end-y] (get-viewport-coords game vcols vrows)]]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        (draw-crosshairs screen vcols vrows)))
+
+No functionality changed, I just shuffled a bit of code out of that ugly
+`draw-ui` function.  As a bonus, the `get-viewport-coords` function is now pure.
+It'll be easy to add unit tests for it later if I want.  Cool.
+
+Now that the viewport coordinates are isolated, it's time to calculate them
+correctly instead of hardcoding them at `0`:
+
+    :::clojure
+    (defn get-viewport-coords [game vcols vrows]
+      (let [location (:location game)
+            [center-x center-y] location
+
+            tiles (:tiles (:world game))
+
+            map-rows (count tiles)
+            map-cols (count (first tiles))
+
+            start-x (max 0 (- center-x (int (/ vcols 2))))
+            start-y (max 0 (- center-y (int (/ vrows 2))))
+
+            end-x (+ start-x vcols)
+            end-x (min end-x map-cols)
+
+            end-y (+ start-y vrows)
+            end-y (min end-y map-rows)
+
+            start-x (- end-x vcols)
+            start-y (- end-y vrows)]
+        [start-x start-y end-x end-y]))
+
+This is long, but very straightforward.  I use the fact that `let` doesn't care
+if you rebind variables many times in the same binding vector to write
+imperative code.  There may be a more "clever" way to do this, but I like the
+clarity.
+
+First it finds the location of the crosshair (which will be `[40 20]` from
+`new-game` at the moment).  It calls that `center-x` and `center-y`.
+
+It also pulls the tile vector out of the `game` object and uses it to
+determine the full dimensions of the map.  I'm thinking of having a `map-size`
+constant somewhere instead of doing it this way.  I may do that in a later post.
+
+Next come these scary lines:
+
+    :::clojure
+    start-x (max 0 (- center-x (int (/ vcols 2))))
+    start-y (max 0 (- center-y (int (/ vrows 2))))
+
+They're not as scary as they look.  Both are exactly the same except for which
+dimension they're working on.  First I subtract half the viewport size from the
+center coordinate.  This should give me either the topmost or leftmost
+coordinate we're going to be drawing.
+
+Then I use `max` to make sure that if the starting coordinate would be less than
+zero (i.e.: off of the map) I just use 0 instead.
+
+Okay, so now I've got the coordinates of the top left point I need to draw, and
+I'm sure that it doesn't fall off the top or left edge of the map.  Cool.  Time
+to get the bottom right coordinate.
+
+    :::clojure
+    end-x (+ start-x vcols)
+    end-x (min end-x map-cols)
+
+    end-y (+ start-y vrows)
+    end-y (min end-y map-rows)
+
+This is similar to how we get the starting coordinates.  We calculate a "naive
+end x" by adding the viewport size to the start, and then make sure the end
+doesn't fall off the map.
+
+I did this all in one line for the start coordinates, but split it into two for
+the end coordinates.  I'm not sure why I did it like that -- I just noticed it
+now.  I'm going to go ahead and change the start to be the expanded, two-line
+form.  I think it's clearer.
+
+Okay, so now I've ensured that the end coordinate doesn't fall off the map.  I'm
+done, right?
+
+Well, not quite.  If I truncated the end coordinate here I'll have ended up with
+a smaller-than-normal viewport.  To fix that I'll reset the start coordinates
+one more time:
+
+    :::clojure
+    start-x (- end-x vcols)
+    start-y (- end-y vrows)
+
+This time I don't need to check any bounds.  I know the end coordinate is good
+because it was based on a known start coordinate (the top/left side is good) and
+I corrected the bottom/right side.  So I simply use this known-good end
+coordinate to get a known-good start coordinate and I'm done.
+
+If the map is smaller than the viewport size this is probably going to explode.
+I'm going to ignore that for now.  I may revisit it later, or I may just stick
+with an 80 by 24 viewport for all time like Nethack.
+
+That was a lot of work, but the only thing that's changed is I'm now displaying
+a section of the map near the middle instead of at the upper left.  The last
+piece is to add the ability to adjust the `:location` in the `game` object on
+the fly.
+
+The player should be able to scroll around when they're at the `:play` UI, so
+let's add the appropriate input handling:
+
+    :::clojure
+    (defn move [[x y] [dx dy]]
+      [(+ x dx) (+ y dy)])
+
+    (defmethod process-input :play [game input]
+      (case input
+        :enter     (assoc game :uis [(new UI :win)])
+        :backspace (assoc game :uis [(new UI :lose)])
+        \q         (assoc game :uis [])
+
+        \s (assoc game :world (smooth-world (:world game)))
+
+        \h (update-in game [:location] move [-1 0])
+        \j (update-in game [:location] move [0 1])
+        \k (update-in game [:location] move [0 -1])
+        \l (update-in game [:location] move [1 0])
+
+        \H (update-in game [:location] move [-5 0])
+        \J (update-in game [:location] move [0 5])
+        \K (update-in game [:location] move [0 -5])
+        \L (update-in game [:location] move [5 0])
+
+        game))
+
+I did a few things here.  First I added the `q` key mapping to quit the game
+without going through the win or lose screens, just to same myself some time.
+Enter and backspace still win and lose the game respectively.
+
+`s` still smooths the world map for now.  No reason to remove that yet.
+
+To handle the movement inputs I first made a `move` helper function which takes
+a coordinate and an amount to move by and returns the new coordinate.
+
+The `process-input` function uses this to get the new coordiate when it gets an
+`h`, `j`, `k`, or `l` keypress.  I also added the shifted versions of the
+letters as "fast movement" keys for convenience.
+
+Right now there's no bounds checking here, so it's possible for your `:location`
+to get scrolled off the edge of the map.  This won't be a problem for the
+display (it will just snap the viewport to the edge of the map), but will make
+the input a bit weird.
+
+For example, if you scroll to the right edge of the map and press right 10 more
+times, you'll need to press left 10 times before it will actually start
+scrolling left again.
+
+This is a bug, but not one I care to fix right now.  I'll be replacing this code
+with player-based code soon enough, so it's just going to get thrown out anyway.
+
 Results
 -------
 
-![Screenshot](/media/images{{ parent_url }}/caves-03-2-01.png)
+That's it!  Running the game, I can now scroll around the map and/or smooth it
+whenever I like:
+
+![Screenshot](/media/images{{ parent_url }}/caves-03-3-01.png)
+
+![Screenshot](/media/images{{ parent_url }}/caves-03-3-02.png)
+
+This doesn't look much different in pictures, but I can scroll through the world
+with `hjkl`.  Here's a screencast showing what that looks like:
+<http://www.screenr.com/T1k8>
+
+As always, you can view the code [on GitHub][result-code] if you want to see it
+all at once.
+
+[result-code]: https://github.com/sjl/caves/tree/entry-03-3/src/caves
+
+That's it for Trystan's third post.  Next time I'll tackle his fourth (adding
+an actual player).
 
 {% endblock article %}
