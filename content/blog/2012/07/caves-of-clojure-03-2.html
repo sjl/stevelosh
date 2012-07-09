@@ -121,7 +121,7 @@ using if I had gone that route:
       [[left mid right]]
       (window (map vector left mid right)))
 
-I personally find it easier to read things like `(get-smoother-row tiles y)`
+I personally find it easier to read things like `(get-smoothed-row tiles y)`
 than `(map vector left right mid)`.  You might feel differently, but this was
 what I ended up with because I didn't want to spend a ton of time on the
 smoothing process.
@@ -273,5 +273,7 @@ the effect if you don't want to actually run it locally.
 
 I still haven't decided exactly how smooth I want to make the caves, so I'll
 leave that `0` in the `nth` call for now and figure it out later.
+
+Next post: scrolling!
 
 {% endblock article %}
