@@ -1,0 +1,335 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 3.4"
+        snip: "Refactoring."
+        created: 2012-07-11 13:00:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry (kind of) corresponds to [post three in Trystan's
+tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-03-4` tag to see the code as it stands
+after this post.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/08/roguelike-tutorial-03-scrolling-through.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+In the last post I said that the next post would be about Trystan's fourth
+entry.  I lied.  I'm going to do a short entry about refactoring before I move
+on, because I don't want to clutter up later ones with this stuff.
+
+Record Creation
+---------------
+
+Hacker News user bitsai [told me about][hn] a new syntax for creating records in
+Clojure 1.3, so I updated all the `(new Foo)` calls to use that.
+
+One example is the `new-game` function.  Before:
+
+[hn]: https://news.ycombinator.com/item?id=4220141
+
+    :::clojure
+    (defn new-game []
+      (assoc (new Game nil [(new UI :start)] nil)
+              :location [40 20]))
+
+After:
+
+    :::clojure
+    (defn new-game []
+      (assoc (->Game nil [(->UI :start)] nil)
+              :location [40 20]))
+
+It's certainly not too impressive from a "characters saved" point of view.  But
+this little change matters more than it might appear at first glance.
+
+Imagine you define a record in Clojure:
+
+    :::clojure
+    (ns a)
+
+    (defrecord Foo [])
+
+And then in another namespace you want to use it:
+
+    :::clojure
+    (ns b
+      (:use a))
+
+    (new Foo)
+
+This will explode, because `Foo` is actually a Java class, so you need to import
+it:
+
+    :::clojure
+    (ns b
+      (:import a.Foo)
+      (:use a))
+
+    (new Foo)
+
+This is one example of Clojure's Java underpinnings leaking through.
+
+In Clojure 1.3, `defrecord` will automatically generate a "factory function"
+that creates the record, and you can `require` or `use` *that* like any other
+function, so you don't need to screw around with a Java interop feature
+(`import`) to use a pure Clojure feature.
+
+This is a good thing.  It means that progress is being made toward patching the
+places that Java leaks into Clojure.  It gives me hope that some day I'll feel
+okay recommending Clojure to people without Java experience.
+
+I updated all the `(new ...)` calls to use the new-style factory functions.
+I won't paste them all here, but if you're following along you'll want to `grep
+-R 'new ' .` and update the rest now.
+
+update-in
+---------
+
+Next is a tiny change that's just a bit cleaner.  Allan Malloy [told me][] about
+it.  In the `process-input` function for the `:play` UI, the code to handle
+smoothing the world looked like this:
+
+    :::clojure
+    \s (assoc game :world (smooth-world (:world game)))
+
+This can be done much more cleanly using `update-in`:
+
+    :::clojure
+    \s (update-in game [:world] smooth-world)
+
+Nice.
+
+Namespaces
+----------
+
+I said in an earlier post that I tend to leave things in one file until I feel
+like they need to be pulled out.  Well, that time has come.
+
+First I pulled the UI drawing code into its own file: `ui/drawing.clj`.  It
+looks like this (nothing has changed, it's just in a file of its own now):
+
+    :::clojure
+    (ns caves.ui.drawing
+      (:require [lanterna.screen :as s]))
+
+
+    (def screen-size [80 24])
+
+    (defn clear-screen [screen]
+      (let [[cols rows] screen-size
+            blank (apply str (repeat cols \space))]
+        (doseq [row (range rows)]
+          (s/put-string screen 0 row blank))))
+
+
+    (defmulti draw-ui
+      (fn [ui game screen]
+        (:kind ui)))
+
+
+    (defmethod draw-ui :start [ui game screen]
+      (s/put-string screen 0 0 "Welcome to the Caves of Clojure!")
+      (s/put-string screen 0 1 "Press any key to continue.")
+      (s/put-string screen 0 2 "")
+      (s/put-string screen 0 3 "Once in the game, you can use enter to win,")
+      (s/put-string screen 0 4 "and backspace to lose."))
+
+
+    (defmethod draw-ui :win [ui game screen]
+      (s/put-string screen 0 0 "Congratulations, you win!")
+      (s/put-string screen 0 1 "Press escape to exit, anything else to restart."))
+
+
+    (defmethod draw-ui :lose [ui game screen]
+      (s/put-string screen 0 0 "Sorry, better luck next time.")
+      (s/put-string screen 0 1 "Press escape to exit, anything else to restart."))
+
+
+    (defn get-viewport-coords [game vcols vrows]
+      (let [location (:location game)
+            [center-x center-y] location
+
+            tiles (:tiles (:world game))
+
+            map-rows (count tiles)
+            map-cols (count (first tiles))
+
+            start-x (- center-x (int (/ vcols 2)))
+            start-x (max 0 start-x)
+
+            start-y (- center-y (int (/ vrows 2)))
+            start-y (max 0 start-y)
+
+            end-x (+ start-x vcols)
+            end-x (min end-x map-cols)
+
+            end-y (+ start-y vrows)
+            end-y (min end-y map-rows)
+
+            start-x (- end-x vcols)
+            start-y (- end-y vrows)]
+        [start-x start-y end-x end-y]))
+
+    (defn draw-crosshairs [screen vcols vrows]
+      (let [crosshair-x (int (/ vcols 2))
+              crosshair-y (int (/ vrows 2))]
+          (s/put-string screen crosshair-x crosshair-y "X" {:fg :red})
+          (s/move-cursor screen crosshair-x crosshair-y)))
+
+    (defn draw-world [screen vrows vcols start-x start-y end-x end-y tiles]
+      (doseq [[vrow-idx mrow-idx] (map vector
+                                       (range 0 vrows)
+                                       (range start-y end-y))
+              :let [row-tiles (subvec (tiles mrow-idx) start-x end-x)]]
+        (doseq [vcol-idx (range vcols)
+                :let [{:keys [glyph color]} (row-tiles vcol-idx)]]
+          (s/put-string screen vcol-idx vrow-idx glyph {:fg color}))))
+
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            tiles (:tiles world)
+            [cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            [start-x start-y end-x end-y] (get-viewport-coords game vcols vrows)]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        (draw-crosshairs screen vcols vrows)))
+
+
+    (defn draw-game [game screen]
+      (clear-screen screen)
+      (doseq [ui (:uis game)]
+        (draw-ui ui game screen))
+      (s/redraw screen))
+
+And now I need to `use` the `draw-game` function back in `core.clj`:
+
+    :::clojure
+    (ns caves.core
+      (:use [caves.world :only [random-world smooth-world]]
+            [caves.ui.drawing :only [draw-game]])
+      (:require [lanterna.screen :as s]))
+
+The fact that I moved eleven top-level symbols into a new namespace and only had
+to bring one of them back into the original is a pretty clear sign that this
+chunk of code was ready to be moved into its own file.
+
+I also did the same for the input processing code, moving it into
+`ui/input.clj`:
+
+    :::clojure
+    (ns caves.ui.input
+      (:use [caves.world :only [random-world smooth-world]])
+      (:require [lanterna.screen :as s]))
+
+
+    (defmulti process-input
+      (fn [game input]
+        (:kind (last (:uis game)))))
+
+    (defmethod process-input :start [game input]
+      (-> game
+        (assoc :world (random-world))
+        (assoc :uis [(->UI :play)])))
+
+
+    (defn move [[x y] [dx dy]]
+      [(+ x dx) (+ y dy)])
+
+    (defmethod process-input :play [game input]
+      (case input
+        :enter     (assoc game :uis [(->UI :win)])
+        :backspace (assoc game :uis [(->UI :lose)])
+        \q         (assoc game :uis [])
+
+        \s (update-in game [:world] smooth-world)
+
+        \h (update-in game [:location] move [-1 0])
+        \j (update-in game [:location] move [0 1])
+        \k (update-in game [:location] move [0 -1])
+        \l (update-in game [:location] move [1 0])
+
+        \H (update-in game [:location] move [-5 0])
+        \J (update-in game [:location] move [0 5])
+        \K (update-in game [:location] move [0 -5])
+        \L (update-in game [:location] move [5 0])
+
+        game))
+
+    (defmethod process-input :win [game input]
+      (if (= input :escape)
+        (assoc game :uis [])
+        (assoc game :uis [(->UI :start)])))
+
+    (defmethod process-input :lose [game input]
+      (if (= input :escape)
+        (assoc game :uis [])
+        (assoc game :uis [(->UI :start)])))
+
+
+    (defn get-input [game screen]
+      (assoc game :input (s/get-key-blocking screen)))
+
+This isn't quite functional yet, because it needs the `->UI` factory function,
+which is created by the `(defrecord UI [...])` that's still in `core.clj`.
+I can't just `use` that in this file, because `core` is going to need to `use`
+some functions from this, so I'd have circular imports.
+
+The solution is to move the `(defrecord UI [...])` into a separate file.
+I chose to put it in `ui/core.clj`:
+
+    :::clojure
+    (ns caves.ui.core)
+
+    (defrecord UI [kind])
+
+And now I can pull its creation function back into the `input` namespace:
+
+    :::clojure
+    (ns caves.ui.input
+      (:use [caves.world :only [random-world smooth-world]]
+            [caves.ui.core :only [->UI]])
+      (:require [lanterna.screen :as s]))
+
+Finally I can update the `ns` back in the original `core.clj` to pull in the
+functions I need, and remove the ones I don't:
+
+    :::clojure
+    (ns caves.core
+      (:use [caves.ui.core :only [->UI]]
+            [caves.ui.drawing :only [draw-game]]
+            [caves.ui.input :only [get-input process-input]])
+      (:require [lanterna.screen :as s]))
+
+Whew!
+
+Results
+-------
+
+That was a lot of shuffling around, but now I've got five separate files, each
+pertaining to one specific thing, instead of one big pile of code.
+
+You can view the code [on GitHub][result-code] if you want to see the end
+result.
+
+[result-code]: https://github.com/sjl/caves/tree/entry-03-4/src/caves
+
+Next post I swear I'll add the player so we'll have an actual game!
+
+{% endblock article %}
