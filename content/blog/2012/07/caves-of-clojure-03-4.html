@@ -101,9 +101,11 @@ I won't paste them all here, but if you're following along you'll want to `grep
 update-in
 ---------
 
-Next is a tiny change that's just a bit cleaner.  Allan Malloy [told me][] about
+Next is a tiny change that's just a bit cleaner.  Alan Malloy [told me][] about
 it.  In the `process-input` function for the `:play` UI, the code to handle
 smoothing the world looked like this:
+
+[told me]: https://twitter.com/alanmalloy/status/222748536595423232
 
     :::clojure
     \s (assoc game :world (smooth-world (:world game)))

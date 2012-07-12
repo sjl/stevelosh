@@ -1,0 +1,624 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 4"
+        snip: "A player!"
+        created: 2012-07-12 09:42:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry corresponds to [post four in Trystan's tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-04` tag to see the code as it stands
+after this post.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/08/roguelike-tutorial-04-player.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+In Trystan's fourth post he adds three main things:
+
+* A player
+* Player movement
+* Digging
+
+I'm going to add all three of those, but I'm going to do things very differently
+than he did.
+
+My goal is to play around with some Clojurey concepts and see how far I can
+stretch them.  I have a feeling that it's going to let me do some very cool
+things in the future.
+
+Refactoring
+-----------
+
+Before I started I wanted to clean up the `world` namespace a bit.  I'm not
+going to go in depth -- I'll just post the code and you can read over it or skip
+it if you trust me.
+
+First I created `coords.clj`:
+
+    :::clojure
+    (ns caves.coords)
+
+
+    (defn offset-coords
+      "Offset the starting coordinate by the given amount, returning the result coordinate."
+      [[x y] [dx dy]]
+      [(+ x dx) (+ y dy)])
+
+    (defn dir-to-offset
+      "Convert a direction to the offset for moving 1 in that direction."
+      [dir]
+      (case dir
+        :w  [-1 0]
+        :e  [1 0]
+        :n  [0 -1]
+        :s  [0 1]
+        :nw [-1 -1]
+        :ne [1 -1]
+        :sw [-1 1]
+        :se [1 1]))
+
+    (defn destination-coords
+      "Take an origin's coords and a direction and return the destination's coords."
+      [origin dir]
+      (offset-coords origin (dir-to-offset dir)))
+
+Then I cleaned up `world.clj`:
+
+    :::clojure
+    (ns caves.world)
+
+
+    ; Constants -------------------------------------------------------------------
+    (def world-size [160 50])
+
+    ; Data structures -------------------------------------------------------------
+    (defrecord World [tiles])
+    (defrecord Tile [kind glyph color])
+
+    (def tiles
+      {:floor (->Tile :floor "." :white)
+       :wall  (->Tile :wall  "#" :white)
+       :bound (->Tile :bound "X" :black)})
+
+
+    ; Convenience functions -------------------------------------------------------
+    (defn get-tile-from-tiles [tiles [x y]]
+      (get-in tiles [y x] (:bound tiles)))
+
+    (defn random-coordinate []
+      (let [[cols rows] world-size]
+        [(rand-int cols) (rand-int rows)]))
+
+
+    ; World generation ------------------------------------------------------------
+    (defn random-tiles []
+      (let [[cols rows] world-size]
+        (letfn [(random-tile []
+                  (tiles (rand-nth [:floor :wall])))
+                (random-row []
+                  (vec (repeatedly cols random-tile)))]
+          (vec (repeatedly rows random-row)))))
+
+
+    (defn get-smoothed-tile [block]
+      (let [tile-counts (frequencies (map :kind block))
+            floor-threshold 5
+            floor-count (get tile-counts :floor 0)
+            result (if (>= floor-count floor-threshold)
+                     :floor
+                     :wall)]
+        (tiles result)))
+
+    (defn block-coords [x y]
+      (for [dx [-1 0 1]
+            dy [-1 0 1]]
+        [(+ x dx) (+ y dy)]))
+
+    (defn get-block [tiles x y]
+      (map (partial get-tile-from-tiles tiles)
+           (block-coords x y)))
+
+    (defn get-smoothed-row [tiles y]
+      (mapv (fn [x]
+              (get-smoothed-tile (get-block tiles x y)))
+            (range (count (first tiles)))))
+
+    (defn get-smoothed-tiles [tiles]
+      (mapv (fn [y]
+              (get-smoothed-row tiles y))
+            (range (count tiles))))
+
+    (defn smooth-world [{:keys [tiles] :as world}]
+      (assoc world :tiles (get-smoothed-tiles tiles)))
+
+
+    (defn random-world []
+      (let [world (->World (random-tiles))
+            world (nth (iterate smooth-world world) 3)]
+        world))
+
+The changes were mostly centered around removing debugging functions and making
+all the world functions take an `[x y]` coordinate vector in place of two
+separate `x` and `y` arguments.
+
+Read through the code if you're curious, it's only about 100 total lines.
+
+Entities
+--------
+
+Now it's time to add a player.  Rather than take the approach Trystan used of
+creating a `Creature` class and `Player` subclass, I went with something a bit
+different.
+
+In Minecraft's network protocol, when you get a list of "things in the world"
+it's not just creatures -- the list includes both creatures and items.  It uses
+the word "entity" to refer to them.  I'm sure it's not the first game to do
+that, but it's the first time I've run across it because I'm not hugely into
+game programming.
+
+That got me thinking: are items and creatures really so different that I need to
+represent them as two completely separate ideas?
+
+Both have a location in the world.  Both have a "glyph" that I'll be using to
+display them to the player.  Both will have some kind of "id" so I can use them
+in mappings efficiently.
+
+On the other hand, there are definitely some differences.  Creatures move
+around, eat things, attack things, can be attacked (and killed), have an AI to
+decide what to do, and so on.
+
+Items can be picked up and dropped, can contain other items, can be eaten or
+quaffed, can rot over time (e.g.: corpses), can be used as weapons or armor, et
+cetera.
+
+But wait a second: are things really so clear?  The bag of tricks in Nethack can
+attack the player.  Cockatrice corpses can be wielded and used as
+petrification-inducing clubs.  In Dwarf Fortress discarded pieces from
+slaughtered animals can come alive if a necromancer sieges your fortress.
+
+I can think of a lot of cool things I could do when I eliminate the distinction
+between items and creatures.
+
+Maybe there's a "pixie" creature that wanders around and does normal creaturey
+things, but if you attack it while wielding a butterfly net you "catch" it and
+it gets picked up and put in your inventory like an item.
+
+Once you've got one you could "apply" it (maybe that means "setting it free") to
+heal yourself, or quaff it to restore mana (mmm, delicious pixie blood).
+
+Oh, and it still has an AI so maybe every 100 turns it has a chance of escaping
+from your inventory.  Unless you put it in a jar.
+
+I can think of tons of interesting things to do with a unified "entity" system.
+A bag that eat things, where you need to remember to "feed" it normal food or
+it'll start digesting the other items!  Giant venus fly traps that eat unwary
+pixies!  Potions that evaporate over time if you don't use them!
+
+The possibilities are really exciting.  But how can I actually *code* all this
+crazy stuff without special-casing *everything*?
+
+Protocols
+---------
+
+After thinking about this problem for a while, I came up with a solution that
+I think has some real promise.
+
+Individual types of entity ("pixie", "player", "goblin", "steel helmet") will be
+defined with simple `(defrecord)`s.  Each should have an `:id`, `:glyph`, and
+`:location`, but beyond that the rest of their state is flexible.
+
+I'm going to create an `Entity` protocol that such records will implement.  That
+protocol will have a single `tick` function that they need to define.  This will
+be called once per game "tick" and will be how the various types of entity
+decide what to do over time.  They may define a `tick` that does nothing if they
+don't change over time.
+
+On its own an entity record can't do anything except exist, be displayed on
+the map, and update itself every tick.  To actually *do* something during
+a tick (or have things done to them) they'll implement what I'm calling
+"aspects".
+
+An "aspect" is a protocol that defines a group of related functions, probably
+all having to do with a simple gameplay mechanic.  Here are a few rough examples
+from the top of my head:
+
+    :::clojure
+    (defprotocol Edible
+      (can-be-eaten? [this eater world])
+      (nutrition-value [this world])
+      (eat [this eater world]))
+
+    (defprotocol Eater
+      (can-eat? [this food world])
+      (eat [this food world]))
+
+    (defprotocol Item
+      (can-be-contained-in? [this container world])
+      (insert-into [this container world])
+      (remove-from [this container world]))
+
+    (defprotocol Container
+      (get-contained [this world])
+      (can-contain? [this item world])
+      (insert [this item world])
+      (remove [this item world]))
+
+As you can see, many aspects will be paired up.  Some entities can have things
+done to them by other entities, which will actually do those things.  Both will
+have the opportunity to override the default method implementations to customize
+the behavior.
+
+Anyway, I think this way of adding in functionality (basically mixin-style, but
+decoupled from the entity class declaration and without namespace clashes)
+could be very cool.  I'm going to give it a shot and see how it works.
+
+The Player
+----------
+
+Let's start with the first and most important entity: the player.  This game
+isn't going to be much fun without one of those.
+
+First I added a new file: `entities/core.clj`.  It'll contain the basic `Entity`
+definition:
+
+    :::clojure
+    (ns caves.entities.core)
+
+
+    (defprotocol Entity
+      (tick [this world]
+            "Update the world to handle the passing of a tick for this entity."))
+
+Simple enough.  `tick`ing an entity will return a new immutable world that
+accounts for whatever the entity decides to do during that tick.
+
+Now to add a player!
+
+    :::clojure
+    (ns caves.entities.player
+      (:use [caves.entities.core :only [Entity]]))
+
+
+    (defrecord Player [id glyph location])
+
+    (extend-type Player Entity
+      (tick [this world]
+        world))
+
+Right now the player doesn't do anything during a tick -- the world will remain
+unchanged.
+
+We'll need to actually place the player somewhere in the world to start, so I'll
+make a helper function like Trystan's to find an empty spot for them in
+`world.clj`:
+
+    :::clojure
+    (defn find-empty-tile [world]
+      (loop [coord (random-coordinate)]
+        (if (#{:floor} (get-tile-kind world coord))
+          coord
+          (recur (random-coordinate)))))
+
+Basically I just try a bunch of random coordinates until I find one that's
+a `:floor` tile.  Maybe not the most efficient way to do things, but it's fine
+for now.
+
+Back in `player.clj` I'll need a way to make a new player when we start a new
+game:
+
+    :::clojure
+    (defn make-player [world]
+      (->Player :player "@" (find-empty-tile world)))
+
+For now I'll use the special ID `:player` for the entity ID.  Since this is
+going to be a single player game, with no chance of ever being multiplayer, it's
+okay to special case things for the player a bit.
+
+Now to actually add the new player into the main `game` object.  Remember that
+the `:start` screen is the one that makes fresh games, so I updated that:
+
+    :::clojure
+    (defn reset-game [game]
+      (let [fresh-world (random-world)]
+        (-> game
+          (assoc :world fresh-world)
+          (assoc-in [:world :player] (make-player fresh-world))
+          (assoc :uis [(->UI :play)]))))
+
+    (defmethod process-input :start [game input]
+      (reset-game game))
+
+I pulled out the guts of the `process-input` function into a helper, which:
+
+* Creates a fresh, random world.
+* Replaces the game's world with the new one.
+* Creates a fresh player at some empty location in that world.
+* Attaches the player to the world.
+* Replaces the UI stack of the game with the main `:play` UI.
+
+I could have made a completely new `game` object instead of just overwriting
+some fields here, but this way if I decide to store configuration options on the
+`game` later they won't be lost when restarting.
+
+Displaying the Player
+---------------------
+
+Now that I've got a player it's time to display them on the map as the
+traditional `@`.  I opened up `input.clj` and replaced the crosshair-drawing
+code from the last two posts with code to draw the player:
+
+    :::clojure
+    (defn draw-player [screen start-x start-y player]
+      (let [[player-x player-y] (:location player)
+            x (- player-x start-x)
+            y (- player-y start-y)]
+          (s/put-string screen x y (:glyph player) {:fg :white})
+          (s/move-cursor screen x y)))
+
+If the screen's `start-x` (i.e.: its left edge) is at 10, and the player is at
+24, then I need to draw the `@` at screen coordinate 14.  Same goes for the
+y coordinates.
+
+Now to tweak the main `draw-ui` function to account for this change:
+
+    :::clojure
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            {:keys [tiles player]} world
+            [cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            [start-x start-y end-x end-y] (get-viewport-coords game (:location player) vcols vrows)]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        (draw-player screen start-x start-y player)))
+
+Instead of a `center-x` and `center-y` that are based on an arbitrary value
+in the `game` object, I'm now basing things off of the player's coordinates.
+Otherwise not much has changed here.
+
+One more thing I decided to do is the start using that line at the bottom of the
+screen that I reserved for stats.  I added a simple function to draw it:
+
+    :::clojure
+    (defn draw-hud [screen game start-x start-y]
+      (let [hud-row (dec (second screen-size))
+            [x y] (get-in game [:world :player :location])
+            info (str "loc: [" x "-" y "]")
+            info (str info " start: [" start-x "-" start-y "]")]
+        (s/put-string screen 0 hud-row info)))
+
+And add a call for that to the `draw-ui` function.  I'm sure you can figure that
+out yourself.
+
+Now the last line of the screen will look like:
+
+    :::text
+    loc: [30-53] start: [10-34]
+
+I can now see the coordinates of the player and the top left corner of the
+screen at all times.  This was really handy when debugging display/movement
+problems later.
+
+Movement
+--------
+
+Now that I'm basing the viewport on the player's location, I need a way for
+players to move around.  I could just tweak the current code, but lots of things
+are going to need to move so this sounds like a great place for my first
+"aspect".
+
+I created the `entities/aspects/mobile.clj` file and added the protocol
+representing the aspect:
+
+    :::clojure
+    (ns caves.entities.aspects.mobile)
+
+
+    (defprotocol Mobile
+      (move [this world dest]
+            "Move this entity to a new location.")
+      (can-move? [this world dest]
+                 "Return whether the entity can move to the new location."))
+
+Right now I'm just defining some simple functions.  Mobile entities must be able
+to check if they can move into a coordinate, as well as actually move themselves
+into it.
+
+Why allow entities to check for movement and move themselves instead of having
+a single movement handling chunk of code for all entities?
+
+Well this means we can customize how movement works on a per-entity basis.
+Maybe we'll have a minotaur that can move into other entities' spaces,
+displacing them.  Or a stone elemental that can walk through wall tiles.
+
+Next I made the Player entity implement Mobile back in `entities/player.clj`:
+
+    :::clojure
+    (ns caves.entities.player
+      (:use [caves.entities.core :only [Entity]]
+            [caves.entities.aspects.mobile :only [Mobile move can-move?]]
+            [caves.coords :only [destination-coords]]
+            [caves.world :only [find-empty-tile get-tile-kind]]))
+
+
+    (defrecord Player [id glyph location])
+
+    (defn check-tile
+      "Check that the tile at the destination passes the given predicate."
+      [world dest pred]
+      (pred (get-tile-kind world dest)))
+
+
+    (extend-type Player Entity
+      (tick [this world]
+        world))
+
+    (extend-type Player Mobile
+      (move [this world dest]
+        {:pre [(can-move? this world dest)]}
+        (assoc-in world [:player :location] dest))
+      (can-move? [this world dest]
+        (check-tile world dest #{:floor})))
+
+
+    (defn make-player [world]
+      (->Player :player "@" (find-empty-tile world)))
+
+    (defn move-player [world dir]
+      (let [player (:player world)
+            target (destination-coords (:location player) dir)]
+        (cond
+          (can-move? player world target) (move player world target)
+          :else world)))
+
+Notice how simple (and concise) this was to add.  I defined `can-move?` to
+simply make sure that the destination is a floor tile.
+
+`move` itself uses a Clojure function precondition to sanity-check that the
+entity isn't trying to cheat and move somewhere illegal.  If everything's okay,
+I simply update the player's location.
+
+`move-player` is an ugly helper function that most entities won't need.  Players
+are special because we're going to want to make certain keystrokes do multiple
+things, as we'll see shortly.  For now don't worry too much about that one.
+
+Before going on make sure you understand how movement is actually going to
+happen, from the point where `(move-player game :s)` is called and down.
+
+The last thing to do to actually make the player movable is handling the actual
+keystrokes from the user, so I did that next over in `ui/input.clj`:
+
+    :::clojure
+    (defmethod process-input :play [game input]
+      (case input
+        :enter     (assoc game :uis [(->UI :win)])
+        :backspace (assoc game :uis [(->UI :lose)])
+        \q         (assoc game :uis [])
+
+        \h (update-in game [:world] move-player :w)
+        \j (update-in game [:world] move-player :s)
+        \k (update-in game [:world] move-player :n)
+        \l (update-in game [:world] move-player :e)
+        \y (update-in game [:world] move-player :nw)
+        \u (update-in game [:world] move-player :ne)
+        \b (update-in game [:world] move-player :sw)
+        \n (update-in game [:world] move-player :se)
+
+        game))
+
+Each of the traditional roguelike movement keys will now move the player around
+the world.  Because the screen drawing is already updated to be based on the
+player's location, movement is pretty much complete!
+
+I added the `yubn` diagonal movement keys because as I was trying out movement
+myself it felt like I needed them.
+
+This is something that I've noticed while watching Notch's Ludum Dare recordings
+(Google for them if you want to see them).  He plays the game he's making for
+longer periods than you might think.  He doesn't just make a feature and make
+sure it works, he makes a feature and then plays the game normally for a few
+minutes to make sure it fits into the game right (and is fun)!
+
+Those `update-in` statements are a bit ugly, but not ugly enough for me to want
+to do something clever to remove them.  They can stay for now.
+
+Digging
+-------
+
+As Trystan mentioned in his post, we're not doing anything special to make sure
+the caves we generate are connected.  The player may very well start in a tiny
+cave.
+
+To make this less of a problem, he added the ability for the player to dig
+through walls.
+
+Digging sounds like a great candidate for another aspect, so I added
+`entities/aspects/digger.clj`:
+
+    :::clojure
+    (ns caves.entities.aspects.digger)
+
+
+    (defprotocol Digger
+      (dig [this world target]
+           "Dig a location.")
+      (can-dig? [this world target]
+                "Return whether the entity can dig the new location."))
+
+Nothing fancy here.  Then I made the Player entity implement it:
+
+    :::clojure
+    (extend-type Player Digger
+      (dig [this world dest]
+        {:pre [(can-dig? this world dest)]}
+        (set-tile-floor world dest))
+      (can-dig? [this world dest]
+        (check-tile world dest #{:wall})))
+
+This looks very similar to the Mobile implementation, except instead of changing
+the player's location I change the map tile from a wall to a floor.
+
+Finally, I update the `move-player` function (which is called when we receive
+a keystroke):
+
+    :::clojure
+    (defn move-player [world dir]
+      (let [player (:player world)
+            target (destination-coords (:location player) dir)]
+        (cond
+          (can-move? player world target) (move player world target)
+          (can-dig? player world target) (dig player world target)
+          :else world)))
+
+Now if the space the user is telling the player to enter is open, the player
+will move there, otherwise if it's diggable the player will dig it, otherwise
+nothing will happen.
+
+This means that moving into a space that is currently a wall will take two
+keypresses: the first digs out the wall, the second moves into the newly open
+space.
+
+I like how this feels.  It takes longer to travel through rock, which makes
+sense.  If you prefer to dig and move all at once you could dig and move in the
+same action.  It's up to you.
+
+Results
+-------
+
+Finally, after seven entries I've got a hero in the game!  It's taken a while,
+but I've laid the groundwork for what I think is some really cool stuff down the
+line.
+
+You can view the code [on GitHub][result-code] if you want to see the end
+result.  From now on I'm going to start moving a bit faster, not always showing
+the namespace declarations and such.  If you want the full code for each post
+look at the GitHub repository.
+
+[result-code]: https://github.com/sjl/caves/tree/entry-04/src/caves
+
+And the obligatory screenshots of our intrepid hero:
+
+![Screenshot](/media/images{{ parent_url }}/caves-04-01.png)
+
+![Screenshot](/media/images{{ parent_url }}/caves-04-02.png)
+
+![Screenshot](/media/images{{ parent_url }}/caves-04-03.png)
+
+Next time I'll be adding some monsters for the hero to slay.
+
+{% endblock article %}
