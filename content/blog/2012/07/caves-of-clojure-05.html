@@ -1,0 +1,481 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 5"
+        snip: "Fungus and more."
+        created: 2012-07-13 09:35:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry corresponds to [post four in Trystan's tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-05` tag to see the code as it stands
+after this post.
+
+Also, I live streamed myself writing the code that this entry is based on.  You
+can view the recordings [on twitch.tv](http://www.twitch.tv/stevelosh/), though
+as I write this the video links are stuck in an infinite HTTP redirect loop.
+Perhaps they will be fixed eventually.
+
+Finally, I've started hanging out in `##cavesofclojure` on Freenode if you have
+questions.  I may or may not be around at any given point.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/09/roguelike-tutorial-05-stationary.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+In Trystan's fifth post he adds three things:
+
+* A stationary monster
+* Attacking
+* A growing mechanic for the monster
+
+I'm going to add all three of those too, though I'll be doing it in the
+entities/aspects fashion of the previous post.
+
+Multiple Entities
+-----------------
+
+First thing's first: I need to change a bit of code around to account for having
+multiple entities instead of just a single player.
+
+At the end of the previous post the player was stored in the world directly,
+meaning the `game` object looked like this:
+
+    :::clojure
+    {:uis [...]
+     :world {:player {...}
+             :tiles [...]}}
+
+I decided to remove some (but not all) of the special casing for the player and
+make them an entity like any other.  The `game` object is now structured like
+this:
+
+    :::clojure
+    {:uis [...]
+     :world {:entities {:player {...}}
+             :tiles [...]}}
+
+Notice that the player has been moved into an `:entities` map, keyed by its id
+(which is still the special-cased `:player`).  I updated anywhere that needed to
+change to account for this, and made sure it still worked.  This was pretty easy
+to do by just searching for `:player`, as the codebase is still small.
+
+Lichens
+-------
+
+Now it's time to actually add another type of entity.  I play a lot of Nethack,
+so naturally I decided to make it a simple lichen.  I added
+`entities/lichen.clj`:
+
+    :::clojure
+    (ns caves.entities.lichen
+      (:use [caves.entities.core :only [Entity get-id]]))
+
+
+    (defrecord Lichen [id glyph location])
+
+    (defn make-lichen [location]
+      (->Lichen (get-id) "F" location))
+
+
+    (extend-type Lichen Entity
+      (tick [this world]
+        (if (should-grow)
+          world)))
+
+Like the `Player`, `Lichen`s implement the `Entity` protocol.  For now they
+don't do anything special during a tick.
+
+You may have noticed the new `get-id` function.  Entities must have IDs so I can
+get them in and out of the entity map.  The player has a special ID of
+`:player`, but I needed a way to get a unique ID for other entities.
+
+The simplest way I could think of was to use a simple counter over in
+`entities/core.clj`:
+
+    :::clojure
+    (ns caves.entities.core)
+
+
+    (def ids (ref 0))
+
+    (defprotocol Entity
+      (tick [this world]
+            "Update the world to handle the passing of a tick for this entity."))
+
+
+    (defn get-id []
+      (dosync
+        (let [id @ids]
+          (alter ids inc)
+          id)))
+
+Not the prettiest solution, but it works.  I might switch to a UUID library or
+something in the future, but this'll do for now.
+
+Populating the World
+--------------------
+
+Unlike the `make-player` function, `make-lichen` takes a location directly
+instead of trying to find an empty space for itself in the world.  I figured it
+was better to not have entities deciding where they emerge in the world all the
+time!  I went ahead and refactored `make-player` to act like this as well.
+
+During this coding session I wasn't actually running and playing the full game
+through as much as I should have been.  I think as I get more and more of the
+basic structure of the game in place I'll be able to do this more.  Up to now
+I've been doing large, sweeping refactorings that touch many different pieces of
+code and break everything until they're finished.
+
+Anyway, back to the world.  I need a way to spawn some lichens in the world, so
+I edited the `reset-game` function in `input.clj`:
+
+    :::clojure
+    (defn add-lichen [world]
+      (let [{:as lichen :keys [id]} (make-lichen (find-empty-tile world))]
+        (assoc-in world [:entities id] lichen)))
+
+    (defn populate-world [world]
+      (let [world (assoc-in world [:entities :player]
+                            (make-player (find-empty-tile world)))
+            world (nth (iterate add-lichen world) 30)]
+        world))
+
+    (defn reset-game [game]
+      (let [fresh-world (random-world)]
+        (-> game
+          (assoc :world fresh-world)
+          (update-in [:world] populate-world)
+          (assoc :uis [(->UI :play)]))))
+
+It should be pretty easy to read.  `add-lichen` adds a new lichen to an empty
+tile.  `populate-world` takes a world and adds a player, then 30 lichens.
+
+This is getting to be a bit much to keep in `input.clj`.  I'll probably pull
+this out into a separate file soon.
+
+Drawing the Entities
+--------------------
+
+So now the lichens are part of the world, but I still need to draw them on the
+screen.  I split the `draw-player` function in `drawing.clj` into two separate
+functions:
+
+    :::clojure
+    (defn draw-entity [screen start-x start-y {:keys [location glyph color]}]
+      (let [[entity-x entity-y] location
+            x (- entity-x start-x)
+            y (- entity-y start-y)]
+          (s/put-string screen x y glyph {:fg color})))
+
+    (defn highlight-player [screen start-x start-y player]
+      (let [[player-x player-y] (:location player)
+            x (- player-x start-x)
+            y (- player-y start-y)]
+        (s/move-cursor screen x y)))
+
+And then I use those in the main `draw-ui` function for the `:play` UI:
+
+    :::clojure
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            {:keys [tiles entities]} world
+            player (:player entities)
+            [cols rows] screen-size
+            vcols cols
+            vrows (dec rows)
+            [start-x start-y end-x end-y] (get-viewport-coords game (:location player) vcols vrows)]
+        (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        (doseq [entity (vals entities)]
+          (draw-entity screen start-x start-y entity))
+        (draw-hud screen game start-x start-y)
+        (highlight-player screen start-x start-y player)))
+
+Long but straightforward.  I'm going to be cleaning this part of the code up
+very soon, as I've just added a bunch of really useful stuff to the
+[clojure-lanterna][] library that will let me delete a bunch of fiddly code
+here.
+
+[clojure-lanterna]: http://sjl.bitbucket.org/clojure-lanterna/
+
+If you're particularly eagle-eyed you might have noticed this new `color`
+attribute that seems to be a part of entities.  I didn't realize I had forgotten
+to specify colors until I actually wrote this bit of code.  Once I did I went
+back and added the field to the `Player` and `Lichen` records, as well as
+`make-player` and `make-lichen`.
+
+Now the lichens appear on the screen!
+
+![Screenshot](/media/images{{ parent_url }}/caves-05-01.png)
+
+Movement
+--------
+
+At this point the lichens are on the screen but the player can walk straight
+through them.  I took care of that by first creating a few helper functions in
+`world.clj`:
+
+    :::clojure
+    (defn get-entity-at [world coord]
+      (first (filter #(= coord (:location %))
+                     (vals (:entities world)))))
+
+    (defn is-empty? [world coord]
+      (and (#{:floor} (get-tile-kind world coord))
+           (not (get-entity-at world coord))))
+
+They'll handle the grunt world of traversing the `world` data structure.  Then
+I updated the player's `can-move?` function:
+
+    :::clojure
+    (extend-type Player Mobile
+      (move ...)
+      (can-move? [this world dest]
+        (is-empty? world dest)))
+
+Previously `can-move` checked the world's tile itself -- now it delegates to
+a basic helper function instead.  I have a feeling a lot of things are going to
+need to use the idea of "empty tiles" so this function will probably get a lot
+of mileage.
+
+Now the player can't walk through fungus.  Great.
+
+Killing
+-------
+
+It's time to give the player a way to cut the lichens into little licheny bits.
+I implemented this with another pair of aspects: `Attacker` and `Destructible`.
+
+`Attacker` should be implemented by anything that can attack other things:
+
+    :::clojure
+    (ns caves.entities.aspects.attacker)
+
+    (defprotocol Attacker
+      (attack [this world target]
+              "Attack the target."))
+
+`Destructible` should be implemented by anything that can "take damage and go
+away once it takes enough":
+
+    :::clojure
+    (ns caves.entities.aspects.destructible)
+
+    (defprotocol Destructible
+      (take-damage [this world damage]
+                   "Take the given amount of damage and update the world appropriately."))
+
+Lichens will be `Destructible` (for now the player will remain invincible):
+
+    :::clojure
+    (extend-type Lichen Destructible
+      (take-damage [{:keys [id] :as this} world damage]
+        (let [damaged-this (update-in this [:hp] - damage)]
+          (if-not (pos? (:hp damaged-this))
+            (update-in world [:entities] dissoc id)
+            (update-in world [:entities id] assoc damaged-this)))))
+
+The logic here is pretty basic.  When a `Destructible` entity takes some damage,
+first its hit points are updated.  If they wind up to be zero or fewer, the
+entity gracefully removes itself from the world.
+
+I have a feeling there's a more elegant way to write the updatey bits of that
+function.  If you've got suggestions please let me know.
+
+If I'm going to be basing damage on the entity's `:hp` attribute they'd better
+have one!  I added a simple `:hp` of `1` to lichens:
+
+    :::clojure
+    (defrecord Lichen [id glyph color location hp])
+
+    (defn make-lichen [location]
+      (->Lichen (get-id) "F" :green location 1))
+
+Next I added the corresponding implementation of `Attacker` to the `Player` (for
+now lichens can't strike back):
+
+    :::clojure
+    (extend-type Player Attacker
+      (attack [this world target]
+        {:pre [(satisfies? Destructible target)]}
+        (let [damage 1]
+          (take-damage target world damage))))
+
+Again, a very basic system for the moment: all attacks do one damage.  Lichens
+only have one hit point, so this will kill them instantly.
+
+Notice the precondition here: an attacker can attack something if and only if
+it's something that satisfies the `Destructible` protocol.
+
+Instead of doing something like checking if the target has `:hp` I simply check
+if it's `Destructible`.  This opens the door for things that don't necessarily
+use hit points, like a monster whose mana and hit points are a single number.
+
+Finally, I need to hook up the attacking functionality in the `move-player`
+helper function:
+
+    :::clojure
+    (defn move-player [world dir]
+      (let [player (get-in world [:entities :player])
+            target (destination-coords (:location player) dir)
+            entity-at-target (get-entity-at world target)]
+        (cond
+          entity-at-target (attack player world entity-at-target)
+          (can-move? player world target) (move player world target)
+          (can-dig? player world target) (dig player world target)
+          :else world)))
+
+This once again overloads the `hjkl` keys, so now the player will attack
+a monster when they try to move into it.  Otherwise the player will move or dig
+as before.
+
+Growing Lichens
+---------------
+
+Now for the last part of Trystan's post.  Lichens should have a chance of
+spreading slowly every turn.  Unlike Trystan, I'm not going to limit the number
+of times the lichen can spread, so the player will need to use their newfound
+attacking ability if they want to stem the tide of invading fungus!
+
+This turned out to be surprisingly painless:
+
+    :::clojure
+    (defn should-grow []
+      (< (rand) 0.01))
+
+    (defn grow [lichen world]
+      (if-let [target (find-empty-neighbor world (:location lichen))]
+        (let [new-lichen (make-lichen target)]
+          (assoc-in world [:entities (:id new-lichen)] new-lichen))
+        world))
+
+    (extend-type Lichen Entity
+      (tick [this world]
+        (if (should-grow)
+          (grow this world)
+          world)))
+
+Every tick, the lichen has a one percent chance to spread to an empty
+neighboring tile.  If there are no empty neighboring tiles, it can't spread.
+
+The `find-empty-neighbor` function is new, and located in `world.clj`:
+
+    :::clojure
+    (defn find-empty-neighbor [world coord]
+      (let [candidates (filter #(is-empty? world %) (neighbors coord))]
+        (when (seq candidates)
+          (rand-nth candidates))))
+
+It uses `neighbors`, which is another function I created after a quick refactor
+of `coords.clj`:
+
+    :::clojure
+    (ns caves.coords)
+
+    (def directions
+      {:w  [-1 0]
+       :e  [1 0]
+       :n  [0 -1]
+       :s  [0 1]
+       :nw [-1 -1]
+       :ne [1 -1]
+       :sw [-1 1]
+       :se [1 1]})
+
+    (defn offset-coords
+      "Offset the starting coordinate by the given amount, returning the result coordinate."
+      [[x y] [dx dy]]
+      [(+ x dx) (+ y dy)])
+
+    (defn dir-to-offset
+      "Convert a direction to the offset for moving 1 in that direction."
+      [dir]
+      (directions dir))
+
+    (defn destination-coords
+      "Take an origin's coords and a direction and return the destination's coords."
+      [origin dir]
+      (offset-coords origin (dir-to-offset dir)))
+
+    (defn neighbors
+      "Return the coordinates of all neighboring squares of the given coord."
+      [origin]
+      (map offset-coords (vals directions) (repeat origin)))
+
+Nothing too crazy here.  The small, composable functions build on top of each
+other to create more interesting ones.
+
+But there's one thing left to do, which is actually `tick` entities in the main
+game loop in `core.clj`:
+
+    :::clojure
+    (defn tick-entity [world entity]
+      (tick entity world))
+
+    (defn tick-all [world]
+      (reduce tick-entity world (vals (:entities world))))
+
+    (defn run-game [game screen]
+      (loop [{:keys [input uis] :as game} game]
+        (when-not (empty? uis)
+          (draw-game game screen)
+          (if (nil? input)
+            (recur (get-input (update-in game [:world] tick-all) screen))
+            (recur (process-input (dissoc game :input) input))))))
+
+Notice how the `tick-all` function reduces over the values in the entities map.
+Maps aren't deterministically ordered (or at least they're not *guaranteed* to
+be), so this means that our entities may process their ticks in a different
+order each turn.
+
+I think I'm okay with that.  Yes, it means that ticking the world isn't going to
+be a pure function, but it won't be pure no matter what since we're going to
+have random numbers involved in attacking and damage soon enough.
+
+Results
+-------
+
+All-in-all it took roughly an hour and a half to code the stuff in this entry.
+This might sound like a lot, but remember what was added:
+
+* The entire concept of "multiple entities in a map".
+* Support for drawing arbitrary entities on the map.
+* A new creature.
+* Entities blocking movement of others.
+* A rudimentary attacking gameplay mechanic.
+* A rudimentary killing mechanic.
+* Ticking entities.
+* Growing/spreading of creatures.
+* Lots of refactoring and helper functions.
+
+Not too bad!
+
+You can view the code [on GitHub][result-code] if you want to see the end
+result.
+
+[result-code]: https://github.com/sjl/caves/tree/entry-05/src/caves
+
+And now some screenshots of our hero cutting a swath through some fungus!
+
+![Screenshot](/media/images{{ parent_url }}/caves-05-02.png)
+
+![Screenshot](/media/images{{ parent_url }}/caves-05-03.png)
+
+I'll be moving on to Trystan's sixth post soon, but before that I'm going to
+have another interlude where I explain some quick refactoring and then work
+a bit of the blackest magic in Clojure: a non-trivial macro.
+
+{% endblock article %}
