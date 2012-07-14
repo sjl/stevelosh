@@ -1,0 +1,560 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Interlude 1"
+        snip: "Black magic."
+        created: 2012-07-14 17:06:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry is an interlude after [post four in Trystan's tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `interlude-1` tag to see the code as it stands
+after this post.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/09/roguelike-tutorial-05-stationary.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+At the end of the last post I said that this one would be about refactoring and
+a macro, so that's what it's going to be.
+
+Refactoring
+-----------
+
+I don't want to bore you with lots of long chunks of refactored code, so I'll
+just outline the changes and if you want to see what happened you can look in
+the repo on GitHub.
+
+I ran [Kibit][] over the code and fixed what it complained.
+
+[jdmarble][] on GitHub pointed out a place where I was using `update-in` and
+could simplify it to `assoc-in`.  This is the kind of thing Kibit should catch,
+so I added it in and sent a pull request.
+
+[jmgimeno][] on GitHub pointed out that I could use an `atom` for the entity ID
+generation instead of a `ref`.  That cleaned up a few lines nicely.
+
+I updated the game loop and moved the call to `draw-game` so it doesn't get draw
+more times than is necessary.
+
+I added a bunch of comments and docstrings throughout the code.
+
+I added a few functions to the latest release of [clojure-lanterna][] that
+allowed me to clean up the UI drawing code.  I was able to completely remove the
+`clear-screen` function, and replaced the hardcoded screen size with a dymanic
+lookup.
+
+I also changed how the actual screen gets drawn.  Look in the repo for the full
+details -- I think it's much nicer now (though I'm still not 100% happy).
+
+I think that's about it.  On to the meat of this post.
+
+[kibit]: https://github.com/jonase/kibit/
+[jdmarble]: https://github.com/jdmarble
+[jmgimeno]: https://github.com/jmgimeno
+[clojure-lanterna]: http://sjl.bitbucket.org/clojure-lanterna/
+
+The Problem
+-----------
+
+Right now, the entity system in the Caves works like this:
+
+* Aspects are Clojure protocols.  They define what functions an entity must
+  implement to have that aspect.
+* Entity types use `extend-type` to add the appropriate implementations for the
+  aspects they want to be.
+
+This is all vanilla Clojure, and up until now it's been fine because there was
+no crossover between the `Lichen` aspects and the `Player` aspects.  But what's
+going to happen when I create a creature that shares behavior with one or both
+of them?
+
+To see the problem, I'm going to create a `Bunny` entity that will hop around
+the screen, and can also be destroyed (assuming the player is a terrible,
+terrible person).  So I'll create `entities/bunny.clj`:
+
+    :::clojure
+    (ns caves.entities.bunny)
+
+    (defrecord Bunny [id glyph color location hp])
+
+    (extend-type Bunny Entity
+      (tick [this world]
+        world))
+
+We'll worry about `tick` soon, but so far, so good.  Now I need to let bunnies
+move around:
+
+    :::clojure
+    (extend-type Bunny Mobile
+      (move [this world dest]
+        {:pre [(can-move? this world dest)]}
+        (assoc-in world [:entities (:id this) :location] dest))
+      (can-move? [this world dest]
+        (is-empty? world dest)))
+
+Hmm, where have we seen this code before?
+
+It's an almost exact copy of the `Player`'s implementation of the `Mobile`
+protocol!
+
+When you think about it, this makes sense.  Most of the entities in the game
+will have the same implementation for most aspects.  The flexibility of Clojure
+protocols means I have the power to customize behavior for every one of them,
+but it also means that I have to redefine the same behavior over and over.
+
+Or do I?
+
+The Not-Quite Solutions
+-----------------------
+
+There are a number of ways I could try to get around this duplication.
+
+First, I could define the "default" implementations as separate, normal
+functions, and then the entity-specific implementations could just call those.
+
+This would work, absolutely.  It would isolate the generic functionality in one
+place successfully.  But it means I'd have to manually type out the calls to
+those generic functions all the time.  This is a Lisp -- I can do better.
+
+The next idea is to make `Object` implement every aspect (with the default
+implementations).  This isn't ideal for two reasons.
+
+First, it means that the type of an entity is no longer useful.  If `Object`
+implements `Mobile` to provide the default functionality, it means *every*
+entity will effectively be `Mobile` even if it shouldn't be!
+
+Second, it doesn't even give me everything I want.  Observe:
+
+    :::clojure
+    (defprotocol Foo
+     (hello [this])
+     (world [this]))
+
+    (defrecord A [])
+
+    (extend-type Object Foo
+     (hello [this] :hello-object)
+     (world [this] :world-object))
+
+    (extend-type A Foo
+     (hello [this] :hello-a))
+
+    (def a (->A))
+
+    (hello a) ; Works
+    (world a) ; Doesn't work
+
+In this example, the `Foo` object doesn't get the benefit of the default
+implementation because it implements the protocol itself.  So when figuring out
+what `world` function to call Clojure asks "Hmm, does A implement Foo?  Oh, it
+does?  Okay, I'll use A's implementations then".
+
+So the entities would either have to implement all of the aspect functions
+(resulting in the duplication of the ones they don't need to change) or none of
+them (which *would* give them the defaults).
+
+So this isn't ideal.  I could also have used multimethods here, because they
+*do* support default implementations.  But multimethods don't give me a nice
+way to group related functions together like protocols.
+
+Protocols also interact with the type system to give me handy functionality
+like:
+
+    :::clojure
+    (defn find-targets
+      "Find potential things to kill!"
+      [world]
+      (filter #(satisfies? Destructible %)
+              (vals (:entities world))))
+
+The concept of "bunnies are destructible" is a useful one, and I'd lose it if
+I used multimethods.
+
+The Macro
+---------
+
+Macros are not something you should reach for right away.  They're tricky and
+much harder to understand than a normal function.  But when all else fails,
+they're there as a last resort.
+
+I couldn't figure out a way to do this without macros, so it's time to roll up
+my sleeves and work some dark Lispy magic to get a nice syntax.
+
+When I'm writing a macro, my first step is usually to start at the end by
+writing out what I want its ultimate usage to be.  For this functionality I'm
+actually going to need a pair of macros.
+
+First, `defaspect` will replace `defprotocol` and allow me to define a protocol
+*and* provide the default implementations:
+
+    :::clojure
+    (defaspect Mobile
+      (move [this world dest]
+        {:pre [(can-move? this world dest)]}
+        (assoc-in world [:entities (:id this) :location] dest))
+      (can-move? [this world dest]
+        (is-empty? world dest)))
+
+Those implementations are generic enough (moving moves an entity from their
+current space into an empty one) that many entities will probably be able to use
+them unchanged.
+
+I'll also need a macro to replace `extend-type`.  I decided to call it
+`add-aspect`:
+
+    :::clojure
+    (add-aspect EarthElemental Mobile
+      (can-move? [this world]
+        (entity-at? world dest)))
+
+In this example the `EarthElemental` entity is implementing `Mobile`.  It will
+use the default `move` implementation (which just changes its location), but it
+overrides `can-move?`.  Earth elementals can't walk through other entities, but
+they *can* walk through the rock walls of the Caves.
+
+So I've got my examples of usage, now it's time to implement the macros.  I'll
+start with `defaspect`.
+
+My second step when writing a macro is writing out what the usage should be
+expanded into.  After a bit of thinking I came up with this:
+
+    :::clojure
+    (defaspect Mobile
+      (move [this world dest]
+        {:pre [(can-move? this world dest)]}
+        (assoc-in world [:entities (:id this) :location] dest))
+      (can-move? [this world dest]
+        (is-empty? world dest)))
+
+    ; should expand into
+
+    (do
+      (defprotocol Mobile
+        (move [this world dest])
+        (can-move? [this world dest]))
+      (def Mobile
+        (with-meta Mobile
+                   {:defaults
+                    {:move (fn [this world dest]
+                             {:pre [(can-move? this world dest)]}
+                             (assoc-in world [:entities (:id this) :location] dest))
+                     :can-move? (fn [this world dest]
+                                  (is-empty? world dest))}})))
+
+This looks a bit complicated because of the method implementations, which aren't
+really important when writing the macro, so let's remove those:
+
+    :::clojure
+    (defaspect Mobile
+      (move [this world dest]
+        {:pre [(can-move? this world dest)]}
+        (assoc-in world [:entities (:id this) :location] dest))
+      (can-move? [this world dest]
+        (is-empty? world dest)))
+
+    ; should expand into
+
+    (do
+      (defprotocol Mobile
+        (move [this world dest])
+        (can-move? [this world dest]))
+      (def Mobile
+        (with-meta Mobile
+                   {:defaults
+                    {:move (fn [this world dest] ...)
+                     :can-move? (fn [this world dest] ...)}})))
+
+That's a bit easier to read.  The `defaspect` macro is going to take all the
+forms I give it and expand into a `do` form with two actions: defining the
+protocol as before, and attaching a map to the Protocol itself with Clojure's
+metadata feature.
+
+This map will contain the default implementations.  For now just trust me that
+I'm going to need them in a map later.
+
+Now to write the actual macro!  It'll go in `entities/core.clj` for the moment.
+I'll start with a skeleton:
+
+    :::clojure
+    (defmacro defaspect [label & fns]
+      (let [fnmap (make-fnmap fns)
+            fnheads (make-fnheads fns)]
+        `(do
+           (defprotocol ~label
+             ~@fnheads)
+           (def ~label
+             (with-meta ~label {:defaults ~fnmap})))))
+
+If you've used macros before, this should be pretty easy to read.  I've pulled
+as much functionality as possible into two helper functions.  Let's look at
+those:
+
+    :::clojure
+    (defn make-fnmap
+      "Make a function map out of the given sequence of fnspecs.
+
+      A function map is a map of functions that you'd pass to extend.  For example,
+      this sequence of fnspecs:
+
+      ((foo [a] (println a)
+       (bar [a b] (+ a b)))
+
+      Would be turned into this fnmap:
+
+      {:foo (fn [a] (println a))
+       :bar (fn [a b] (+ a b))}
+
+      "
+      [fns]
+      (into {} (for [[label fntail] (map (juxt first rest) fns)]
+                 [(keyword label)
+                  `(fn ~@fntail)])))
+
+    (defn make-fnheads
+      "Make a sequence of fnheads of of the given sequence of fnspecs.
+
+      A fnhead is a sequence of (name args) like you'd pass to defprotocol.  For
+      example, this sequence of fnspecs:
+
+      ((foo [a] (println a))
+       (bar [a b] (+ a b)))
+
+      Would be turned into this sequence of fnheads:
+
+      ((foo [a])
+       (bar [a b]))
+
+      "
+      [fns]
+      (map #(take 2 %) fns))
+
+Hopefully the docstrings will make them pretty clear.  If you have questions let
+me know (or play around with them in a REPL to see how they behave).
+
+And with that, `defaspect` is complete!  I now have a way to define a protocol
+and attach some default implementations to it in one easy, beautiful call.
+
+The other macro, `add-aspect`, is a piece of cake now that I've got the helper
+functions:
+
+    :::clojure
+    (defmacro add-aspect [entity aspect & fns]
+      (let [fnmap (make-fnmap fns)]
+        `(extend ~entity ~aspect (merge (:defaults (meta ~aspect))
+                                        ~fnmap))))
+
+The important thing in understanding this macro is `extend`.  `extend` is what
+`extend-type` and `extend-protocol` sugar over.  It takes a type, a protocol,
+and a map of the implementations of that protocol's functions.
+
+The key word there is "map", which really does mean a plain old Clojure map.  So
+this macro will expand like so:
+
+    :::clojure
+    (add-aspect EarthElemental Mobile
+      (can-move? [this world dest]
+       (entity-at? world dest)))
+
+    ; should expand into
+
+    (extend EarthElemental Mobile
+      (merge (:defaults (meta Mobile))
+             {:can-move? (fn [this world dest] ...)})
+
+The `(:defaults (meta Mobile))` simply retrieves the function mapping that
+`defaspect` attached to the Protocol, so in effect I get something like:
+
+    :::clojure
+    (extend EarthElemental Mobile
+      (merge {:move (fn [this world dest] ...)
+              :can-move? (fn [this world dest] ...)}
+             {:can-move? (fn [this world dest] ...)})
+
+`merge` is just the vanilla Clojure `merge` function, so the resulting map will
+have the default implementations overridden by any custom ones given.
+
+And that's it!  Let's see it in action.
+
+Usage
+-----
+
+First I need to update the aspects to use `defaspect` and include their default
+implementations.  Here's `Destructible`:
+
+    :::clojure
+    (ns caves.entities.aspects.destructible
+      (:use [caves.entities.core :only [defaspect]]))
+
+
+    (defaspect Destructible
+      (take-damage [{:keys [id] :as this} world damage]
+        (let [damaged-this (update-in this [:hp] - damage)]
+          (if-not (pos? (:hp damaged-this))
+            (update-in world [:entities] dissoc id)
+            (assoc-in world [:entities id] damaged-this)))))
+
+The code is just torn out of the `Lichen` code.  Since this is how lichens will
+act, I can update them to use `add-aspect`:
+
+    :::clojure
+    (add-aspect Lichen Destructible)
+
+One line!  Nice.
+
+I'll make bunnies destructible too:
+
+    :::clojure
+    (add-aspect Bunny Destructible)
+
+Perfect.  I then updated `Mobile` to use the `defaspect` macro.  Look in the
+repository if you want to see that.  Now players and bunnies can both use the
+same default implementations for movement:
+
+    :::clojure
+    (add-aspect Bunny Mobile)
+    (add-aspect Player Mobile)
+
+Beautiful.  I then converted the remaining aspects and implementations to use
+these macros.
+
+Let's add some bunnies to the world.  First I'll need a `make-bunny` function
+similar to `make-lichen`:
+
+    :::clojure
+    (defn make-bunny [location]
+      (->Bunny (get-id) "v" :yellow location 1))
+
+I don't know why I picked yellow.  Are there yellow bunnies?  There are in
+*this* world.  I used a `v` as the glyph because it kind of looks like bunny
+ears.
+
+Then I updated the world-populating code over in `input.clj`:
+
+    :::clojure
+    (defn add-creature [world make-creature]
+      (let [creature (make-creature (find-empty-tile world))]
+        (assoc-in world [:entities (:id creature)] creature)))
+
+    (defn add-creatures [world make-creature n]
+      (nth (iterate #(add-creature % make-creature)
+                    world)
+           n))
+
+    (defn populate-world [world]
+      (let [world (assoc-in world [:entities :player]
+                            (make-player (find-empty-tile world)))]
+        (-> world
+          (add-creatures make-lichen 30)
+          (add-creatures make-bunny 20))))
+
+Bunnies will be a bit rarer than lichens for the moment (and maybe in the future
+they could eat them).
+
+Finally, let's run the game!
+
+![Screenshot](/media/images{{ parent_url }}/caves-interlude-1-01.png)
+
+Bunnies!  They're populated into the world and the player can kill them because
+they're `Destructible`.
+
+Right now they *can* move, but choose not to.  I'll fix that by updating their
+`tick` function:
+
+    :::clojure
+    (extend-type Bunny Entity
+      (tick [this world]
+        (if-let [target (find-empty-neighbor world (:location this))]
+          (move this world target)
+          world)))
+
+Now they'll move whenever they're not backed into a corner.  Obviously move
+complicated AI is possible, but this is fine for now.
+
+So this is all good, but I haven't even used the "override one function of an
+aspect but not others" part of my fancy macro.  I'll add another creature to
+show that off:
+
+
+    :::clojure
+    (ns caves.entities.silverfish
+      (:use [caves.entities.core :only [Entity get-id add-aspect]]
+            [caves.entities.aspects.destructible :only [Destructible]]
+            [caves.entities.aspects.mobile :only [Mobile move can-move?]]
+            [caves.world :only [get-entity-at]]
+            [caves.coords :only [neighbors]]))
+
+
+    (defrecord Silverfish [id glyph color location hp])
+
+    (defn make-silverfish [location]
+      (->Silverfish (get-id) "~" :white location 1))
+
+
+    (extend-type Silverfish Entity
+      (tick [this world]
+        (let [target (rand-nth (neighbors (:location this)))]
+          (if (get-entity-at world target)
+            world
+            (move this world target)))))
+
+    (add-aspect Silverfish Mobile
+      (can-move? [this world dest]
+        (not (get-entity-at world dest))))
+
+    (add-aspect Silverfish Destructible)
+
+
+Oh no!  The horrible silverfish from Minecraft!  They wormy little guys are
+`Mobile` and `Destructible`, but they can move through walls with their custom
+`can-move?` function.
+
+Notice how I didn't have to provide an implementation of `move`.  Silverfish
+move like any other mobile entity (just by updating their location), the only
+thing special is where they can go.
+
+After adding them to the world population, we can see a few wriggling their way
+though the walls in the northeast corner:
+
+![Screenshot](/media/images{{ parent_url }}/caves-interlude-1-02.png)
+
+Results
+-------
+
+You can view the code [on GitHub][result-code] if you want to see the end
+result.
+
+[result-code]: https://github.com/sjl/caves/tree/interlude-1/src/caves
+
+These two macros allowed me to add a new mob, with custom movement, in about 13
+lines of code (excluding imports).  That's pretty nice!  They certainly aren't
+perfect though.
+
+For one, every aspect *has* to define default implementations for its methods.
+You can't force all entities to implement it.  This isn't a big deal for now,
+but I may want to add it in later.
+
+Second, it doesn't handle docstrings properly.  Again, not a huge problem at the
+moment but something to put on the todo list for later.
+
+Finally, defining the protocol and implementations in the same form may lead to
+some tricky circular import issues.  I can always split them into separate files
+in the future though.
+
+That about wraps it up.  If you have any questions or comments let me know!  In
+the next entry I'll get back to Trystan's tutorial.
+
+{% endblock article %}
