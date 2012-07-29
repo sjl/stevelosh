@@ -1,0 +1,885 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Homely Mutt"
+        snip: "Sparrow's dead?  Why not try Mutt?"
+        created: 2012-07-23 10:00:00
+        flattr: true
+    %}
+
+{% block article %}
+
+Now that [Sparrow][] is [effectively dead][sparrow-dead] many of its users will
+be looking for a new email client.  If you're not afraid of the terminal you may
+want to give [Mutt][] a try.
+
+Mutt certainly isn't the prettiest email client around, and its
+setup/configuration process is one of the ugliest out there.  But once you get
+it set up it's got a lot of advantages over many other email clients.
+
+In this post I'll show you how to set up Mutt on OS X like I do.
+
+[Sparrow]: http://sparrowmailapp.com/
+[sparrow-dead]: http://www.theverge.com/2012/7/20/3172222/google-buys-sparrow-mail
+[Mutt]: http://www.mutt.org/
+
+[TOC]
+
+How I Use Email
+---------------
+
+This setup is going to be specific to the way I work with email.  Notably:
+
+* I have a Google Apps account that provides my steve@stevelosh.com email address.
+* I have a lot of other email addresses, but they all simply forward to my main one.
+* All mail I send comes from steve@stevelosh.com.
+* I store my contacts in the OS X address book.
+* All email comes into my inbox (or to a folder for a specific mailing list).
+* Once I'm done with an email, I remove it from my inbox and it lives in the
+  "All Mail" archive.  I don't sort email into folders.
+* Sometimes I write email without an internet connection and send it once I get
+  connected again.
+
+My email setup is tailored around those requirements, so that's what it does
+best.  Mutt is very configurable though, so if you work differently you can
+probably bend it to make it work like you want.
+
+In particular, extending this setup to work with multiple email accounts
+wouldn't be too much trouble.  I used to work with two separate accounts until
+I said "screw it, I'll just use the one".
+
+Other Guides and Resources
+--------------------------
+
+I've used a lot of other guides to figure out how to get this giant Rube
+Goldberg machine of an email client working.  Here are a few of them:
+
+* <http://thomas.pelletier.im/2010/10/low-memory-mail-client/>
+* <http://www.andrews-corner.org/mutt.html>
+* <http://jstorimer.com/shells/2010/01/19/using-mutt-with-gmail-on-osx.html>
+* <http://www.vijaykiran.com/2010/01/27/mutt-for-gmail-imap-on-mac-os-x/>
+* <http://hynek.me/articles/my-mutt-gmail-setup/>
+* <https://wiki.archlinux.org/index.php/Mutt>
+* <http://linsec.ca/Using_mutt_on_OS_X>
+* <http://www.mutt.org/doc/manual/manual.html>
+* <http://pbrisbin.com/posts/two_accounts_in_mutt>
+
+Overview
+--------
+
+I'm going to give it to you straight: getting this whole contraption set up is
+going to take at least an hour from start to finish, not counting the time it'll
+take to download all of your email and install stuff.
+
+It's an investment, and you might not want to make it.  If not, go use
+Thunderbird, er, Sparrow, er, I don't know, the Gmail web interface or
+something.
+
+Mutt on its own doesn't do very much, so we're going to combine it with a few
+other things to get the job done.  Here's a bird's eye view of what it'll look
+like when we're done:
+
+![Diagram](/media/images{{ parent_url }}/what-the-mutt.png)
+
+If this diagram doesn't make you run screaming, you might just be masochistic
+enough to make it through the initial setup of Mutt.  If you do, you'll be
+rewarded with email bliss that won't go away when Google or Facebook decide to
+toss some money around.
+
+Getting Email
+-------------
+
+First thing's first: we're going to pull down our email from Gmail to our local
+machine.  All of it.  It'll take a while the first time you sync, but has a few
+benefits.
+
+### Why Local Email?
+
+Having a local copy of all of your email means you've always got access to it,
+no matter where you are.  Looking for that one person's address they emailed you
+six years ago when you're trying to find their house and you don't have an
+internet connection?  No problem, it's on your hard drive.
+
+This also acts as a backup in case Google ever decides to kill your Gmail
+account.  It'll be stored in a common format that a lot of programs can read, so
+you've got a safety net.  And the email is stored as normal files, so if you use
+something like Time Machine or [Backblaze][] that's yet another backup.
+
+In this setup all of your email is stored as plain text.  If you want it
+encrypted just use OS X's full-disk encryption and you're set.
+
+I use [offlineimap][] to pull email down from Gmail and get it on my hard drive.
+Offlineimap will also sync any changes you make to this local copy back up to
+Gmail.
+
+[offlineimap]: http://offlineimap.org/
+[Backblaze]: http://www.backblaze.com/partner/af3574
+
+### Installing offlineimap
+
+I've gone through a number of laptops in the past few years, and each time
+I spend a painful half hour or so screwing around with the lastest version of
+offlineimap's backwards-incompatible changes.
+
+If you're determined to run the latest version of offlineimap, you can install
+it with pip or something.  If you just want to download your fucking email and
+get on with your life, you can follow the instructions I've laid out for you
+here:
+
+* `git clone git://github.com/spaetz/offlineimap.git`
+* `cd offlineimap`
+* `git checkout 679c491c56c981961e18aa43b31955900491d7a3`
+* `python setup.py install`
+
+That's the version I'm using.  It works.  You can use a newer one if you want,
+but expect to spend some time figuring out how to fix the configuration in this
+post to work with whatever breaking changes have been made since then.  The last
+time I tried this I got to rewrite all my nametrans stuff.  That was fun.
+
+### Configuring offlineimap
+
+Once you've got offlineimap installed, you'll need to create
+a `~/.offlineimaprc` file.  You can keep it in your dotfiles repo and symlink it
+into place if you want.  Here's a sample to get you started:
+
+    [general]
+    ui = TTY.TTYUI
+    accounts = SteveLosh
+    pythonfile=~/.mutt/offlineimap.py
+    fsync = False
+
+    [Account SteveLosh]
+    localrepository = SteveLosh-Local
+    remoterepository = SteveLosh-Remote
+    status_backend = sqlite
+    postsynchook = notmuch new
+
+    [Repository SteveLosh-Local]
+    type = Maildir
+    localfolders = ~/.mail/steve-stevelosh.com
+    nametrans = lambda folder: {'drafts':  '[Gmail]/Drafts',
+                                'sent':    '[Gmail]/Sent Mail',
+                                'flagged': '[Gmail]/Starred',
+                                'trash':   '[Gmail]/Trash',
+                                'archive': '[Gmail]/All Mail',
+                                }.get(folder, folder)
+
+    [Repository SteveLosh-Remote]
+    maxconnections = 1
+    type = Gmail
+    remoteuser = steve@stevelosh.com
+    remotepasseval = get_keychain_pass(account="steve@stevelosh.com", server="imap.gmail.com")
+    realdelete = no
+    nametrans = lambda folder: {'[Gmail]/Drafts':    'drafts',
+                                '[Gmail]/Sent Mail': 'sent',
+                                '[Gmail]/Starred':   'flagged',
+                                '[Gmail]/Trash':     'trash',
+                                '[Gmail]/All Mail':  'archive',
+                                }.get(folder, folder)
+    folderfilter = lambda folder: folder not in ['[Gmail]/Trash',
+                                                 'Nagios',
+                                                 'Django',
+                                                 'Flask',
+                                                 '[Gmail]/Important',
+                                                 '[Gmail]/Spam',
+                                                 ]
+
+It's kind of a beast, so let's go through it line by line and see what's going
+on.
+
+    [general]
+    ui = TTY.TTYUI
+    accounts = SteveLosh
+    pythonfile=~/.mutt/offlineimap.py
+    fsync = False
+
+First we tell offlineimap to use the `TTY.TTYUI` ui.  Yes, this program that
+syncs yoiur email has multiple user interfaces.  I guess if you can't decide
+what color the bikeshed should be you can just build a whole bunch of bikesheds
+instead.
+
+Then we specify the accounts.  There's only one, because as I said before:
+I only use a single email account that all my addresses forward to.  If you
+wanted to have many, you'd change this line.
+
+The `pythonfile` is just a file that offlineimap will parse (as Python) before
+loading the rest of the config, so you can define custom helper functions more
+easily.  We'll see more of this later.
+
+We're also telling offlineimap that it doesn't need to fsync after every single
+operation.  This will speed things up, and since it's just a local copy it's
+typically not a big deal if we lose an email here and there from a crash (it'll
+just be synced the next time anyway).
+
+    [Account SteveLosh]
+    localrepository = SteveLosh-Local
+    remoterepository = SteveLosh-Remote
+    status_backend = sqlite
+
+This next section hooks up a few things.  First, it tells offlineimap which
+local and remote repositories to use for the account.  Manual configuration
+instead of sane defaults is a recurring theme we'll see throughout this process.
+
+Hey, I titled the entry "The *Homely* Mutt" for a reason.
+
+We're also going to use a SQLite-based cache for this account.  If you don't
+already have SQLite you'll want to get it with `brew install sqlite`.
+
+    [Repository SteveLosh-Local]
+    type = Maildir
+    localfolders = ~/.mail/steve-stevelosh.com
+    nametrans = lambda folder: {'drafts':  '[Gmail]/Drafts',
+                                'sent':    '[Gmail]/Sent Mail',
+                                'flagged': '[Gmail]/Starred',
+                                'trash':   '[Gmail]/Trash',
+                                'archive': '[Gmail]/All Mail',
+                                }.get(folder, folder)
+
+Now we're getting to the meat of the configuration.  This "local repository" is
+going to be the mail as it sites on our hard drive.  We're going to use the
+[Maildir format][maildir] because it plays nicely with Mutt (and tons of other
+stuff).
+
+Then we specify the path where we're going to keep the mail.  This is going to
+take a lot of space if you've got a lot of mail.  Attachments are downloaded
+too.  When I said you're getting an offline copy of your email I meant all of
+it.
+
+I think offlineimap needs the `~/.mail` directory created for it.  It's been
+a while since I did this, so I might be wrong, but if it complains about not
+being able to access the mail folders just go ahead and `mkdir ~/.mail`.
+
+Next we have the craziest part of the offlineimap configuration: name
+translation.
+
+Here's the issue: offlineimap needs to know how to translate the names of
+folders on the IMAP server to folder names on your hard drive.
+
+Also, Gmail doesn't actually use *folders* but its own concept called "labels".
+But since the IMAP protocol doesn't know about labels, it fakes them by making
+them appear to be folders.
+
+User-created labels in Gmail (like "Mercurial" or "Clients") will appear as
+folders with those names through IMAP.
+
+Built-in, special Gmail folders have names that start with `[Gmail]/`.  We need
+to turn those into something sane for our hard drive, so that's what this
+nametrans setting is for.  It's a Python function that takes the remote folder
+name and returns the name that should be used on your local hard drive.
+
+Yes, you read that right.  This is Python code embedded in the right hand side
+of an INI file's setting assignment.  I am not fucking with you, this is
+seriously how you do it.  Go ahead and crack open that beer now.
+
+So the "Sent Mail" folder in your Gmail account will be synced to
+`~/.mail/steve-stevelosh.com/sent`.  Cool.
+
+(No, I don't know what would happen if you created a label called `[Gmail]/All
+Mail` in Gmail.  If you try, let me know, but I take no responsibility if it
+ends with all your email deleted.)
+
+[maildir]: https://en.wikipedia.org/wiki/Maildir
+
+    [Repository SteveLosh-Remote]
+    maxconnections = 1
+    type = Gmail
+    remoteuser = steve@stevelosh.com
+    remotepasseval = get_keychain_pass(account="steve@stevelosh.com", server="imap.gmail.com")
+    realdelete = no
+    nametrans = lambda folder: {'[Gmail]/Drafts':    'drafts',
+                                '[Gmail]/Sent Mail': 'sent',
+                                '[Gmail]/Starred':   'flagged',
+                                '[Gmail]/Trash':     'trash',
+                                '[Gmail]/All Mail':  'archive',
+                                }.get(folder, folder)
+    folderfilter = lambda folder: folder not in ['[Gmail]/Trash',
+                                                 'Nagios',
+                                                 'Django',
+                                                 'Flask',
+                                                 '[Gmail]/Important',
+                                                 '[Gmail]/Spam',
+                                                 ]
+
+Finally, the home stretch.  The last section described the folder on our local
+hard drive, and this one describes our Gmail account.
+
+First, we tell offlineimap to only ever use a single connection at a time.  You
+can try increasing this number for better performance, but in my experience
+Google is not stingy with its rate limits and would cut me off fairly often when
+I tried that.  Just leave it at one if you want to be safe.
+
+Next is the type.  Luckily offlineimap provides a `Gmail` type that handles
+a lot of the craziness that is Gmail's IMAP setup.  Nice.
+
+Then we have the username.  Nothing special here, except that if you have
+a non-apps account (i.e.: an actual vanilla Gmail account) you may or may not
+need to include the `@gmail.com` in the username.  I don't know.  If one doesn't
+work, just try the other.
+
+Next we have `remotepasseval`.  This is a bit of Python code (drink!) that
+should return the password for the account.
+
+What is this `get_keychain_pass` function?  Well, remember when we saw the
+`pythonfile` setting back in the general section?  It's a function defined in
+there.  I'll talk about that in the next section, for now just accept that it
+works.
+
+Next we set `realdelete` to no.  If this is set to yes, then deleting an email
+in your inbox would actually delete it entirely.  When you set it to no, then
+deleting an email from your inbox (or any label's folder) will leave it in
+Gmail's All Mail.
+
+If you want to really delete an email, you'll need to delete it from All Mail
+(which is named archive on our local filesystem, remember?).  I feel like this
+is a good compromise.  I rarely care about actually deleting mail, given that
+I have many unused gigabytes available on Gmail.
+
+Next we have another nametrans setting.  This is a Python function (drink!) just
+like the one for the local repository, except it goes in the other direction.
+It takes the name of a local folder and returns the name of the folder on the
+IMAP server.  Knowing this, it should be easy to understand this setting.
+
+Finally, we have `folderfilter`.  This is a Python function (drink!) that takes
+a **remote** folder name and returns `True` if that folder should be synced, or
+`False` if it should *not* be synced.  I've chosen to skip syncing my Spam and
+Trash folders, as well as a few mailing list labels I don't check all that
+often.  Customize this to your own taste.
+
+### Retrieving Passwords
+
+We're almost ready, but there's one more thing we need to do, and that's
+implement a secure way for offlineimap to get access to our Gmail password.
+
+If you don't care too much about security, you *can* configure offlineimap with
+a plaintext password right in the config file.  But don't do that.  It'll only
+take a minute to do this securely.
+
+First, you need to add your Gmail password into your OS X keychain.  Open the
+Keychain Access app and press the `+` button:
+
+![Keychain 1](/media/images{{ parent_url }}/keychain-1.png)
+
+Then fill out the form.  The "Keychain Item Name" should be
+`http://imap.gmail.com`.  The "Account Name" should be your email address.  The
+password should be your password:
+
+![Keychain 2](/media/images{{ parent_url }}/keychain-2.png)
+
+Press "Add".  Now repeat the process for the SMTP server.  The "Keychain Item
+Name" should be `smtp://smtp.gmail.com`.  The "Account Name" should be your
+email address.  The password should be your password:
+
+![Keychain 3](/media/images{{ parent_url }}/keychain-3.png)
+
+Now we need to create the `offlineimap.py` file we pointed offlineimap to
+earlier.  It needs to contain the `get_keychain_pass` function, which takes an
+`account` and `server` and return the password.  Here's the file I'm using:
+
+    :::python
+    #!/usr/bin/python
+    import re, subprocess
+    def get_keychain_pass(account=None, server=None):
+        params = {
+            'security': '/usr/bin/security',
+            'command': 'find-internet-password',
+            'account': account,
+            'server': server,
+            'keychain': '/Users/sjl/Library/Keychains/login.keychain',
+        }
+        command = "sudo -u sjl %(security)s -v %(command)s -g -a %(account)s -s %(server)s %(keychain)s" % params
+        output = subprocess.check_output(command, shell=True, stderr=subprocess.STDOUT)
+        outtext = [l for l in output.splitlines()
+                   if l.startswith('password: ')][0]
+
+        return re.match(r'password: "(.*)"', outtext).group(1)
+
+In a nutshell, it uses `/usr/bin/security` to retrieve the password.  Read
+through the code if you're curious.
+
+This is not *completely* secure, but it's better than having your password in
+a plaintext file in your home directory.
+
+Whew!  Time to actually run this thing and pull down our email!
+
+### Running offlineimap
+
+Assuming everything is in place, open a terminal and run offlineimap:
+
+    offlineimap
+
+Go read a book, because this is going to pull down all the email (with
+attachments) in any folders you didn't exclude in the config file.
+
+**If there's an error, stop and figure out what went wrong**.  Remember,
+offlineimap is a *two-way* sync, so there's always the possibility it'll eat
+your email if you seriously mess something up!  I wish it had a
+`--dont-touch-remote` option you could use as a safety net for the original
+sync, but it doesn't, so be careful!
+
+In the future you can use `offlineimap -q` to run it in "quick mode".  It'll
+perform fewer checks but will generally be much faster.
+
+If you want to set up offlineimap to run every 5 minutes or so, you can use
+launchd.  `cron` does not work for some reason.  I'm not entirely sure why.
+
+Personally I actually *like* having to press a key to fetch new mail.  It's less
+of a distraction than having new mail rolling in all the time.  I can get new
+email when I'm ready to actually look at it, rather than having it nagging me
+all the time.
+
+Mutt!
+-----
+
+Now that you've got your email on your computer, it's finally time to start
+using Mutt itself!
+
+### Installing
+
+Mutt can be installed in a bunch of different ways, but the easiest is through
+Homebrew:
+
+    brew install mutt --sidebar-patch
+
+The sidebar patch is a third-party patch that adds a sidebar to Mutt.  I don't
+know why it's not in core Mutt because it's insanely useful.  Oh well, at least
+Homebrew makes it simple to get.
+
+That's pretty much it for installation, but don't get too relaxed because you're
+far from done.
+
+### Configuring
+
+Mutt is *very* configurable.  This is great once you've become a power user and
+want to mold it to your will, but terrible when you're just getting started.
+
+Mutt settings are kept in a `~/.muttrc` file.  If this file doesn't exist Mutt
+will look for `~/.mutt/muttrc` (note the lack of a dot in the filename), so you
+can put it there if you prefer.
+
+Here's a basic `~/.muttrc` to get you started (a lot of which was taken from
+[this article][pris]).  Once you've got a bit of Mutt under your belt you'll
+want to read [the documentation][muttdoc] for these settings, but for now just
+use them to keep things sane:
+
+[pris]: http://pbrisbin.com/posts/two_accounts_in_mutt
+[muttdoc]: http://www.mutt.org/doc/manual/manual-6.html
+
+    # Paths
+    set alias_file       = ~/.mutt/alias         # where to store aliases
+    set header_cache     = ~/.mutt/cache/headers # where to store headers
+    set message_cachedir = ~/.mutt/cache/bodies  # where to store bodies
+    set certificate_file = ~/.mutt/certificates  # where to store certs
+    set tmpdir           = ~/.mutt/temp          # where to keep temp files
+    set signature        = ~/.mutt/sig           # signature file
+
+    # Use Vim to compose email, with a few default options.
+    set editor = "vim -c 'normal! }' -c 'redraw'"
+
+    # Colors!
+    source ~/.vim/bundle/badwolf/contrib/badwolf.muttrc
+
+    # Basic Options
+    set wait_key = no        # shut up, mutt
+    set mbox_type = Maildir  # mailbox type
+    set folder = ~/.mail     # mailbox location
+    set timeout = 3          # idle time before scanning
+    set mail_check = 0       # minimum time between scans
+    unset move               # gmail does that
+    set delete               # don't ask, just do
+    unset confirmappend      # don't ask, just do!
+    set quit                 # don't ask, just do!!
+    unset mark_old           # read/new is good enough for me
+    set beep_new             # bell on new mails
+    set pipe_decode          # strip headers and eval mimes when piping
+    set thorough_search      # strip headers and eval mimes before searching
+
+    # Sidebar Patch
+    set sidebar_delim   = '  │'
+    set sidebar_visible = yes
+    set sidebar_width   = 24
+    color sidebar_new color221 color233
+    bind index,pager <down>   sidebar-next
+    bind index,pager <up>     sidebar-prev
+    bind index,pager <right>  sidebar-open
+
+    # Status Bar
+    set status_chars  = " *%A"
+    set status_format = "───[ Folder: %f ]───[%r%m messages%?n? (%n new)?%?d? (%d to delete)?%?t? (%t tagged)? ]───%>─%?p?( %p postponed )?───"
+
+    # Index View
+    set date_format = "%m/%d"
+    set index_format = "[%Z]  %D  %-20.20F  %s"
+    set sort = threads                         # like gmail
+    set sort_aux = reverse-last-date-received  # like gmail
+    set uncollapse_jump                        # don't collapse on an unread message
+    set sort_re                                # thread based on regex
+    set reply_regexp = "^(([Rr][Ee]?(\[[0-9]+\])?: *)?(\[[^]]+\] *)?)*"
+
+    # Pager View
+    set pager_index_lines = 10 # number of index lines to show
+    set pager_context = 3      # number of context lines to show
+    set pager_stop             # don't go to next message automatically
+    set menu_scroll            # scroll in menus
+    set tilde                  # show tildes like in vim
+    unset markers              # no ugly plus signs
+
+    set quote_regexp = "^( {0,4}[>|:#%]| {0,4}[a-z0-9]+[>|]+)+"
+    alternative_order text/plain text/enriched text/html
+
+    # Compose View
+    set realname = "Steve Losh"          # who am i?
+    set envelope_from                    # which from?
+    set sig_dashes                       # dashes before sig
+    set edit_headers                     # show headers when composing
+    set fast_reply                       # skip to compose when replying
+    set askcc                            # ask for CC:
+    set fcc_attach                       # save attachments with the body
+    unset mime_forward                   # forward attachments as part of body
+    set forward_format = "Fwd: %s"       # format of subject when forwarding
+    set forward_decode                   # decode when forwarding
+    set attribution = "On %d, %n wrote:" # format of quoting header
+    set reply_to                         # reply to Reply to: field
+    set reverse_name                     # reply as whomever it was to
+    set include                          # include message in replies
+    set forward_quote                    # include message in forwards
+
+    # Headers
+    ignore *                                # ignore all headers
+    unignore from: to: cc: date: subject:   # show only these
+    hdr_order from: to: cc: date: subject:  # and in this order
+
+    # steve@stevelosh.com {{{
+
+    # Default inbox.
+    set spoolfile = "+steve-stevelosh.com/INBOX"
+
+    # Alternate email addresses.
+    alternates sjl@pculture.org still\.?life@gmail.com steve@ladyluckblues.com steve@pculture.org
+
+    # Mailboxes to show in the sidebar.
+    mailboxes +steve-stevelosh.com/INBOX \
+              +steve-stevelosh.com/vim \
+              +steve-stevelosh.com/clojure \
+              +steve-stevelosh.com/python \
+              +steve-stevelosh.com/mercurial \
+              +steve-stevelosh.com/archive \
+              +steve-stevelosh.com/sent \
+              +steve-stevelosh.com/drafts \
+
+    # Other special folders.
+    set mbox      = "+steve-stevelosh.com/archive"
+    set postponed = "+steve-stevelosh.com/drafts"
+
+    # Sending email.
+    set from     = "steve@stevelosh.com"
+    set sendmail = "/usr/local/bin/msmtp -a stevelosh"
+    set sendmail_wait = 0 # no please don't silently fail, email is important
+    unset record
+
+    # }}}
+    # Account Hooks {{{
+
+    # folder-hook steve-stevelosh.com/* source ~/.mutt/steve-stevelosh.com.muttrc
+
+    # }}}
+    # Key Bindings {{{
+
+    # Unbind Stupid Keys {{{
+
+    bind index,pager \# noop
+    bind index i        noop
+    bind index w        noop
+
+    # }}}
+    # Pager {{{
+
+    bind pager i  exit
+    bind pager /  search
+    bind pager k  previous-line
+    bind pager j  next-line
+    bind pager gg top
+    bind pager G  bottom
+    bind pager R  group-reply
+
+    macro pager \Cu "|urlview<enter>" "call urlview to open links"
+    macro pager s "<pipe-message>cat > ~/Desktop/"  "save message as"
+
+    # }}}
+    # Index {{{
+
+    bind index R  group-reply
+    bind index <tab>    sync-mailbox
+    bind index k        previous-entry
+    bind index j        next-entry
+    bind index gg       first-entry
+    bind index G        last-entry
+    bind index p        recall-message
+    bind index <space>  collapse-thread
+    macro index s "<pipe-message>cat > ~/Desktop/"  "save message as"
+
+    # Mark all as read
+    macro index \Cr "T~U<enter><tag-prefix><clear-flag>N<untag-pattern>.<enter>" "mark all messages as read"
+
+    # Quickly change date formats
+    macro index <esc>f ":set date_format = \"%m/%d\"<enter>"             "short date format"
+    macro index <esc>F ":set date_format = \"%m/%d at %I:%M %P\"<enter>" "long date format"
+
+    # Sync email
+    macro index O "<shell-escape>offlineimap -q<enter>"                   "run offlineimap to sync mail in the foreground"
+    macro index o "<shell-escape>offlineimap -q >/dev/null 2>&1 &<enter>" "run offlineimap to sync mail in the background"
+
+    # Saner copy/move dialogs
+    macro index C "<copy-message>?<toggle-mailboxes>" "copy a message to a mailbox"
+    macro index M "<save-message>?<toggle-mailboxes>" "move a message to a mailbox"
+
+    # Quickly change mailboxes
+    macro index \' "<change-folder>+steve-stevelosh.com/INBOX<enter>"   "go to stevelosh/INBOX"
+    macro index \" "<change-folder>+steve-stevelosh.com/archive<enter>" "go to stevelosh/archive"
+
+    # Just use notmuch for everything
+    macro index / "<enter-command>unset wait_key<enter><shell-escape>read -p 'notmuch query: ' x; echo \$x >~/.cache/mutt_terms<enter><limit>~i \"\`notmuch search --output=messages \$(cat ~/.cache/mutt_terms) | head -n 600 | tr '+' '.' | perl -le '@a=<>;chomp@a;s/\^id:// for@a;$,=\"|\";print@a'\`\"<enter>" "show only messages matching a notmuch pattern"
+
+    # Unlimit aka show [a]ll
+    macro index a "<limit>all\n" "show all messages (undo limit)"
+
+    # }}}
+    # Compose {{{
+
+    bind compose p postpone-message
+
+    # }}}
+    # Attachment {{{
+
+    # View, god dammit!
+    bind attach <return> view-mailcap
+
+    # }}}
+    # "Open in Vim" {{{
+
+    macro index,pager V "|vim -c 'setlocal ft=mail' -c 'setlocal buftype=nofile' -<enter>"              "open in vim"
+    macro index,pager M "|mvim -c 'setlocal ft=mail' -c 'setlocal buftype=nofile' - >/dev/null<enter>"  "open in macvim"
+
+    # }}}
+
+    # }}}
+### Running
+
+Now that you've got Mutt configured you can run it:
+
+    mutt
+
+I like to always be in my `~/Desktop` folder when in Mutt, so that when I save
+emails or attachments they go there by default.  I have a little shell function
+set up that cd's there for be before running Mutt.
+
+If you run the [new fish shell][fish], this is going to cause problems later
+(long story, but it's related to the `read` builtin).  Do yourself a favor and
+head those confusing issues off at the pass with a fish function:
+
+    :::text
+    function mutt
+        bash -c 'cd ~/Desktop; /usr/local/bin/mutt' $argv;
+    end
+
+[fish]: http://ridiculousfish.com/shell/
+
+Reading Email
+-------------
+
+Reading email is pretty straightforward in Mutt.  You select a message in the
+index and pretty return, and Mutt will display the "pager" with the contents of
+the email:
+
+Let's add a few settings to our `~/.muttrc` to make reading email a bit
+smoother.
+
+    set pager_index_lines = 10
+
+This sets the number of lines of the index (the top "pane") to show while
+reading email.  I like to have 10 so I can tell where I'm at in the list of
+email.
+
+    set pager_context = 3
+
+This tells Mutt how far it should scroll when you "page down" in the pager with
+space.  I have it set to three, so when I press space Mutt scrolls down far
+enough that the last three lines on the screen become the first three lines.
+It's there to help you avoid losing your place when reading.
+
+    set pager_stop
+
+Prevents Mutt from automatically going to the next message when you page down
+when already at the end of a message.  I'll move to the next message when I'm
+good and ready, thank you.
+
+    set tilde
+
+Shows tildes at the end of the message, like Vim does after the end of the file.
+This is personal preference, but as a Vim user I like it.
+
+    unset markers
+
+By default, when Mutt wraps long lines of text in the pager it will display
+a `+` and the beginning of the wrapped lines.  That's kind of ugly, so this
+setting turns it off.
+
+    set quote_regexp = "^( {0,4}[>|:#%]| {0,4}[a-z0-9]+[>|]+)+"
+
+This defines how Mutt finds "quoted text" in emails.  Mutt will highlight quoted
+text differently:
+
+![Quote Highlighting](/media/images{{ parent_url }}/mutt-quotes-1.png)
+
+This regex will tell Mutt to look for lines prefixed with `>` characters as
+quoted text.  Each `>` is one level of quoting.  This is pretty standard.
+
+Writing Email
+-------------
+
+Sending Email
+-------------
+
+Mutt does have (some) built-in SMTP support, but we're going to use a separate
+program to do our sending for a few reasons.
+
+First, Mutt's SMTP support was considered "experimental" the last time
+I checked.  Sending email is kind of important, so we'll stick with something
+tried and true.
+
+Second, we want a method that won't require our password in a plaintext config
+file.
+
+Go ahead and install the `msmtp` program through Homebrew:
+
+    brew install msmtp
+
+Next we're going to need to create a `~/.msmtprc` file with the following
+contents:
+
+    account stevelosh
+    host smtp.gmail.com
+    port 587
+    protocol smtp
+    auth on
+    from steve@stevelosh.com
+    user steve@stevelosh.com
+    tls on
+    tls_trust_file ~/.mutt/Equifax_Secure_CA.cert
+
+    account default : stevelosh
+
+`msmtp` will look in your keychain for your SMTP password, which we added
+earlier.  No plaintext passwords!
+
+The other "interesting" bit here is the `tls_trust_file`.  We're going to be
+connecting to Gmail's SMTP server over SSL, and `msmtp` needs to know if it can
+trust the certificate that the server on the other end is sending back.
+
+Copy the following and paste it into the path `tls_trust_file` is set to:
+
+    :::text
+    -----BEGIN CERTIFICATE-----
+    MIIDIDCCAomgAwIBAgIENd70zzANBgkqhkiG9w0BAQUFADBOMQswCQYDVQQGEwJVUzEQMA4GA1UE
+    ChMHRXF1aWZheDEtMCsGA1UECxMkRXF1aWZheCBTZWN1cmUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5
+    MB4XDTk4MDgyMjE2NDE1MVoXDTE4MDgyMjE2NDE1MVowTjELMAkGA1UEBhMCVVMxEDAOBgNVBAoT
+    B0VxdWlmYXgxLTArBgNVBAsTJEVxdWlmYXggU2VjdXJlIENlcnRpZmljYXRlIEF1dGhvcml0eTCB
+    nzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwV2xWGcIYu6gmi0fCG2RFGiYCh7+2gRvE4RiIcPR
+    fM6fBeC4AfBONOziipUEZKzxa1NfBbPLZ4C/QgKO/t0BCezhABRP/PvwDN1Dulsr4R+AcJkVV5MW
+    8Q+XarfCaCMczE1ZMKxRHjuvK9buY0V7xdlfUNLjUA86iOe/FP3gx7kCAwEAAaOCAQkwggEFMHAG
+    A1UdHwRpMGcwZaBjoGGkXzBdMQswCQYDVQQGEwJVUzEQMA4GA1UEChMHRXF1aWZheDEtMCsGA1UE
+    CxMkRXF1aWZheCBTZWN1cmUgQ2VydGlmaWNhdGUgQXV0aG9yaXR5MQ0wCwYDVQQDEwRDUkwxMBoG
+    A1UdEAQTMBGBDzIwMTgwODIyMTY0MTUxWjALBgNVHQ8EBAMCAQYwHwYDVR0jBBgwFoAUSOZo+SvS
+    spXXR9gjIBBPM5iQn9QwHQYDVR0OBBYEFEjmaPkr0rKV10fYIyAQTzOYkJ/UMAwGA1UdEwQFMAMB
+    Af8wGgYJKoZIhvZ9B0EABA0wCxsFVjMuMGMDAgbAMA0GCSqGSIb3DQEBBQUAA4GBAFjOKer89961
+    zgK5F7WF0bnj4JXMJTENAKaSbn+2kmOeUJXRmm/kEd5jhW6Y7qj/WsjTVbJmcVfewCHrPSqnI0kB
+    BIZCe/zuf6IWUrVnZ9NA2zsmWLIodz2uFHdh1voqZiegDfqnc1zqcPGUIWVEX/r87yloqaKHee95
+    70+sB3c4
+    -----END CERTIFICATE-----
+
+If you're paranoid and don't trust that I'm giving you the right cert (or that
+someone has hacked my site and changed it), you can generate it yourself.  I'll
+leave that as an exercise for the reader.
+
+Now we need to tell Mutt to use msmtp.  Add the following to your `~/.muttrc`
+file:
+
+    set from     = "steve@stevelosh.com"
+    set sendmail = "/usr/local/bin/msmtp -a stevelosh"
+    set sendmail_wait = 0
+    unset record
+
+The `-a stevelosh` will need to change to whatever you named your account in the
+msmtp config.
+
+The `unset record` line tells Mutt to not append a copy of every email you send
+to a file on your hard drive.  Gmail will save the emails you send in the sent
+folder, so you'll get the the next time you sync with offlineimap anyway.
+
+The `sendmail_wait` line tells Mutt to wait for the msmtp program to finish
+sending the mail before returning control, instead of running it in the
+background.  This makes it obvious if there's a problem sending a message, which
+I prefer to silent, backgrounded failures.
+
+Now you can send email!  Awesome!
+
+Once you've composed a test email and saved it you'll be presented with a screen
+like this:
+
+![Sending Screen](/media/images{{ parent_url }}/mutt-send-1.png)
+
+The keys you need are listed along the top.  Pressing `y` now will invoke msmtp
+and send your email!
+
+You'll see "Sending message..." at the bottom of the screen while msmtp is
+working.  If there's a problem, Mutt will tell you the error.  Figure it out
+before moving on.
+
+Contacts
+--------
+
+Next we'll want to get Mutt to autocomplete our contacts from the OS X address
+book.  Unfortunately I've got some bad news for you:
+
+You're going to need to install XCode.
+
+No, not the command-line developer tools.  The full XCode.  I'm sorry, but trust
+me when I say it's going to save you a lot of pain, so just grumble to yourself
+a bit and do it.
+
+Okay, now that you've got XCode you can install the `contacts` program through
+Homebrew:
+
+    brew install contacts
+
+`contacts` is a command-line program that you can use to query your address
+book.  To tell Mutt how to use it add the following lines to your
+`~/.mutt/muttrc`:
+
+    set query_command = "contacts -Sf '%eTOKEN%n' '%s' | sed -e 's/TOKEN/\t/g'"
+    bind editor <Tab> complete-query
+    bind editor ^T    complete
+
+Now when you're filling out an email address field you can type a few characters
+and hit Tab to get a screen like this:
+
+![Contacts](/media/images{{ parent_url }}/mutt-contacts-1.png)
+
+You can use `j` and `k` to select an item, press return to complete it.  Press
+`q` if you've changed your mind and want to cancel the completion.  Look at the
+top of the screen for more handy little keys you can use here.
+
+If there's only one item in the list Mutt won't bother showing you this screen
+and will just complete it right away.
+
+This completion searches more than just the email address.  It'll also search
+the names and possibly other fields from the address book entries as well.
+
+Searching Email
+---------------
+
+notmuch
+muttrc
+
+
+
+{% endblock article %}

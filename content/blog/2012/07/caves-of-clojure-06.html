@@ -1,0 +1,389 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 6"
+        snip: "Real combat and messages."
+        created: 2012-07-30 10:15:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry corresponds to [post six in Trystan's tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-06` tag to see the code as it stands
+after this post.
+
+Sorry for the long wait for this entry.  I've been working on lots of other
+stuff and haven't had a lot of time to write.  Hopefully I can get back to it
+more often!
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/09/roguelike-tutorial-06-hitpoints-combat.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+In Trystan's sixth post he adds a combat system and messaging infrastructure.
+Once again I'm following his lead and implementing the same things, but in the
+entity/aspect way of doing things.
+
+As usual I ended up refactoring a few things, which I'll briefly cover first.
+
+Refactoring
+-----------
+
+So far, the functions entities implement to fulfill aspects have looked like
+this:
+
+    :::clojure
+    (defaspect Digger
+      (dig [this world dest]
+        ...)
+      (can-dig? [this world dest]
+        ...))
+
+The entity has to be the first argument, because that's how protocols work.
+I don't have any flexibility there.  I originally made the world always be the
+second argument, but it turns out that it's more convenient to make the world
+the *last* argument.
+
+To see why, imagine we want to allow players to dig and move at the same time,
+instead of forcing them to be separate actions.  Updating the world might look
+like this:
+
+    :::clojure
+    (let [new-world (dig player world dest)
+          new-world (move player world dest)]
+      new-world)
+
+You could make this one specific case a bit prettier, but in general chaining
+together world-modifying actions is going to be a pain.  If I change the aspect
+functions to take the player, then other args, and *then* the world, I can use
+`->>` to chain actions:
+
+    :::clojure
+    (->> world
+      (dig player dest)
+      (move player dest))
+
+Much cleaner!  I went ahead and switched all the aspect functions to use this
+new scheme.
+
+I also did some other minor refactoring.  You can look through the changesets if
+you're really curious.
+
+Attacking and Defending
+-----------------------
+
+Instead of simply killing everything in one hit, I'm now going to give some
+creatures a bit of hp.  I also added a `:max-hp` attribute, since I'll likely
+need that in the future.  Here's a sample of what the `Bunny` creation function
+looks like:
+
+    :::clojure
+    (defn make-bunny [location]
+      (map->Bunny {:id (get-id)
+                   :name "bunny"
+                   :glyph "v"
+                   :color :yellow
+                   :location location
+                   :hp 4
+                   :max-hp 4}))
+
+I started using the `map->Foo` record constructors because the `->Foo` versions
+that relied on positional arguments started getting hard to read.
+
+Bunnies have 4 hp.  It'd be trivial to randomize this in the future, but for now
+I'll stick with a simple number.
+
+Trystan uses a simple attack and defense system.  I toyed with the idea of using
+a different one (like Brogue's) but figured I should stick to his tutorial when
+there's no clear reason not to.
+
+Trystan's system needs attack and defense values, so I added functions to the
+`Attacker` and `Destructible` aspects to retrieve these:
+
+    :::clojure
+    (defaspect Attacker
+      (attack [this target world]
+        ...)
+      (attack-value [this world]
+        (get this :attack 1)))
+
+    (defaspect Destructible
+      (take-damage [this damage world]
+        ...)
+      (defense-value [this world]
+        (get this :defense 0)))
+
+The default attack value is `1`.  If an entity has an `:attack` attribute that
+will be used instead.  Or the entity could provide a completely custom version
+of `attack-value` (e.g.: werewolves could have a larger attack if there's a full
+moon in the game or something).  Defense values work the same way.
+
+Now that I'm starting to actually use HP I'll display it in the bottom row of
+info on the screen:
+
+    :::clojure
+    (defn draw-hud [screen game]
+      (let [hud-row (dec (second (s/get-size screen)))
+            player (get-in game [:world :entities :player])
+            {:keys [location hp max-hp]} player
+            [x y] location
+            info (str "hp [" hp "/" max-hp "]")
+            info (str info " loc: [" x "-" y "]")]
+        (s/put-string screen 0 hud-row info)))
+
+The bottom row of the screen now looks like: "hp [20/20] loc: [82-103]".  I'll
+probably get rid of the loc soon, but for now it won't hurt to keep it onscreen.
+
+Now for the damage calculation.  I added a little helper function to take care
+of this in `attacker.clj`:
+
+    :::clojure
+    (defn get-damage [attacker target world]
+      (let [attack (attack-value attacker world)
+            defense (defense-value target world)
+            max-damage (max 0 (- attack defense))
+            damage (inc (rand-int max-damage))]
+        damage))
+
+This matches what Trystan does.  In a nutshell, the damage done is: "If defense
+is higher than attack, then 1.  Otherwise, a random number between 1 and (attack
+- defense)."
+
+I kept it separate from the `attack` function so that an entity can override
+attack without having to reimplement this logic.
+
+The `attack` default implementation needs to use this new damage calculator:
+
+    :::clojure
+    (defaspect Attacker
+      (attack [this target world]
+        {:pre [(satisfies? Destructible target)]}
+        (let [damage (get-damage this target world)]
+          (take-damage target damage)))
+      (attack-value [this world]
+        (get this :attack 1)))
+
+`Destructible` already handles reducing HP appropriately.  The only thing left
+is to give my entities some non-1 attack, defense, and/or hp values.  For now
+I used the following values:
+
+* Bunnies have 4 HP, default defense.
+* Lichens have 6 HP, default defense.
+* Silverfish have 15 HP, default defense.
+* Players have 40 HP, 10 attack, default defense.
+
+These are really just placeholder numbers until I add the ability for monsters
+to attack back.  Once I do that I'll be able to play the game a bit and
+determine if it's too easy or hard.
+
+Messaging
+---------
+
+Now the player can attack things and it may take a few swings to kill them.  The
+problem is that there's no feedback while this is going on, so it's hard to tell
+that you're actually doing damage until the monster dies.
+
+A messaging system will let me display informational messages to give the player
+some feedback.  I decided to implement this like everything else: as an aspect.
+
+An entity that implements the `Receiver` protocol will be able to receive
+messages.  Here's `entities/aspects/receiver.clj`:
+
+    :::clojure
+    (ns caves.entities.aspects.receiver
+      (:use [caves.entities.core :only [defaspect]]
+            [caves.world :only [get-entities-around]]))
+    
+    (defaspect Receiver
+      (receive-message [this message world]
+        (update-in world [:entities (:id this) :messages] conj message)))
+    
+    (defn send-message [entity message args world]
+      (if (satisfies? Receiver entity)
+        (receive-message entity (apply format message args) world)
+        world))
+
+I've got a helper function `send-message` which is what entities will use to
+send messages, instead of performing the `(satisfies? Receiver entity)` check
+themselves every time.  If the entity they're sending the message to isn't
+a `Receiver` it will simply drop the message on the floor by returning the world
+unchanged.  It also handles formatting the message string for them.
+
+The default `receive-message` simply appends the message to a `:messages`
+attribute in the entity.
+
+I have a lot of ideas about extending this system in the future, but for now
+I'll just keep it simple to match Trystan's.
+
+Now I need to send some messages.  The most obvious place to do this is when
+something attacks something else, so I updated the `Attacker` aspect once more:
+
+
+    :::clojure
+    (defaspect Attacker
+      (attack [this target world]
+        {:pre [(satisfies? Destructible target)]}
+        (let [damage (get-damage this target world)]
+          (->> world
+            (take-damage target damage)
+            (send-message this "You strike the %s for %d damage!"
+                          [(:name target) damage])
+            (send-message target "The %s strikes you for %d damage!"
+                          [(:name this) damage]))))
+      (attack-value [this world]
+        (get this :attack 1)))
+
+This is starting to get a little crowded.  If I need to do much more in here
+I'll refactor some stuff out into helper functions.  But for now it's still
+readable.
+
+Here you can see how making world-altering functions take the world as the last
+argument pays off by letting me use `->>` to chain together actions.
+
+I also added a `:name` attribute to entities so I can say "You strike the bunny"
+instead of "You strike the v".  Nothing too special there.
+
+Finally, I need a way to notify nearby entities when something happens.  Here's
+what I came up with:
+
+    :::clojure
+    (defn send-message-nearby [coord message world]
+      (let [entities (get-entities-around world coord 7)
+            sm (fn [world entity]
+                 (send-message entity message [] world))]
+        (reduce sm world entities)))
+
+First I grab all the entities within 7 squares of the message coordinate.  Then
+I create a little helper function called `sm` that wraps `send-message`.  It
+will take a world and an entity and return the modified world.  I use `reduce`
+here to iterate over the entities and send the message to each one.  It's
+a pretty way of handling that looping.
+
+The `get-entities-around` function is new:
+
+    :::clojure
+    (defn get-entities-around
+      ([world coord] (get-entities-around world coord 1))
+      ([world coord radius]
+         (filter #(<= (radial-distance coord (:location %))
+                      radius)
+                 (vals (:entities world)))))
+
+It looks through all the entities in the world and returns a sequence of those
+whose "radial" distance is less than or equal to the given radius.  The "radial
+distance" (also called the "king's move" distance by some) looks like this:
+
+    :::text
+    3333333
+    3222223
+    3211123
+    3210123
+    3211123
+    3222223
+    3333333
+
+And the function:
+
+    :::clojure
+    (defn radial-distance
+      "Return the radial distance between two points."
+      [[x1 y1] [x2 y2]]
+      (max (abs (- x1 x2))
+           (abs (- y1 y2))))
+
+I may end up needing to modify this `send-message-nearby` function to be a bit
+more powerful in the future.  Trystan's version modifies the verbs and such.
+For now this is good enough for me.
+
+Now I can make lichens notify nearby creatures when they grow:
+
+    :::clojure
+    (defn grow [{:keys [location]} world]
+      (if-let [target (find-empty-neighbor world location)]
+        (let [new-lichen (make-lichen target)
+              world (assoc-in world [:entities (:id new-lichen)] new-lichen)
+              world (send-message-nearby location "The lichen grows." world)]
+          world)
+        world))
+
+The last step is to actually display these messages to the player.  I added
+a `draw-messages` function to the `ui/drawing.clj` file:
+
+    :::clojure
+    (defn draw-messages [screen messages]
+      (doseq [[i msg] (enumerate messages)]
+        (s/put-string screen 0 i msg {:fg :black :bg :white})))
+
+And then I modified the main `draw-ui` function for `:play` UIs to draw the
+messages on top of the map:
+
+    :::clojure
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            {:keys [tiles entities]} world
+            player (:player entities)
+            [cols rows] (s/get-size screen)
+            vcols cols
+            vrows (dec rows)
+            origin (get-viewport-coords game (:location player) vcols vrows)]
+        (draw-world screen vrows vcols origin tiles)
+        (doseq [entity (vals entities)]
+          (draw-entity screen origin vrows vcols entity))
+        (draw-hud screen game)
+        (draw-messages screen (:messages player))
+        (highlight-player screen origin player)))
+
+This does mean that messages will cover a bit of the screen.  For now I'll live
+with that, but in the future it's something to fix.
+
+Finally we need to clear the message queue out periodically, otherwise it'll
+grow until it covers the entire screen!  I modified the main game loop in
+`core.clj`:
+
+    :::clojure
+    (defn clear-messages [game]
+      (assoc-in game [:world :entities :player :messages] nil))
+    
+    (defn run-game [game screen]
+      (loop [{:keys [input uis] :as game} game]
+        (when (seq uis)
+          (if (nil? input)
+            (let [game (update-in game [:world] tick-all)
+                  _ (draw-game game screen)
+                  game (clear-messages game)]
+              (recur (get-input game screen)))
+            (recur (process-input (dissoc game :input) input))))))
+
+Results
+-------
+
+After fixing a few other bugs (you can read the changelog if you're interested)
+I've now got a working combat system, and a messaging system so I can tell
+what's going on:
+
+![Screenshot](/media/images{{ parent_url }}/caves-06-01.png)
+
+It's actually starting to feel like a real game now, instead of just a sandbox
+where you can break things.
+
+You can view the code [on GitHub][result-code] if you want to see the end
+result.
+
+[result-code]: https://github.com/sjl/caves/tree/entry-06/src/caves
+
+The next article will move on to Trystan's seventh post, which adds multiple
+z-levels to the caves.
+
+{% endblock article %}
