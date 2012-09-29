@@ -15,9 +15,14 @@
     <div id="leaf-stats" class="group">
         {% if page.flattr %}
             <div class="flattr">
-                <a class="FlattrButton" style="display:none;" rev="flattr;button:compact;"
-                   href="http://stevelosh.com{{ page.url }}"></a>
-           </div>
+                <a class="FlattrButton"
+                    style="display: none;"
+                    title="{{ page.title|safe }}"
+                    data-flattr-category="text"
+                    data-flattr-button="compact"
+                    href="http://stevelosh.com{{ page.url }}">Flattr</a>
+            </div>
+
         {% endif %}
         <p>
             Posted
