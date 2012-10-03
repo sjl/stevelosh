@@ -11,10 +11,6 @@ body {
     color: @c-body;
     position: relative;
 
-    &.rhythm {
-        background: transparent url("/media/images/rhythm.png") top left;
-    }
-
     a {
         text-decoration: none;
         color: @c-link;
@@ -265,6 +261,7 @@ span.dquo {
         border: 11px solid #e5e5e5;
         padding: 1px;
         background: black;
+        max-width: 590px;
     }
     img.left, img.right {
         border: none;
@@ -292,6 +289,25 @@ span.dquo {
 
         ul:first-child>li {
             margin-left: 0em;
+        }
+    }
+    table {
+        padding: 0px;
+        margin-top: -8px;
+        margin-bottom: 25px;
+
+        tr {
+            margin: 0px;
+            padding: 0px;
+
+            td, th {
+                margin: 0px;
+                padding: 5px 5px;
+                line-height: 23px;
+            }
+            td {
+                border: 1px solid #666;
+            }
         }
     }
 }
