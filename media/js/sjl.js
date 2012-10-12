@@ -49,5 +49,8 @@ $(function() {
         $(window).scroll(function () {
             place_scrolly_header();
         });
+        $(window).resize(function () {
+            place_scrolly_header();
+        });
     }
 });
