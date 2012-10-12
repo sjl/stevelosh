@@ -1,0 +1,215 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "Why I Two-Space"
+        snip: "You can pry my extra spaces from my cold, dead hands."
+        created: 2012-10-12 10:12:00
+        flattr: true
+    %}
+
+{% block article %}
+
+If you look at [the source code][source] for this blog, you might notice that
+all my blog posts (written in [Markdown][]) have two spaces after every period.
+
+Every so often [this Slate article][slate] makes the rounds and annoys me.  This
+time I figured I'd write a blog post/rant to get it off my chest once and for
+all: two-spacing is equal or superior to one-spacing in all non-trivial ways.
+
+[source]: https://bitbucket.org/sjl/stevelosh/src/tip/content/blog
+[Markdown]: http://daringfireball.net/projects/markdown/
+[slate]: http://www.slate.com/articles/technology/technology/2011/01/space_invaders.html
+
+[TOC]
+
+The Arguments for One-Spacing
+-----------------------------
+
+If you read the aforementioned Slate article you'll see that it presents a total
+of three arguments in favor of single-spacing after a period:
+
+1. Many professional typographers find two-spacing ugly (though they have no
+   actual evidence of its effects on readability).
+2. It's less work to press the space bar once instead of twice.
+3. It's pretty much arbitrary anyway, so *why not*?
+
+You might also infer from the article's tone that "you get to feel superior to
+those Neanderthals that use two spaces" is another argument in favor of it, but
+I'll leave that one out because it can go both ways.
+
+Let's go through these arguments one by one and see how they hold up.
+
+Effort
+------
+
+I don't think the "it's more effort to press the space bar twice" argument is at
+all compelling.  The extra space *may* account for around half a percent of the
+keystrokes you type, depending on how long your sentences tend to run (mine
+usually end up fairly long, as you can see).
+
+Not only is it not a large portion of your keystrokes, but the space bar has
+your two strongest digits dedicated solely to it!  If any fingers are going to
+wear out from typing, it won't be your thumbs.
+
+You could get pedantic and mention increased file size as a disadvantage of two
+spacing, but let's not quibble about a few bytes when I can hold 32 gigabytes on
+an SD card the size of a postage stamp.
+
+Two-Spacing is Ugly
+-------------------
+
+The Slate article is correct is saying that many professional typographers think
+two-spacing is ugly.  My copy of [The Elements of Typographic Style][elements]
+agrees.  However, there's more to the issue than a single blanket rule.
+
+[elements]: http://www.amazon.com/dp/0881792063/?tag=stelos-20
+
+### Source and Presentation
+
+If you're reading this in a web browser and look closely, you'll notice that
+there's only one space between each sentence.  I said I used two, so what
+happened?
+
+Web browsers, by default, collapse successive whitespace into a single space when it
+renders the HTML.  You could put a thousand spaces between sentences in the
+source and it would still come out single-spaced.
+
+Another widely-used format, LaTeX, splits the difference and actually uses
+somewhere between one and two spaces (by default).
+
+The key idea here is that what you type and what the end user actually reads are
+two different things.  They don't need to be bound together.  It's possible to
+type two spaces but get one in your output (or in LaTeX's case: an even more
+pleasing "one and a bit").
+
+If you're using a WYSIWYG editor like Microsoft Word this may not be the case.
+For the high school students typing up papers for class: sure, go ahead and
+single-space.  But if you're still using Word to type up things like books, long
+blog posts, or technical documentation, you're doing yourself a disservice.
+Learn to use a system like LaTeX so your source and rendered output aren't
+locked together.
+
+This means that "two-spacing looks ugly" doesn't imply "you should not type two
+spaces when you write".  It *actually* implies "you should use a system that
+results in single-spacing when rendered", and most of the common ones today will
+do exactly that.
+
+### Typewriters
+
+So we've seen that the "extra spaces take more effort" argument isn't
+convincing, and that "two-spacing in the final output is ugly" doesn't prevent
+you from using two spaces in the input.
+
+But so far I haven't given you any reason *for* using two spaces.  That's the
+Slate article's third argument: "it's arbitrary anyway, so you may as well use
+one".
+
+Let's fix that by examining the common holier-than-thou put-down of "two-spacing
+was useful back when people used *typewriters*, you dinosaur!".
+
+To his credit, the Slate author correctly points out that it's not the fact that
+people used typewriters that made two-spacing popular, it was the fact that
+*typewriters used monospaced fonts*.  Most people miss that logical leap.
+
+Unfortunately he follows that up with:
+
+> Here's the thing, though: Monospaced fonts went out in the 1970s.
+
+For the average person typing up a school paper here and there, sure.  But for
+many people doing a large amount of writing for LaTeX books and papers,
+technical documentation, code comments, mailing lists, blog posts, and lots of
+other things, it's simply *wrong* for one big reason:
+
+**Text editors use monospaced fonts!**
+
+It doesn't matter what editor you use.  Vim, Emacs, TextMate, Sublime Text,
+Eclipse, Gedit, Notepad++?  *All* of them use monospaced fonts.
+
+Going back to the typewriter quip, this means that if people used two spaces
+when writing on typewriters because it looked better, then using two spaces in
+a text editor will look better.  And we know that because there's a distinction
+between source and presentation in non-WYSIWYG contexts, we can use separate
+strategies for each.
+
+We can have our cake and eat it too!  We can type two spaces after a period to
+make our text look better as we write, revise, and edit it, and then render it
+to single-spacing (or "space-and-a-half-ing") to give our readers a beautiful
+reading experience with pleasant spacing.
+
+So now two-spacing has a real advantage over single-spacing.  That's enough to
+make it preferable.  But let's look at one more advantage for power users, just
+to seal the deal.
+
+Power
+-----
+
+If you use [Vim][] to edit text, you're probably familiar with its "text
+objects".  Text objects are what let you move and act on whole chunks of text at
+a time.  For example, instead of deleting a word letter-by-letter you can use
+`daw` to "delete around word".
+
+Vim comes with a "sentence" text object built-in.  You can move around your
+document sentence-by-sentence with `(` and `)`, and yank/delete/change/etc
+entire sentences with `cas` ("change around sentence") and so on.
+
+You can probably guess where this is going.  If you single-space sentences Vim
+will do its best to "do the right thing", but inevitably gets tripped up when
+you've got punctuation in your sentence.  For example:
+
+    Bob started speaking. Hello, Mr. Smith! How are you today?
+                                        ^
+                                        cursor
+
+What happens when you tell Vim to "delete around sentence" now?
+
+    Bob started speaking. Hello, Mr. How are you today?
+                                      ^
+                                      cursor
+
+Well that's not right!  Vim can't easily tell the difference between the period
+after "Mr" and the end of a sentence.  What happens if you type your prose with
+two-spacing instead?
+
+    Bob started speaking.  Hello, Mr. Smith!  How are you today?
+                                         ^
+                                         cursor
+    Bob started speaking.  How are you today?
+                           ^
+                           cursor
+
+This time Vim is able to delete the sentence correctly!  Note that you'll need
+to make sure to `set cpo+=J` in your `~/.vimrc` file to tell Vim "don't worry,
+I'm using two spaces like a sane person" for this to work.
+
+Two-spacing provides more semantic information, which means that software can
+parse and work with it more easily.  I'm sure Emacs has something similar, and
+if you or someone else ever needs to parse your writing programatically they'll
+have an easier time.
+
+Final Score
+-----------
+
+To recap, the arguments *for* single-spacing are:
+
+1. Two-spacing is ugly in proportional fonts.
+2. It's less work to press the space bar once instead of twice.
+3. It's pretty much arbitrary anyway, so why bother with two?
+
+Number 1 is irrelevant, because writing and rendering are (except in trivial
+cases) two orthogonal activities.
+
+Number 2 isn't very convincing.
+
+Number 3 is false, because two-spacing gives you two advantages over
+one-spacing:
+
+1. It looks better in your editor.
+2. It gives you more power when editing and parsing.
+
+So the next time you see that arrogant Slate article, feel free to be arrogant
+right back.  Wield your extra spaces proudly, because they give you both comfort
+and power!
+
+[Vim]: http://vim.org/
+
+{% endblock article %}
