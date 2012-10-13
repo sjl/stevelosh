@@ -1,0 +1,329 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "The Caves of Clojure: Part 7.1"
+        snip: "Region mapping."
+        created: 2012-10-15 09:50:00
+        flattr: true
+    %}
+
+{% block article %}
+
+This post is part of an ongoing series.  If you haven't already done so, you
+should probably start at [the beginning][].
+
+This entry corresponds to the beginning of [post seven in Trystan's
+tutorial][trystan-tut].
+
+If you want to follow along, the code for the series is [on Bitbucket][bb] and
+[on GitHub][gh].  Update to the `entry-07-1` tag to see the code as it stands
+after this post.
+
+It's been a while since the last post, but I've been taking care of things and
+hopefully should be able to write a bit more now.
+
+This post is going to be short.  It'll cover a relatively self-contained but
+interesting bit of Trystan's seventh post.  The rest of it will be covered in
+the next entry.
+
+[the beginning]: /blog/2012/07/caves-of-clojure-01/
+[trystan-tut]: http://trystans.blogspot.com/2011/09/roguelike-tutorial-07-z-levels-and.html
+[bb]: http://bitbucket.org/sjl/caves/
+[gh]: http://github.com/sjl/caves/
+
+[TOC]
+
+Summary
+-------
+
+In Trystan's seventh post he adds vertical levels and stairs connecting them.
+I'm going to cover the first part of that now: mapping out regions.
+
+There's been a bit of refactoring since my last post which I'm not going to
+cover.  If you want to see what changed, diff the tags in your VCS of choice.
+
+Region Mapping
+--------------
+
+In order to decide where to place stairs, Trystan maps out "regions" of
+contiguous, walkable tiles after he generates and smooths the world.  I'm going
+to do the same thing.
+
+My goal is to create a "region map", which is a map of coordinates to region
+numbers.  For example, consider the following tiny world map:
+
+    :::text
+    ..##..
+    ..#...
+    ..#.##
+    ..#.#.
+
+There are three distinct regions in this map:
+
+    :::text
+    11##22
+    11#222
+    11#2##
+    11#2#3
+
+So the region map would look like:
+
+    :::clojure
+    ; x y  region
+    {[0 0] 1
+     [1 0] 1
+     [4 0] 2
+     [5 0] 2
+     ...
+     [5 3] 3}
+
+This makes it easy to tell which region a particular tile is in (if any).
+
+As usual, I'll start with a few helper functions.  These two functions are just
+for convenience and readability:
+
+    :::clojure
+    (def all-coords
+      (let [[cols rows] world-size]
+        (for [x (range cols)
+              y (range rows)]
+          [x y])))
+
+    (defn get-tile-from-level [level [x y]]
+      (get-in level [y x] (:bound tiles)))
+
+The `all-coords` function simply returns a lazy sequence of `[x y]` coordinates
+representing every coordinate in a level.
+
+`get-tile-from-level` encapsulates the act of pulling out a tile from a level
+given an `[x y]` coordinate.  This is helpful because of the way I'm storing
+tiles (note the ugly `[y x]`).
+
+Next up is a function that filters a set of coordinates to only contain those
+that are actually walkable in the given level (i.e.: those that don't contain
+a wall tile):
+
+    :::clojure
+    (defn filter-walkable
+      "Filter the given coordinates to include only walkable ones."
+      [level coords]
+      (set (filter #(tile-walkable? (get-tile-from-level level %))
+                   coords)))
+
+This uses the `get-tile-from-level` function as well as `tile-walkable?` from
+`world.core`.
+
+Next is a function to take a coordinate and return which of its neighboring
+coordinates are walkable:
+
+    :::clojure
+    (defn walkable-neighbors
+      "Return the neighboring coordinates walkable from the given coord."
+      [level coord]
+      (filter-walkable level (neighbors coord)))
+
+This one is almost trivial, but I like building up functions in small steps like
+this because it's easier for me to read.
+
+Now we come to a function with a bit more meat.  This is the core of the "flood
+fill" algorithm I'm going to use to fill in the region map.
+
+    :::clojure
+    (defn walkable-from
+      "Return all coordinates walkable from the given coord (including itself)."
+      [level coord]
+      (loop [walked #{}
+             to-walk #{coord}]
+        (if (empty? to-walk)
+          walked
+          (let [current (first to-walk)
+                walked (conj walked current)
+                to-walk (disj to-walk current)
+                candidates (walkable-neighbors level current)
+                to-walk (union to-walk (difference candidates walked))]
+            (recur walked to-walk)))))
+
+In a nutshell, this function loops over two sets: `walked` and `to-walk`.
+
+Each iteration it grabs a coordinate from `to-walk` and sticks it into the
+`walked` set.  It then finds all the coordinates it can walk to from that
+coordinate using a helper function.  It uses `clojure.set/difference` to
+determine which of those are new (i.e.: still need to be walked) and sticks them
+into the `to-walk` set.  Then it recurs.
+
+The code for this is surprisingly simple and easy to read.  It's mostly just
+shuffling things between sets.  Eventually the `to-walk` set will be empty and
+`walked` will contain all the coordinates that we want.
+
+Finally comes the function to create the region map for an entire level:
+
+    :::clojure
+    (defn get-region-map
+      [level]
+      (loop [remaining (filter-walkable level all-coords)
+             region-map {}
+             n 0]
+        (if (empty? remaining)
+          region-map
+          (let [next-coord (first remaining)
+                next-region-coords (walkable-from level next-coord)]
+            (recur (difference remaining next-region-coords)
+                   (into region-map (map vector
+                                         next-region-coords
+                                         (repeat n)))
+                   (inc n))))))
+
+This function also uses Clojure sets to its advantage.  Once again, I loop
+over a couple of variables.
+
+`remaining` is a set containing all the coordinates whose regions has not yet
+been determined.
+
+Each iteration it pulls off one of the remaining coordinates.  Note that I'm
+using `first` to do this.  `remaining` is a set, which is unordered, so `first`
+effectively could return any element in the set.  For this loop that doesn't
+matter, but it's important to be aware of if you're going to use the same
+strategy.
+
+After pulling off a coordinate, it finds all coordinates walkable from that
+coordinate with the `walkable-from` flood-fill function.  It removes all of
+those from the `remaining` set, shoves them into the region map, and increments
+the region number before recurring.
+
+Visualization
+-------------
+
+I'm going to save the rest of Trystan's seventh post for another entry, but
+since this one ended up pretty short I'm also going to go over visualizing the
+region map I've just created.
+
+First I need to generate the region map when I create the world, and attach it
+to the world itself so we can access it from other places:
+
+    :::clojure
+    (defn random-world []
+      (let [world (->World (random-tiles) {})
+            world (nth (iterate smooth-world world) 3)
+            world (populate-world world)
+            world (assoc world :regions (get-region-map (:tiles world)))]
+        world))
+
+The last line in the `let` is where it gets generated.  It's pretty
+straightforward.
+
+I'd like to be able to toggle the visualization of regions off and on, so I'm
+going to introduce a new concept to the game: "debug flags".
+
+I updated the `Game` record to include a slot for these flags:
+
+    :::clojure
+    (defrecord Game [world uis input debug-flags])
+
+I then updated the `new-game` function to initialize them (currently there's
+only one) to default values:
+
+    :::clojure
+    (defn new-game []
+      (map->Game {:world nil
+                  :uis [(->UI :start)]
+                  :input nil
+                  :debug-flags {:show-regions false}}))
+
+The user needs a way to toggle them.  For now I'll just bind it to a key.  In
+the future I could make a debug UI with a nice menu.
+
+    :::clojure
+    (defmethod process-input :play [game input]
+      (case input
+        :enter     (assoc game :uis [(->UI :win)])
+        :backspace (assoc game :uis [(->UI :lose)])
+        \q         (assoc game :uis [])
+
+        \h (update-in game [:world] move-player :w)
+        \j (update-in game [:world] move-player :s)
+
+        ; ...
+
+        \R (update-in game [:debug-flags :show-regions] not)
+
+        game))
+
+Now when the user presses `R` (Shift and R) it will toggle the state of the
+`:show-regions` debug flag in the game.
+
+All that's left is to actually *draw* the regions somehow.  First, we only want
+to do this if `:show-regions` is `true`.  I edited the `:play` UI's drawing
+function to do this:
+
+    :::clojure
+    (defmethod draw-ui :play [ui game screen]
+      (let [world (:world game)
+            {:keys [tiles entities regions]} world
+            player (:player entities)
+            [cols rows] (s/get-size screen)
+            vcols cols
+            vrows (dec rows)
+            origin (get-viewport-coords game (:location player) vcols vrows)]
+        (draw-world screen vrows vcols origin tiles)
+        ; ******************
+        (when (get-in game [:debug-flags :show-regions])
+          (draw-regions screen regions vrows vcols origin))
+        ; ******************
+        (doseq [entity (vals entities)]
+          (draw-entity screen origin vrows vcols entity))
+        (draw-hud screen game)
+        (draw-messages screen (:messages player))
+        (highlight-player screen origin player)))
+
+The marked lines are the only new ones.  I'm going to draw regions after/above
+the world tiles (so they'll show up at all) but before/below the entities (so we
+can still see what's going on).
+
+Drawing the regions is fairly simple, if a bit tedious:
+
+    :::clojure
+    (defn draw-regions [screen region-map vrows vcols [ox oy]]
+      (letfn [(get-region-glyph [region-number]
+                (str
+                  (nth
+                    "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                    region-number)))]
+        (doseq [x (range ox (+ ox vcols))
+                y (range oy (+ oy vrows))]
+          (let [region-number (region-map [x y])]
+            (when region-number
+              (s/put-string screen (- x ox) (- y oy)
+                            (get-region-glyph region-number)
+                            {:fg :blue}))))))
+
+For now, bad things will happen if we have more than 62 regions in a single
+level.  In practice I usually end up with about 20 to 30, so it's not a big
+deal.
+
+To sum up this function: it iterates through every coordinate in the level
+that's displayed in the viewport, looks up its region number in the region map,
+and draws the appropriate letter if it has a region number.
+
+Results
+-------
+
+Now that I've got a way to visualize regions it becomes much easier to check
+whether they're getting set correctly.  Here's an example of what it looks like
+when you toggle `:show-regions` with `R`:
+
+![Screenshot without Regions](/media/images{{ parent_url }}/caves-07-1-1.png)
+
+![Screenshot with Regions](/media/images{{ parent_url }}/caves-07-1-2.png)
+
+As you can see, the small, closed off areas have their own numbers, while the
+larger regions sprawl across the map.
+
+You can view the code [on GitHub][result-code] if you want to see the end
+result.
+
+[result-code]: https://github.com/sjl/caves/tree/entry-07-1/src/caves
+
+The next article will finish Trystan's seventh post by adding multiple z-levels
+to the caves.
+
+{% endblock article %}
