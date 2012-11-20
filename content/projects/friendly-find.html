@@ -1,0 +1,20 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+    title: "Friendly Find"
+    snip: "A friendlier find(1)."
+    created: 2012-11-19 19:00:01
+    exclude: False
+    %}
+
+{% block article %}
+
+[Friendly Find][] is the friendly file finder.
+
+It's meant to be a more usable replacement for find(1). If you've used [ack][],
+then `ffind` is to `find` as `ack` is to `grep`.
+
+[Friendly Find]: https://github.com/sjl/friendly-find
+[ack]: http://betterthangrep.com/
+
+{% endblock %}
