@@ -1,6 +1,6 @@
 /* @override http://localhost:8080/media/css/pygments-monokai-light.css */
 .codehilite .hll { background-color: #49483e }
-.codehilite .c { color: #75715e } /* Comment */
+.codehilite .c { color: #7A7663 } /* Comment */
 .codehilite .err { color: #960050; background-color: #1e0010 } /* Error */
 .codehilite .k { color: #00a8c8} /* Keyword */
 .codehilite .l { color: #ae81ff } /* Literal */
@@ -32,7 +32,7 @@
 .codehilite .nf { color: #75af00} /* Name.Function */
 .codehilite .nl { color: #111111 } /* Name.Label */
 .codehilite .nn { color: #111111} /* Name.Namespace */
-.codehilite .nx { color: #75af00 } /* Name.Other */
+.codehilite .nx { color: #111111 } /* Name.Other */
 .codehilite .py { color: #111111 } /* Name.Property */
 .codehilite .nt { color: #f92672 } /* Name.Tag */
 .codehilite .nv { color: #111111 } /* Name.Variable */

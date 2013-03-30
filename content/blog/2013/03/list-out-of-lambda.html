@@ -1,0 +1,1066 @@
+    {% extends "_post.html" %}
+
+    {% hyde
+        title: "List Out of Lambda"
+        snip: "Down the rabbit hole we go!"
+        created: 2013-03-30 14:00:00
+        flattr: true
+    %}
+
+    {% block article %}
+
+If you ignore the practical issues of computers like size, weight, cost, heat,
+and so on, what do you *really* need in a programming language?  Let's play
+around with this question.
+
+To understand this post you'll need a basic understanding of how functions in
+Javascript work.  If you can look at this code and understand what it prints,
+you're good to go:
+
+    :::javascript
+    var x = 10;
+
+    var f = function(y) {
+        console.log(x);
+        console.log(y);
+    }
+
+    var g = f;
+
+    f(1);
+    g(2);
+
+This blog post is a thought exercise.  It's not something you'd ever use for
+real code.  But just like a guitarist practices scales that she won't ever play
+in a song, we programmers should be exercising our brains every so often.
+
+I'm going to use Javascript for the examples.  Any language with first class
+functions and lexical scoping (basically: closures) will work.  The examples
+would be prettier in a Lisp, but some people would be turned off by the syntax
+and miss out on some interesting ideas.  Feel free to port the code if it
+bothers you.
+
+If you've already seen this kind of thing before (maybe you've gone through [The
+Little Schemer][] or [SICP][]) you may want to just skim the code here and look
+for anything new.
+
+If you *haven't* seen anything like this, then you're in for a treat!  It's all
+going to look extremely weird the first time you see it.  Go slowly and make
+sure you understand each piece fully before moving on to the next.  These
+concepts may be unintuitive, but they're built from very simple pieces.
+
+Finally: if you get stuck, don't worry.  Tracing out the execution of a function
+on paper can be a good way to wrap your brain around it (I recommend investing
+in a good lap desk for comfy reading and writing).  If that doesn't work, just
+close the window and come back tomorrow.  Sometimes new concepts need a while to
+rattle around in your brain before they click into place.
+
+[The Little Schemer]: http://www.amazon.com/dp/0262560992/?tag=stelos-20
+[SICP]: http://www.amazon.com/dp/0070004846/?tag=stelos-20
+
+[TOC]
+
+Lists
+-----
+
+Let's get started.  One of the most common things we do as programmers is
+grouping data together.  Javascript has "arrays" built in to the language for
+this:
+
+    :::javascript
+    var names = ["Alice", "Bob", "Candice"];
+
+What if Javascript didn't come with arrays included?  Could we create them (or
+something like them) ourselves?
+
+To answer this, let's think about the bare minimum we'd need to "bootstrap"
+something like an array.  There are a number of ways to do this, but we're going
+to look at one in particular.
+
+We'll call our array-like thing a "list".  To make it work, we need four parts:
+
+* The concept of "the empty list".
+* A way to add an element to the front of a list.
+* A way to take a list and get the first element.
+* A way to take a list and get everything *but* the first element.
+
+If we have those four things, we can build on top of them to do anything else we
+might want.  For example: to make a list of one item, you add that item to the
+front of the empty list.
+
+Let's narrow this down further.  There are lots of ways you could implement
+those four things -- I'm going to use functions.  Let's sketch out an outline:
+
+    :::javascript
+    var empty_list = null;
+
+    var prepend = function(el, list) {
+        // ...
+    };
+
+    var head = function(list) {
+        // ...
+    };
+
+    var tail = function(list) {
+        // ...
+    };
+
+    var is_empty = function(list) {
+        // ...
+    };
+
+Here are the descriptions of each of these items.
+
+The `empty_list` is a special value that represents a list of zero elements.
+It can be anything, so for now we'll use `null` (we'll revisit this later).
+
+`prepend(1, some_list)` will return a new list that looks like the old one, but
+with `1` stuck onto the front of it.  So if we want to create a list of the
+numbers `1` and `2` we can say `prepend(1, prepend(2, empty_list))` or "prepend
+one to the result of prepending 2 to the empty list".
+
+`head(some_list)` will return the first element in the list.  Calling it on the
+empty list will be undefined, so we'll just be very careful not to do that!
+
+`tail(some_list)` will return a new list that's like the one we gave it, but
+with the first element removed.  Again, calling this on an empty list will make
+things explode.
+
+`is_empty(some_list)` will return `true` if the list given to it is the empty
+list, and `false` otherwise.
+
+Once we have those four functions (plus the special empty list value) we can
+start building on top of them, so let's figure out how to make them!
+
+### List Out of If
+
+If you haven't seen anything like this before, you might think it's time to
+start creating Javascript Objects.  That's certainly one way to do it.
+
+Since this post is a thought experiment in what we actually *need*, though,
+let's try to avoid using big language features (like Objects) unless we
+absolutely can't avoid it.
+
+So if we don't want to use other language features yet, what are we left with?
+Well so far our skeleton only has functions (and `null`), so let's try those!
+
+Here's the first working revision of the building blocks of lists:
+
+    :::javascript
+    var empty_list = null;
+
+    var prepend = function(el, list) {
+        return function(command) {
+            if (command === "head") {
+                return el;
+            } else if (command === "tail") {
+                return list;
+            }
+        }
+    };
+
+    var head = function(list) {
+        return list("head");
+    };
+
+    var tail = function(list) {
+        return list("tail");
+    };
+
+    var is_empty = function(list) {
+        return list === null;
+    };
+
+Go ahead and paste that into a browser console and play with it:
+
+    :::javascript
+    var e = empty_list;
+
+    console.log(is_empty(e));
+    // true
+
+    var names = prepend("Alice",
+                        prepend("Bob",
+                                prepend("Candice",
+                                        empty_list)));
+
+    console.log(is_empty(names));
+    // False
+
+    console.log(head(names));
+    // Alice
+
+    console.log(tail(names));
+    // Some function representing the list of ("Bob", "Candice")
+
+    console.log(head(tail(names)));
+    // Bob
+
+### But Where is the Data?
+
+Did the definitions of those functions surprise you?  Lists seem like such an
+important, object-oriented concept, but there only appear to be functions here!
+
+Let's look at how this actually works.  First of all, the "empty list" concept
+is pretty straightforward:
+
+    :::javascript
+    var empty_list = null;
+
+    var is_empty = function(list) {
+        return list === null;
+    };
+
+We could have picked any arbitrary value here.  `null` seemed appropriate, so
+I used that.
+
+Now on to the meat of things: `prepend`.
+
+    :::javascript
+    var prepend = function(el, list) {
+        return function(command) {
+            if (command === "head") {
+                return el;
+            } else if (command === "tail") {
+                return list;
+            }
+        }
+    };
+
+This is where the real magic happens.  Let's think through it.
+
+First of all, we know that when you prepend something to a list, you're going to
+get a (new) list back.  So whatever `prepend` returns must be a list.
+
+Looking at the code, we can see it returns a function.  So in our little thought
+experiment, a list is actually a Javascript function under the hood!
+
+So what do we need to do with lists (aside from empty checking, which we've
+already covered)?  Well, we need to be able to get the head and the tail.  When
+we call `prepend(h, t)`, we happen to be conveniently specifying the head and
+tail as the arguments!  So in `prepend` we return a function that knows how to
+return its own head or tail when asked.
+
+So a "list" is "a function that knows how to return its own head or tail when
+asked".  So our `head` and `tail` functions just need to ask nicely!
+
+    :::javascript
+    var head = function(list) {
+        return list("head");
+    };
+
+    var tail = function(list) {
+        return list("tail");
+    };
+
+That's it!  We've created lists in 23 lines of code without using any fancy
+things like Objects.  Before you move on, make sure you really understand why
+this works.  Write out a few examples on paper.
+
+    :::javascript
+    var empty_list = null;
+
+    var prepend = function(el, list) {
+        return function(command) {
+            if (command === "head") {
+                return el;
+            } else if (command === "tail") {
+                return list;
+            }
+        }
+    };
+
+    var head = function(list) {
+        return list("head");
+    };
+
+    var tail = function(list) {
+        return list("tail");
+    };
+
+    var is_empty = function(list) {
+        return list === null;
+    };
+
+### Building on the Foundations
+
+Now that we have lists, let's implement a few common things on top of them as
+practice.
+
+#### map
+
+A common thing to do to a list is to create a new list by looping through it and
+doing something to each item.  This is called "map":
+
+    :::javascript
+    var map = function(fn, l) {
+        if (is_empty(l)) {
+            return empty_list;
+        } else {
+            return prepend(fn(head(l)), map(fn, tail(l)));
+        }
+    };
+
+If you're not used to recursive definitions like this, you may way to take
+a few minutes and try to work out how it works.  Here's an example:
+
+    :::javascript
+    var square = function(x) {
+        return x * x;
+    }
+    var numbers = prepend(1, prepend(2, prepend(3, empty_list)));
+
+    var squared_numbers = map(square, numbers);
+    // map(square, [1, 2, 3])
+    // prepend(square(1), map(square, [1, 2, 3]))
+    // prepend(square(1), prepend(square(2), map(square, [3])))
+    // prepend(square(1), prepend(square(2), prepend(square(3), map(square, []))))
+    // prepend(square(1), prepend(square(2), prepend(square(3), [])))
+    // prepend(square(1), prepend(square(2), prepend(9, [])))
+    // prepend(square(1), prepend(square(2), [9]))
+    // prepend(square(1), prepend(4, [9]))
+    // prepend(square(1), [4, 9])
+    // prepend(1, [4, 9])
+    // [1, 4, 9]
+
+I'm using brackets here to represent lists, but remember that these aren't
+arrays, but are actually the functions that were returned by `prepend`.
+
+If you're still not sure about this, trace out every step of `map(square,
+empty_list)` on paper.  Then trace out every step of `map(square, prepend(10,
+empty_list))`.
+
+Thinking recursively like this takes some practice.  I have notebooks filled
+with [pages like this](http://i.imgur.com/kqu5jy9.jpg).  Experienced guitarists
+practice new material slowly and methodically -- there's no reason programmers
+shouldn't do the same.  Watching the function calls expand and contract on paper
+can help you feel in your gut how these things work in a way that just staring
+at the words can't.
+
+#### filter
+
+We're going to start moving a bit faster now, but you should still make sure you
+understand everything completely before moving on.  Take as much time as you
+need.  Write things out.  Run them.  Get a feel for them.
+
+The next "utility" function we'll build on top of lists is `filter`, which
+takes a function and a list, and returns a new list whose elements are those in
+the original that make the function return `true`.  Here's an example:
+
+    :::javascript
+    var numbers = prepend(1, prepend(2, prepend(3, empty_list)));
+    var is_odd = function(x) {
+        return x % 2 === 1;
+    }
+
+    filter(is_odd, numbers);
+    // [1, 3]
+
+Now let's implement `filter`:
+
+    :::javascript
+    var filter = function(fn, l) {
+        if (is_empty(l)) {
+            return empty_list;
+        } else if (fn(head(l))) {
+            return prepend(head(l), filter(fn, tail(l)));
+        } else {
+            return filter(fn, tail(l));
+        }
+    };
+
+Take your time.  Trace out some examples.  Move on when you feel it in your gut.
+
+#### and, or, not
+
+Let's take a slight detour to implement a few "helper" functions.  Τhese don't
+have anything specifically to do with lists, but we'll need them later.
+
+    :::javascript
+    var not = function(x) {
+        if (x) {
+            return false;
+        } else {
+            return true;
+        }
+    };
+
+    var and = function(a, b) {
+        if (a) {
+            if (b) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    };
+
+    var or = function(a, b) {
+        if (a) {
+            return true;
+        } else {
+            if (b) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+
+Javascript already has these things built in as `!`, `&&`, and `||`, of course,
+but remember that in this thought exercise we're trying to avoid using extra
+language features if we don't need them.  How far can we scrape by on just
+functions and `if` statements?
+
+One small note: these functions are just normal Javascript functions, which
+means that `and(a, b)` will *not* short-circuit like `a && b` would.  For our
+purposes here that won't hurt us, but it's something to be aware of.
+
+### List Out of Lambda
+
+Now that we've had a bit more practice, let's go back to our definition of
+lists:
+
+    :::javascript
+    var empty_list = null;
+
+    var prepend = function(el, list) {
+        return function(command) {
+            if (command === "head") {
+                return el;
+            } else if (command === "tail") {
+                return list;
+            }
+        }
+    };
+
+    var head = function(list) {
+        return list("head");
+    };
+
+    var tail = function(list) {
+        return list("tail");
+    };
+
+    var is_empty = function(list) {
+        return list === null;
+    };
+
+There are a few things about this implementation that bother me.  Our goal is to
+use as few language features as possible, but we've actually used quite a few!
+I count at least five:
+
+* Functions
+* `if` statements
+* Strings
+* Booleans (the `true`/`false` result of `is_empty`)
+* Equality checking (the `===` checks)
+
+It turns out we can remove most of those things at the cost of a bit of
+readability (and more bending of our minds).
+
+Let's start by rewriting the core three functions to ditch those ugly strings,
+equality checks, and even the `if` statement:
+
+    :::javascript
+    var prepend = function(el, list) {
+        return function(selector) {
+            return selector(el, list);
+        };
+    };
+
+    var head = function(list) {
+        return list(function(h, t) {
+            return h;
+        });
+    };
+
+    var tail = function(list) {
+        return list(function(h, t) {
+            return t;
+        });
+    };
+
+You may want to get a snack before wrapping your brain around this one!  There's
+no strings, no equality checking, no `if` statements.  But we still have lists!
+
+The `prepend` functions still returns a function, just like before.  Remember
+that in the last implementation, a "list" was really a function that knew how to
+give out its head or its tail when asked for them.
+
+This time, we're inverting the "asking".  In this version, a "list" is "a
+function that will tell another function about both its head *and* its tail when
+asked".  This time the *asker* gets *both* pieces, and can decide which one they
+want to use.
+
+Let's look at the `head` function:
+
+* `head` takes a list and says `return list(...)`, which means: "Hey list,
+  I would like you to tell all of your info to this little helper function I'm
+  giving you".
+* The list says `return ...(el, list)`, which means: "Okay helper function,
+  here's my head and my tail, enjoy!"
+* The helper function that `head` originally gave was `function(h, t) { return
+  h; }`.  So when the list calls it with the head and the tail as arguments, it
+  returns the head and ignores the tail.
+* `head` takes that result and just returns it straight through back to the
+  caller.
+
+`tail` works exactly the same way, but its helper function returns the second
+argument (the tail) instead of the first.
+
+That's it!  The equality checking and `if` statements have disappeared.  Can you
+describe where they've gone?  What has taken their place?
+
+Before we move on, let's clean up the idea of the empty list.  It's still using
+`null` and equality checking.  Let's remove those and make things a little more
+uniform.
+
+To do this we'll need to change the other three functions a bit as well, but if
+you've understood everything so far it shouldn't be too bad.
+
+    :::javascript
+    var empty_list = function(selector) {
+        return selector(undefined, undefined, true);
+    };
+
+    var prepend = function(el, list) {
+        return function(selector) {
+            return selector(el, list, false);
+        };
+    };
+
+    var head = function(list) {
+        return list(function(h, t, e) {
+            return h;
+        });
+    };
+
+    var tail = function(list) {
+        return list(function(h, t, e) {
+            return t;
+        });
+    };
+
+    var is_empty = function(list) {
+        return list(function(h, t, e) {
+            return e;
+        });
+    };
+
+We've now made lists a bit smarter.  In addition to telling the helper function
+their head and tail, they also tell it "am I the empty list?".  We've modified
+the helpers `head` and `tail` to accept (and ignore) this extra argument.
+
+We then modified `is_empty` to work just like `head` and `tail`.
+
+Finally, we've redefined `empty_list` to match the rest of the lists instead of
+being a special, magic value.  The empty list is now just like a normal one:
+it's a function that takes an "asker" and tells that asker "Hey, my head and
+tail are undefined and I am the empty list".
+
+I used `undefined` here which is technically another language feature because
+it's easier to read.  Feel free to replace it with anything you want to make it
+more pure.  Since we're being very careful to never call `head` or `tail` on the
+empty list those values will never be seen anyway.
+
+So after all that, we've finally implemented the building blocks of lists with
+only two things:
+
+* Functions.
+* `true` and `false` for empty lists.
+
+If you're up for a challenge, think about whether you could remove that second
+item (and if so, are you *really* removing it, or just using certain features of
+Javascript implicitly instead of explicitly?).
+
+A Brief Intermission
+--------------------
+
+Let's take a minute to reflect on all the code we've seen so far.  First, we
+have an implementation of lists that uses only functions and booleans:
+
+    :::javascript
+    var empty_list = function(selector) {
+        return selector(undefined, undefined, true);
+    };
+
+    var prepend = function(el, list) {
+        return function(selector) {
+            return selector(el, list, false);
+        };
+    };
+
+    var head = function(list) {
+        return list(function(h, t, e) {
+            return h;
+        });
+    };
+
+    var tail = function(list) {
+        return list(function(h, t, e) {
+            return t;
+        });
+    };
+
+    var is_empty = function(list) {
+        return list(function(h, t, e) {
+            return e;
+        });
+    };
+
+From this point on, we can now ignore the details of how lists are implemented.
+As long as we have `head`, `tail`, and `prepend` we don't need to worry about
+what lists actually *are* under the hood.
+
+We also built a few helper functions on top of this foundation:
+
+    :::javascript
+    var not = function(x) {
+        if (x) {
+            return false;
+        } else {
+            return true;
+        }
+    };
+
+    var and = function(a, b) {
+        if (a) {
+            if (b) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    };
+
+    var or = function(a, b) {
+        if (a) {
+            return true;
+        } else {
+            if (b) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
+
+    var map = function(fn, l) {
+        if (is_empty(l)) {
+            return empty_list;
+        } else {
+            return prepend(fn(head(l)), map(fn, tail(l)));
+        }
+    };
+
+    var filter = function(fn, l) {
+        if (is_empty(l)) {
+            return empty_list;
+        } else if (fn(head(l))) {
+            return prepend(head(l), filter(fn, tail(l)));
+        } else {
+            return filter(fn, tail(l));
+        }
+    };
+
+Before you move on, make sure all of this code is crystal clear.  Come back
+tomorrow if you need to let it sink in.  We're about to go a lot deeper into the
+rabbit hole, so make sure you're ready.
+
+Numbers
+-------
+
+If you look at the definitions of `prepend`, `head`, and `tail`, they're pretty
+mind-bending.  However, the definitions of `map` and `filter` are much more
+straightforward.
+
+This is because we encapsulated the implementation of lists into the first four
+functions.  We did all the hard work of building lists out of almost nothing at
+all and hid it behind that simple `prepend`, `head`, and `tail` interface.
+
+The idea of creating things from simple pieces and abstracting them into "black
+boxes" is one of the most important parts of both computer science and
+programming, so let's take it a step further and get some more practice by
+implementing numbers.
+
+### What is a Number?
+
+For this blog post we're only going to concern ourselves with non-negative
+integers.  Feel free to try extending all this to include negative integers if
+you want more.
+
+How can we represent a number?  Well we could obviously use Javascript numbers
+like `14`, but that's not very fun, and we're trying to minimize the number of
+language features we use.
+
+One way to represent a number is a list whose length is the number.  So we could
+say that `[1, 1, 1]` means "three", `["cats", null]` means "two", and `[]` means
+"zero".
+
+The elements themselves don't really matter, so let's just pick something we
+already have: the empty list!  Let's write out a few to get a feel for this:
+
+    :::javascript
+    var zero = empty_list;
+    // []
+
+    var one = prepend(empty_list, empty_list);
+    // [ [] ]
+
+    var two = prepend(empty_list, prepend(empty_list, empty_list));
+    // [ [], [] ]
+
+### inc, dec
+
+We're going to want to *do* things with our numbers, so let's start writing
+things that work with this "list of things" representation of numbers.
+
+Our basic building blocks are going to be `inc` and `dec` (increment and
+decrement).
+
+    :::javascript
+    var inc = function(n) {
+        return prepend(empty_list, n);
+    };
+
+    var dec = function(n) {
+        return tail(n);
+    };
+
+To add 1 to a number, we just push another element on the list.  So
+`inc(inc(zero))` means "two".
+
+To subtract 1, we just pop off one of the elements: `dec(two)` means "one"
+(remember we're ignoring negative numbers).
+
+### is\_zero
+
+When we started working with lists we used `is_empty` a lot, so it's probably
+a good idea to create an `is_zero` function at this point:
+
+    :::javascript
+    var is_zero = function(n) {
+        return is_empty(n);
+    };
+
+Zero is just represented by the empty list, so this one is easy!
+
+### add
+
+Adding one is easy, but we're probably going to want to add arbitrary numbers
+together.  Now that we have `inc` and `dec` this is actually pretty easy:
+
+    :::javascript
+    var add = function(a, b) {
+        if (is_zero(b)) {
+            return a;
+        } else {
+            return add(inc(a), dec(b));
+        }
+    };
+
+This is another recursive definition.  When adding two numbers, there are two
+possibilities:
+
+* If `b` is zero, then anything plus zero is zero, so we can just return `a`.
+* Otherwise, adding `a + b` is the same as adding `(a + 1) + (b - 1)`.
+
+Eventually `b` will "bottom out" and return `a` (which has been steadily getting
+bigger as `b` got smaller).
+
+Notice how we didn't say anything about lists here!  The "numbers are lists
+under the hood" idea has been encapsulated behind `is_zero`, `inc`, and `dec`,
+so we can ignore it and work at the "number" level of abstraction from here on
+out.
+
+### sub
+
+Subtraction is similar to addition, but instead of *increasing* `a` as `b` gets
+smaller, we *decrease* them both together:
+
+    :::javascript
+    var sub = function(a, b) {
+        if (is_zero(b)) {
+            return a;
+        } else {
+            return add(dec(a), dec(b));
+        }
+    };
+
+Now we can say something like `add(two, sub(three, two))` and the result will be
+a representation of "three" in our system (which, of course, is a list of three
+elements).
+
+Pause for a minute now and remember that underneath numbers are lists, and
+underneath lists there's nothing but functions.  We can add and subtract
+integers and underneath it all it's just functions shuffling around, expanding
+into other functions and contracting as they're called, and this writhing mass
+of lambdas somehow ends up representing `1 + 1 = 2`.  That's pretty cool!
+
+### mul, pow
+
+For practice let's create a way to multiply numbers:
+
+    :::javascript
+    var mul = function(a, b) {
+        if (is_zero(b)) {
+            return zero;
+        } else {
+            return add(a, mul(a, dec(b)));
+        }
+    };
+
+Building on `add` makes this pretty easy.  `3 * 4` is the same as `3
++ 3 + 3 + 3 + 0`.  Trace out the execution on paper if things are starting to
+get away from you.  Carry on when you're ready.
+
+`pow` ("power" or exponential) follows a similar structure as `mul`, but instead
+of adding together the copies we multiply them, and our base is one instead of
+zero:
+
+    :::javascript
+    var pow = function(a, b) {
+        if (is_zero(b)) {
+            return one;
+        } else {
+            return mul(a, pow(a, dec(b)));
+        }
+    };
+
+### is\_equal
+
+A common thing to do with numbers is to check if two are equal, so let's write
+that:
+
+    :::javascript
+    var is_equal = function(n, m) {
+        if (and(is_zero(n), is_zero(m))) {
+            return true;
+        } else if (or(is_zero(n), is_zero(m))) {
+            return false;
+        } else {
+            return is_equal(dec(n), dec(m));
+        }
+    };
+
+There are three cases here:
+
+* If both numbers are zero, they are equal.
+* If only one number is zero (but not both, or the first case would have caught
+  it), then they are *not* equal.
+* Otherwise, subtract one from each and try again.
+
+When calling this function with two non-zero numbers, both will be decremented
+in tandem until one of them bottoms out at zero first, or until they bottom out
+at the same time.
+
+### less\_than, greater\_than
+
+We can take a similar approach to implementing `less_than`:
+
+    :::javascript
+    var less_than = function(a, b) {
+        if (and(is_zero(a), is_zero(b))) {
+            return false;
+        } else if (is_zero(a)) {
+            return true;
+        } else if (is_zero(b)) {
+            return false;
+        } else {
+            return less_than(dec(a), dec(b));
+        }
+    };
+
+The difference here is that we have four cases.
+
+* If both numbers are zero, then `a` is not less than `b`.
+* Otherwise if `a` is zero (and we know `b` isn't) then yes, `a` is less than
+  `b`.
+* Otherwise if `b` is zero (and we know that `a` isn't) then no, `a` cannot be
+  less than `b` (remember that we're ignoring negative numbers).
+* Otherwise decrement both and try again.
+
+Once again, both numbers race to bottom out, and the outcome is decided by which
+one bottoms out first.
+
+We could do something similar for `greater_than`, but let's do it the easy way
+instead:
+
+    :::javascript
+    var greater_than = function(a, b) {
+        return less_than(b, a);
+    };
+
+### div, mod
+
+Once we have `less_than` we're ready to implement division and remainders:
+
+    :::javascript
+    var div = function(a, b) {
+        if (less_than(a, b)) {
+            return zero;
+        } else {
+            return inc(div(sub(a, b), b));
+        }
+    };
+
+    var rem = function(a, b) {
+        if (less_than(a, b)) {
+            return a;
+        } else {
+            return rem(sub(a, b), b);
+        }
+    };
+
+This pair is a bit more complicated than the three other basic operations
+because we can't deal with negative numbers.  Make sure you understand how it
+works.
+
+Full Circle
+-----------
+
+At this point, we have a (very basic) working system of numbers built on top of
+lists.  Let's chase our tails a bit and implement a few more list functions that
+use numbers.
+
+### nth
+
+To get the Nth item in a list, we just pop things off of it as we decrement
+N until we hit zero:
+
+    :::javascript
+    var nth = function(l, n) {
+        if (is_zero(n)) {
+            return head(l);
+        } else {
+            return nth(tail(l), dec(n));
+        }
+    };
+
+Under the hood there are really *two* lists getting things popped off as we
+iterate, because `n` is a number, which is a list, and `dec` pops things off.
+But it's much easier to read when we've abstracted away the representation of
+numbers, don't you think?
+
+### drop, take
+
+Two handy functions for working with lists are `drop` and `take`.
+
+`drop(l, three)` will return the list with the first three elements removed.
+
+`take(l, three)` will return the list containing only the first three elements.
+
+    :::javascript
+    var drop = function(l, n) {
+        if (is_zero(n)) {
+            return l;
+        } else {
+            return drop(tail(l), dec(n));
+        }
+    };
+
+    var take = function(l, n) {
+        if (is_zero(n)) {
+            return empty_list;
+        } else {
+            return prepend(head(l), take(tail(l), dec(n)));
+        }
+    };
+
+### slice
+
+Slicing a list is easy now that we have `drop`, `take`, and the ability to
+subtract numbers:
+
+    :::javascript
+    var slice = function(l, start, end) {
+        return take(drop(l, start), sub(end, start));
+    };
+
+First we drop up to the start, then take enough to get us to the end.
+
+### length
+
+We can define `length` recursively like everything else:
+
+    :::javascript
+    var length = function(l) {
+        if (is_empty(l)) {
+            return zero;
+        } else {
+            return inc(length(tail(l)));
+        }
+    };
+
+The length of the empty list is zero, and the length of any non-empty list is
+one plus the length of its tail.
+
+If your mind isn't in knots by this point, consider the following:
+
+* Lists are made of functions.
+* Numbers are made of lists whose length represents the number.
+* `length` is a function that takes a list (which is a function) and returns
+  the length as a number (a list whose length represents the number).
+* We only just now got around to defining `length` even though we've been using
+  numbers (which use the *length* of a list to represent a number) for a while
+  now!
+
+Are you dizzy yet?  If not:
+
+    :::javascript
+    var mylist = prepend(empty_list,
+                         prepend(empty_list,
+                                 empty_list));
+    var mylistlength = length(mylist);
+
+`mylist` is a list of two empty lists.
+
+`mylistlength` is the length of `mylist`...  
+which is "two"...  
+which is represented by a list of two empty lists...  
+which is `mylist` itself!
+
+Conclusion
+----------
+
+If you liked this twisty little story, I highly recommend you check out [The
+Little Schemer][].  It was one of the first books that really changed how
+I thought about programming.  Don't be put off by the fact that it uses Scheme
+-- the language doesn't really matter.
+
+I've also created [a gist][] with all the code.  Feel free to fork it and use it
+for practice.
+
+You could add some more utility functions for practice writing recursively:
+
+* `append` to add an item to the end of a list.
+* `concat` to concatenate two lists.
+* `min` and `max` which take two numbers and return the minimum/maximum one.
+* `remove`, which is like filter except it only leaves the elements that return
+  `false` for the predicate.
+* `contains_number`, which checks if a specific number is inside a list of
+  numbers.
+
+Or if you want something more challenging, try implementing bigger concepts on
+top of the current ones:
+
+* Negative numbers.
+* Non-negative rational numbers.
+* Negative rational numbers.
+* Association lists (a data structure that associates keys with values).
+
+Remember: the point is not to create something that runs well on a physical
+computer.  Instead of thinking about how to make a particular combination of
+transistors and circuits have the right voltages, think about "computing" in the
+beautiful, perfect, abstract sense.
+
+[a gist]: https://gist.github.com/sjl/5277681
+
+    {% endblock article %}
+
